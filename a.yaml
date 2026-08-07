@@ -1,0 +1,42 @@
+# name: John Doe
+# age: 30
+# email: john.doe@example.com
+# address:
+#   street: 123 Main St
+#   city: Anytown
+#   state: CA
+#   zip: 12345
+# phone_numbers:
+#   - type: home
+#     number: 555-1234
+#   - type: work
+#     number: 555-5678
+# skills:
+#   - programming
+#   - data analysis
+#   - project management  
+# experience:
+#   - company: ABC Corp
+#     position: Software Engineer
+#     start_date: 2015-01-01
+#     end_date: 2018-12-31
+#   - company: XYZ Inc
+#     position: Data Analyst
+#     start_date: 2019-01-01
+#     end_date: present
+# education:
+#   - institution: University of Example
+#     degree: Bachelor of Science in Computer Science
+#     graduation_year: 2014
+#   - institution: Example State University
+#     degree: Master of Science in Data Science
+#     graduation_year: 2016
+# certifications:
+#   - name: Certified Data Scientist
+#     issuing_organization: Data Science Institute
+#     issue_date: 2017-05-01
+#     expiration_date: 2022-05-01
+#   - name: Project Management Professional (PMP)
+#     issuing_organization: Project Management Institute
+#     issue_date: 2020-01-01
+#     expiration_date: 2025-01-01

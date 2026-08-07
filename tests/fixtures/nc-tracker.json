@@ -1,0 +1,122 @@
+{
+  "TC-01": {
+    "ncId": "4465b383-b59f-459f-941d-dc4b8737e778",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-02": {
+    "ncId": "5414db4c-b318-44ce-b237-648f674ad345",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-03": {
+    "ncId": "cf5f6601-b83c-4434-8716-9af3c1bdcc83",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-04": {
+    "ncId": "dc213bf2-a6ac-49e7-83a9-1ffc934e5bc6",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  }
+}

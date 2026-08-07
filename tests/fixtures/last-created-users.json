@@ -1,0 +1,90 @@
+{
+  "EE": {
+    "name": "EEkluUser42",
+    "email": "EEkluUser42@adani.com",
+    "phone": "6956868442",
+    "number": 42,
+    "role": "Execution Engineer",
+    "userType": "AGEL"
+  },
+  "QI": {
+    "name": "QIrahUser42",
+    "email": "QIrahUser42@adani.com",
+    "phone": "6052935851",
+    "number": 42,
+    "role": "Quality Inspector",
+    "userType": "AGEL"
+  },
+  "EL": {
+    "name": "ELdedUser42",
+    "email": "ELdedUser42@adani.com",
+    "phone": "7821440734",
+    "number": 42,
+    "role": "Execution Lead",
+    "userType": "AGEL"
+  },
+  "QL": {
+    "name": "QLenuUser42",
+    "email": "QLenuUser42@adani.com",
+    "phone": "6921323790",
+    "number": 42,
+    "role": "Quality Lead",
+    "userType": "AGEL"
+  },
+  "PM": {
+    "name": "PMmafUser42",
+    "email": "PMmafUser42@adani.com",
+    "phone": "8898597494",
+    "number": 42,
+    "role": "Project Manager",
+    "userType": "AGEL"
+  },
+  "PAD": {
+    "name": "PADimiUser42",
+    "email": "PADimiUser42@adani.com",
+    "phone": "9710343249",
+    "number": 42,
+    "role": "Plot Admin",
+    "userType": "AGEL"
+  },
+  "SAD": {
+    "name": "SADgcnUser42",
+    "email": "SADgcnUser42@adani.com",
+    "phone": "6675371886",
+    "number": 42,
+    "role": "Site Admin",
+    "userType": "AGEL"
+  },
+  "CAD": {
+    "name": "CADoyxUser42",
+    "email": "CADoyxUser42@adani.com",
+    "phone": "7065580543",
+    "number": 42,
+    "role": "Cluster Admin",
+    "userType": "AGEL"
+  },
+  "ADM": {
+    "name": "ADMiyvUser42",
+    "email": "ADMiyvUser42@adani.com",
+    "phone": "6218000138",
+    "number": 42,
+    "role": "Admin",
+    "userType": "AGEL"
+  },
+  "CIC": {
+    "name": "CICkvaUser42",
+    "email": "CICkvaUser42@adani.com",
+    "phone": "9510247721",
+    "number": 42,
+    "role": "Contractor Incharge",
+    "userType": "VENDOR"
+  },
+  "CM": {
+    "name": "CMbruUser42",
+    "email": "CMbruUser42@adani.com",
+    "phone": "7818298395",
+    "number": 42,
+    "role": "Contractor Manager",
+    "userType": "VENDOR"
+  }
+}

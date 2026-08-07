@@ -1,0 +1,278 @@
+{
+  "TC-01": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-02": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-03": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-04": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-05": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-06": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-07": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-08": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  },
+  "TC-09": {
+    "rfiId": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "pending",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ]
+  }
+}

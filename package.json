@@ -1,0 +1,26 @@
+{
+  "name": "automation-playwright-script",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "reset:rfi-tracker": "node tests/utils/reset-tracker.js",
+    "reset:nc-tracker": "node tests/utils/reset-nc-tracker.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "dotenv": "^17.4.2"
+  }
+}
