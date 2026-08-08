@@ -1,3 +1,5 @@
+
+// RFI inspector dom
 /**
  * DOM Inspector — NOT a real test, no assertions.
  * Run this once after SO Mapping / WAM are set up in the test environment.
