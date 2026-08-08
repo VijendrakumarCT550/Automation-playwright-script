@@ -1,3 +1,4 @@
+// NC spec inspection
 /**
  * DOM Inspector — NOT a real test, no assertions.
  * Logs in as CI and opens an already-"Raised" NC (id read from
