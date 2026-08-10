@@ -53,9 +53,13 @@ class RFIChecklistPage extends BasePage {
       const input = inputs.nth(i);
       if (await input.isVisible().catch(() => false)) {
         await input.scrollIntoViewIfNeeded();
-        await input.click({ clickCount: 3 });
         const filledValue = incrementSuffix ? `${value} ${i + 1}` : value;
-        await input.pressSequentially(filledValue, { delay: 3 });
+        // .fill() sets the whole value in one native operation (still fires
+        // the input/change events React listens to) instead of simulating a
+        // keystroke per character — same result, far faster across many
+        // checkpoint questions. Also replaces the old text itself, so the
+        // separate select-all click before it is no longer needed.
+        await input.fill(filledValue);
         await this.page.keyboard.press('Tab');
       }
     }
