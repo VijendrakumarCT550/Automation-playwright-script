@@ -3,6 +3,7 @@ const {
   loadTracker, getPendingStepsForActor, advanceStep, markFailed,
 } = require("../utils/tracker-utils");
 const { loginAsRole } = require("../utils/helpers");
+const { openFromPendingWithMe } = require("../utils/rfi-nav");
 const RFIReviewPage = require("../pages/RFIReviewPage");
 
 test.describe.configure({ mode: "serial" });
@@ -16,8 +17,13 @@ test("QI: approve/reject every RFI whose next step is mine", async ({ page }) =>
 
   for (const { tcId, tc, step } of myTurns) {
     try {
+      // My Tasks -> "Pending with me" -> find row by visible code -> eye
+      // icon, instead of a direct page.goto to the RFI's URL. rfiCode is
+      // already known by now — CI's own backfillRfiCodes (see
+      // 08_rfi_flow_ci.spec.js) reads it right after every create/resubmit,
+      // in the same CI session. QI never reads or guesses at the code itself.
+      await openFromPendingWithMe(page, tc.rfiCode);
       const review = new RFIReviewPage(page);
-      await review.goto(tc.rfiId);
       await review.expandAllChecklist();
 
       if (step.action === "approve") {

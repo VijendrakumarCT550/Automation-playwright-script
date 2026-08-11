@@ -104,6 +104,31 @@ class RFIChecklistPage extends BasePage {
     await this.page.waitForLoadState('networkidle');
   }
 
+  // The RFI's UI-visible human-readable code (e.g. "RFI-A-06c-BL01-CIV-528")
+  // — confirmed live via DOM dump: it's the deepest breadcrumb crumb,
+  // `<a aria-current="page" href="/my-tasks/rfi/<uuid>/view">CODE</a>`,
+  // alongside SEVERAL other elements the app also marks aria-current="page"
+  // at shallower breadcrumb levels ("My Tasks", "RFI", "RFIs Pending with
+  // others/me") — an app rendering quirk, every ancestor crumb gets marked
+  // current too, not just the deepest one.
+  //
+  // Matching by href EXACTLY EQUAL to the current page's path (not by
+  // position via .first()/.last(), and not by a loose href substring) is
+  // what actually works: confirmed live that BOTH .first() and .last() are
+  // unreliable here — the deepest crumb can mount asynchronously slightly
+  // after the shallower ones, so a position-based pick can resolve against
+  // a temporarily-last-but-not-final element while the DOM is still
+  // settling (worked in an isolated single-create check, then failed under
+  // the real back-to-back creation loop — a genuine race, not an ordering
+  // mistake). The current page's own path is unique and stable the instant
+  // we're actually on it, sidestepping that race entirely.
+  async getVisibleCode() {
+    const path = new URL(this.page.url()).pathname;
+    const crumb = this.page.locator(`a[aria-current="page"][href="${path}"]`);
+    await crumb.waitFor({ state: 'visible', timeout: 10000 });
+    return (await crumb.innerText()).trim();
+  }
+
   async cancelSubmit() {
     await this.confirmPopup.waitFor({ state: 'visible', timeout: 10000 });
     await this.confirmNoButton.click();
