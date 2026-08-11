@@ -1,6 +1,7 @@
 {
   "TC-01": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -17,6 +18,7 @@
   },
   "TC-02": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -42,6 +44,7 @@
   },
   "TC-03": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -67,6 +70,7 @@
   },
   "TC-04": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -96,6 +100,7 @@
   },
   "TC-05": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -125,6 +130,7 @@
   },
   "TC-06": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -163,6 +169,7 @@
   },
   "TC-07": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -201,6 +208,7 @@
   },
   "TC-08": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",
@@ -239,6 +247,7 @@
   },
   "TC-09": {
     "rfiId": null,
+    "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
     "status": "pending",

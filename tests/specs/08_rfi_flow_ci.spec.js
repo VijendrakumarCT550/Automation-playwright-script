@@ -1,8 +1,10 @@
 const { test, expect } = require("@playwright/test");
 const {
-  loadTracker, getPendingStepsForActor, setRfiId, advanceStep, markFailed, getLastRejectPage,
+  loadTracker, getPendingStepsForActor, setRfiId, setRfiCode, advanceStep, markFailed, getLastRejectPage,
 } = require("../utils/tracker-utils");
 const { loginAsRole } = require("../utils/helpers");
+const { openFromPendingWithMe } = require("../utils/rfi-nav");
+const DashboardPage    = require("../pages/DashboardPage");
 const MyTasksPage      = require("../pages/MyTasksPage");
 const RFICreatePage    = require("../pages/RFICreatePage");
 const RFIChecklistPage = require("../pages/RFIChecklistPage");
@@ -54,22 +56,39 @@ async function createNewRfi(page) {
 
   const match = page.url().match(/rfi\/([a-f0-9-]+)\/view/i);
   if (!match) throw new Error(`Could not extract RFI id from URL: ${page.url()}`);
+
+  // Only the id — the visible code is read later, in one batch, after every
+  // TC due this pass has been created/resubmitted (see backfillRfiCodes
+  // below), not right here. User-confirmed live: reading it immediately
+  // after submitting can capture a "RFI-...-CIV-DRAFT" placeholder because
+  // the app hasn't finished assigning the real code yet — happened for
+  // EVERY TC in a back-to-back creation loop, not just occasionally.
   return match[1];
 }
 
-// Direct URL navigation instead of finding the row in "Pending with me" and
-// clicking its eye icon — simpler and avoids depending on table sort/scroll.
-//
-// MUST be /re-submit, not /view — user-confirmed live: once an RFI is
-// rejected, /view is read-only (no Submit button, form fields not editable)
-// and only /re-submit is the actual editable resubmission form. This
-// function is only ever called for a step whose action is "resubmit" (i.e.
-// only after a reject already happened), so /re-submit is always correct
-// here — confirmed this was the root cause of every CI-resubmit timeout
-// waiting on the Work Location combobox (it simply never appears on /view).
-async function resubmitRfi(page, rfiId, lastRejectPage) {
-  await page.goto(`${process.env.BASE_URL}/my-tasks/rfi/${rfiId}/re-submit`);
-  await page.waitForLoadState('networkidle');
+// Opens the rejected RFI through the UI — My Tasks -> "Pending with me" ->
+// find the row by its visible code -> eye icon (see rfi-nav.js) — instead of
+// a direct page.goto to a known URL. rfiCode is expected to already be
+// known: backfillRfiCodes (below) fills it in right after every
+// create/resubmit in this same CI session, before this is ever called for
+// a later resubmit.
+async function resubmitRfi(page, rfiCode, lastRejectPage) {
+  await openFromPendingWithMe(page, rfiCode);
+
+  // That eye icon always lands on the read-only /view page, even for a row
+  // whose actual next action is "resubmit" — user-confirmed live: once an
+  // RFI is rejected, /view has no Submit button and no editable fields. The
+  // actual editable form only exists at /re-submit, reached from /view via
+  // a Resubmit/Edit action on the page itself — confirmed this
+  // /view-vs-/re-submit distinction was the root cause of every CI-resubmit
+  // timeout waiting on the Work Location combobox (it simply never appears
+  // on /view).
+  if (!page.url().includes('/re-submit')) {
+    const resubmitButton = page.getByRole('button', { name: /resubmit|edit/i }).first();
+    await resubmitButton.waitFor({ state: 'visible', timeout: 15000 });
+    await resubmitButton.click();
+    await page.waitForLoadState('networkidle');
+  }
 
   const rfiCreate = new RFICreatePage(page);
   const locked = await rfiCreate.isFirstPageLocked();
@@ -86,15 +105,59 @@ async function resubmitRfi(page, rfiId, lastRejectPage) {
   await checklist.submitRFI();
 
   // Resubmitting creates a NEW CHILD RECORD with its OWN id — the original
-  // id becomes ARCHIVED (user-confirmed live: visible in the app as the
-  // previous RFI code permanently showing "Rejected", while a new RFI code
-  // carries the live version forward). Every step after this one (EE/QI
-  // review, or a further resubmit) must operate on THIS new id, not the one
-  // passed in — the caller is responsible for saving it back to the tracker.
+  // becomes ARCHIVED (user-confirmed live: visible in the app as the
+  // previous RFI code permanently showing "Rejected"). The visible CODE
+  // does NOT necessarily change along with it, though — confirmed live:
+  // it stayed identical across a resubmit that didn't touch any Page-1
+  // field data, and only changes "in some cases... with some data change
+  // in RFI first page details" (direct user confirmation). So the code
+  // must always be freshly read from the app after every resubmit, never
+  // assumed to match (or differ from) the pre-resubmit value. Every step
+  // after this one must operate on THIS new id, not the one passed in —
+  // the caller saves it back to the tracker. The new code AND the bumped
+  // version badge are both read later, in backfillRfiCodes, NOT right here
+  // — reading getVersionBadge() immediately after submitRFI() hits the
+  // exact same async-lag problem as the code itself: the badge can still
+  // show the OLD version (vN) for a moment before updating to vN+1
+  // (user-confirmed live via tracker inspection: every resubmitted TC
+  // stayed at "v1" instead of bumping to "v2" when read this early).
   const match = page.url().match(/rfi\/([a-f0-9-]+)\/view/i);
   if (!match) throw new Error(`Could not extract new RFI id after resubmit from URL: ${page.url()}`);
 
-  return { newRfiId: match[1], version: await checklist.getVersionBadge() };
+  return { newRfiId: match[1] };
+}
+
+// After every create/resubmit this pass is done — still the same CI login
+// session, never re-logging in — revisits each one's real data by going to
+// the DASHBOARD FIRST, then to its /view page by known UUID, and reads the
+// now-finalized visible code (and, for a resubmit, the now-bumped version
+// badge) off the page, storing them via setRfiCode.
+//
+// Going through the dashboard first (not a direct goto straight to /view
+// from wherever the page happens to be) matters — user-confirmed live:
+// this is what actually clears the stale/DRAFT state and forces a full
+// data refresh; a direct goto to /view alone was what kept reading the
+// "RFI-...-CIV-DRAFT" placeholder instead of the real numeric code. Same
+// fix covers the version-badge lag (see resubmitRfi's comment) — both were
+// the same underlying "read before the app has refreshed" problem.
+async function backfillRfiCodes(page, pending) {
+  for (const { tcId, rfiId, isResubmit } of pending) {
+    try {
+      const dashboard = new DashboardPage(page);
+      await dashboard.goToDashboard();
+      await dashboard.waitForContentOnly();
+      await page.goto(`${process.env.BASE_URL}/my-tasks/rfi/${rfiId}/view`);
+      await page.waitForLoadState('networkidle');
+      const checklist = new RFIChecklistPage(page);
+      const code = await checklist.getVisibleCode().catch(() => null);
+      const version = isResubmit ? await checklist.getVersionBadge().catch(() => null) : null;
+      setRfiCode(loadTracker(), tcId, code, version);
+    } catch {
+      // Best-effort — a miss here just means this TC's next "Pending with
+      // me" lookup fails loudly and diagnosably later, rather than the
+      // whole CI pass being lost over one bad read.
+    }
+  }
 }
 
 test("CI: create pending TCs and resubmit rejected RFIs", async ({ page }) => {
@@ -105,22 +168,27 @@ test("CI: create pending TCs and resubmit rejected RFIs", async ({ page }) => {
 
   const tracker = loadTracker();
   const myTurns = getPendingStepsForActor(tracker, "CI");
+  const pendingCodeBackfill = [];
 
   for (const { tcId, tc, step } of myTurns) {
     try {
       if (!tc.rfiId) {
         const rfiId = await createNewRfi(page);
         setRfiId(loadTracker(), tcId, rfiId);
+        pendingCodeBackfill.push({ tcId, rfiId, isResubmit: false });
         continue;
       }
 
       if (step.action === "resubmit") {
         const lastRejectPage = getLastRejectPage(tc);
-        const { newRfiId, version } = await resubmitRfi(page, tc.rfiId, lastRejectPage);
-        advanceStep(loadTracker(), tcId, { newVersion: version, newRfiId });
+        const { newRfiId } = await resubmitRfi(page, tc.rfiCode, lastRejectPage);
+        advanceStep(loadTracker(), tcId, { newRfiId, newRfiCode: null });
+        pendingCodeBackfill.push({ tcId, rfiId: newRfiId, isResubmit: true });
       }
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
   }
+
+  await backfillRfiCodes(page, pendingCodeBackfill);
 });

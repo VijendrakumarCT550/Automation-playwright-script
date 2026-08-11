@@ -1,9 +1,16 @@
 const { BasePage } = require('./BasePage');
 
-// Covers the EE/QI "review" view of a single RFI — reached by navigating
-// directly to /my-tasks/rfi/<id>/view (simpler and more robust than finding
-// the row in the "Pending with me" table and clicking its eye icon, which
-// requires horizontal/vertical scrolling and depends on sort order).
+// Covers the EE/QI "review" view of a single RFI.
+//
+// 09/10 (the real RFI-flow regression) reach this page through the UI — My
+// Tasks -> "Pending with me" tile -> find the row by its visible code ->
+// click its eye icon — via tests/utils/rfi-nav.js's openFromPendingWithMe(),
+// not this class's own goto() below. EE/QI never read or discover the
+// visible code themselves; CI captures it for every TC right after
+// creating/resubmitting (see 08_rfi_flow_ci.spec.js's backfillRfiCodes),
+// in the same CI login session, well before EE/QI's turn. goto() is kept
+// for other callers (inspector scripts, ad-hoc debugging) that want a
+// direct jump to a known id without caring about list navigation.
 //
 // Unlike CI's create/resubmit flow, the checklist questions are visible
 // immediately (collapsed) — no separate "Proceed" step is needed to reach
