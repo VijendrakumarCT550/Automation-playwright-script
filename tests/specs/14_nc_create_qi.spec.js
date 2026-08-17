@@ -5,7 +5,11 @@ const NCCreatePage = require('../pages/NCCreatePage');
 // NC Quantity/UOM rule (per app owner): both required UNLESS the selected
 // Unit is "Not Applicable (NA)", in which case NC Quantity is not required.
 const NC_DATA = {
-  workLocation:     null, // pre-populated to A-06c on form open for this QI — no interaction needed
+  // Explicitly 'A-06c' — user-confirmed live: unlike when this was last
+  // validated, Work Location is NOT pre-populated for QI anymore and must
+  // be explicitly selected, or every downstream dropdown (Work Area,
+  // Vendor, Package, Activity, ...) stays empty with nothing to pick.
+  workLocation:     'A-06c',
   // '__first__' rather than a hardcoded 'BL01' — confirmed live that A-06c's
   // Work Area list for NC creation doesn't start at BL01 (BL06 was first),
   // so specific area names aren't reliably present; any valid area works

@@ -189,13 +189,82 @@ class BasePage {
     }
   }
 
-  // RFI version badge ("v1"/"v2"/"v3") shown in the header only once a
-  // specific RFI is open (not on list/dashboard pages) — same badge on both
-  // the review page (EE/QI) and the create/resubmit page (CI).
+  // Polls `check()` every `intervalMs`, capped at `timeoutMs` total, instead
+  // of one single blocking wait/click with no explicit timeout — which
+  // silently inherits playwright.config.js's global `actionTimeout`
+  // (30000ms) underneath. Confirmed live: RFI's Work-Location-dependent
+  // dropdowns (Work Area, Package, Activity, ...) can sit briefly
+  // blocked/loading right after Work Location changes; a plain
+  // trigger.click() + option.click() with no timeout, one after another,
+  // each silently retrying against that 30s ceiling, is what made simple
+  // Work Area selection feel like it was "waiting 30-60 seconds" even
+  // though the real underlying wait needed was much shorter. Returns true
+  // as soon as `check()` resolves truthy, false if the deadline passes
+  // first — callers decide whether that's a real error.
+  async pollUntil(check, { timeoutMs = 10000, intervalMs = 300 } = {}) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      if (await check().catch(() => false)) return true;
+      await this.page.waitForTimeout(intervalMs);
+    }
+    return false;
+  }
+
+  // Same "leftover UI blocks later clicks" pattern as closeAnyOpenListbox
+  // above, but for a toast notification — confirmed live for NC: a toast
+  // left open after an earlier action (e.g. CI's resubmit) can sit on top
+  // of completely unrelated later elements (the NC tab, even the "My
+  // Tasks" nav link) and "intercept pointer events," blocking every click
+  // there until it's gone — Playwright's own actionability log showed the
+  // target element itself was visible/enabled/stable throughout, with the
+  // toast (or in one case the whole <html>, once its backdrop had grown)
+  // reported as the actual interceptor. Ark UI toasts auto-dismiss on
+  // their own after a timeout, but that can be longer than the gap between
+  // one TC's submit and the next TC's navigation attempt. Safe to call
+  // speculatively even when nothing is open (no-ops quickly).
+  async dismissToastIfPresent() {
+    const toast = this.page.locator('[data-scope="toast"][data-state="open"]').first();
+    if (await toast.isVisible({ timeout: 1000 }).catch(() => false)) {
+      const closeButton = toast.locator('button').first();
+      if (await closeButton.isVisible({ timeout: 500 }).catch(() => false)) {
+        await closeButton.click().catch(() => {});
+      } else {
+        await this.page.keyboard.press('Escape').catch(() => {});
+      }
+      await toast.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    }
+  }
+
+  // RFI/NC version badge ("v1"/"v2"/"v3") shown in the header only once a
+  // specific record is open (not on list/dashboard pages) — same badge on
+  // both the review page (EE/QI) and the create/resubmit page (CI).
   async getVersionBadge() {
     const badge = this.page.locator('text=/^v\\d+$/i').first();
     await badge.waitFor({ state: 'visible', timeout: 10000 });
     return (await badge.innerText()).trim();
+  }
+
+  // The record's UI-visible human-readable code (e.g.
+  // "RFI-A-06c-BL01-CIV-528" / "NC-S-07b-300MW-BL02-CIV-22") — confirmed
+  // live for RFI: it's the deepest breadcrumb crumb, alongside SEVERAL
+  // other elements the app also marks aria-current="page" at shallower
+  // breadcrumb levels ("My Tasks", "RFI"/"NC", "...Pending with
+  // others/me") — an app rendering quirk, every ancestor crumb gets marked
+  // current too, not just the deepest one.
+  //
+  // Matching by href EXACTLY EQUAL to the current page's path (not by
+  // position via .first()/.last(), and not by a loose href substring) is
+  // what actually works — confirmed live for RFI that BOTH .first() and
+  // .last() are unreliable: the deepest crumb can mount asynchronously
+  // slightly after the shallower ones, so a position-based pick can
+  // resolve against a temporarily-last-but-not-final element while the DOM
+  // is still settling. The current page's own path is unique and stable
+  // the instant we're actually on it, sidestepping that race entirely.
+  async getVisibleCode() {
+    const path = new URL(this.page.url()).pathname;
+    const crumb = this.page.locator(`a[aria-current="page"][href="${path}"]`);
+    await crumb.waitFor({ state: 'visible', timeout: 10000 });
+    return (await crumb.innerText()).trim();
   }
 }
 

@@ -17,9 +17,16 @@ const TRACKER_PATH = path.join(__dirname, "..", "fixtures", "nc-tracker.json");
 // NOT itself a steps[] entry (same reasoning as RFI's tracker: every TC's
 // steps[] starts with CI's first real action, "respond"), so a TC with no
 // ncId yet is always QI's turn regardless of steps[0]'s actor.
+//
+// ncCode mirrors RFI's rfiCode (see tracker-utils.js) — the NC's UI-visible
+// human-readable code (e.g. "NC-S-07b-300MW-BL02-CIV-22"), NOT the same as
+// ncId (the backend UUID used in URLs). Captured off the /my-tasks/nc/<id>
+// page's breadcrumb (BasePage.getVisibleCode()) so later steps can find
+// this exact NC by clicking through "Pending with me" in the UI, the same
+// way a real user would, instead of a direct URL.
 const SEED_TRACKER = {
   "TC-01": {
-    ncId: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
+    ncId: null, ncCode: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
     steps: [
       { actor: "CI", action: "respond" },
       { actor: "EE", action: "approve" },
@@ -27,7 +34,7 @@ const SEED_TRACKER = {
     ],
   },
   "TC-02": {
-    ncId: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
+    ncId: null, ncCode: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
     steps: [
       { actor: "CI", action: "respond" },
       { actor: "EE", action: "reject" },
@@ -37,7 +44,7 @@ const SEED_TRACKER = {
     ],
   },
   "TC-03": {
-    ncId: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
+    ncId: null, ncCode: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
     steps: [
       { actor: "CI", action: "respond" },
       { actor: "EE", action: "approve" },
@@ -48,7 +55,7 @@ const SEED_TRACKER = {
     ],
   },
   "TC-04": {
-    ncId: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
+    ncId: null, ncCode: null, currentStepIndex: 0, currentVersion: "V1", status: "pending",
     steps: [
       { actor: "CI", action: "respond" },
       { actor: "EE", action: "reject" },
@@ -98,24 +105,45 @@ function getPendingStepsForActor(tracker, actor) {
   return pending;
 }
 
-// Records a freshly-created NC's id WITHOUT advancing currentStepIndex —
-// "create" is not itself a steps[] entry (see getPendingStepsForActor above).
-function setNcId(tracker, tcId, ncId) {
+// Records a freshly-created NC's id + UI-visible code WITHOUT advancing
+// currentStepIndex — "create" is not itself a steps[] entry (see
+// getPendingStepsForActor above).
+function setNcId(tracker, tcId, ncId, ncCode) {
   tracker[tcId].ncId = ncId;
+  if (ncCode) tracker[tcId].ncCode = ncCode;
   saveTracker(tracker);
 }
 
-// Call only AFTER the UI confirms the action succeeded — never optimistically
-// before. `newNcId` is accepted defensively in case CI's resubmit turns out
-// to create a new child record the way RFI's does (unconfirmed for NC at the
-// time this was written — CI's response here only edits two text fields on
-// the SAME record via the same /my-tasks/nc/<id> URL, unlike RFI's full
-// re-submission through a separate /re-submit form, so it may well just
-// update in place) — passing the same id back is a harmless no-op either way.
-function advanceStep(tracker, tcId, { newVersion, newNcId } = {}) {
+// Backfills ncCode (and optionally the version badge) onto a TC that
+// already has an ncId — mirrors RFI's setRfiCode (see tracker-utils.js).
+// Doesn't touch currentStepIndex/status — purely filling in fields, not
+// completing a step.
+function setNcCode(tracker, tcId, ncCode, version) {
+  if (ncCode) tracker[tcId].ncCode = ncCode;
+  if (version) tracker[tcId].currentVersion = version;
+  saveTracker(tracker);
+}
+
+// Call only AFTER the UI confirms the action succeeded — never
+// optimistically before. `newNcId` matters because CI's resubmit creates a
+// NEW CHILD RECORD with its OWN id, confirmed live — same behavior as RFI's
+// resubmit (see project_nc_flow_feature memory: "TC-02/03/04 all received a
+// brand-new ncId immediately after their respective CI resubmit steps").
+// Whenever newNcId is given, ncCode is ALWAYS reset (to newNcCode if
+// provided, else null) — never left as whatever it was before. Leaving the
+// OLD code in place would be actively wrong: it belonged to the
+// now-archived original record, so the next "Pending with me" row search
+// would go looking for a row that can never exist (same reasoning as RFI's
+// advanceStep fix, see tracker-utils.js).
+function advanceStep(tracker, tcId, { newVersion, newNcId, newNcCode } = {}) {
   const tc = tracker[tcId];
   if (newVersion) tc.currentVersion = newVersion;
-  if (newNcId) tc.ncId = newNcId;
+  if (newNcId) {
+    tc.ncId = newNcId;
+    tc.ncCode = newNcCode || null;
+  } else if (newNcCode) {
+    tc.ncCode = newNcCode;
+  }
   tc.currentStepIndex += 1;
   tc.status = tc.currentStepIndex >= tc.steps.length ? "done" : "pending";
   saveTracker(tracker);
@@ -130,5 +158,5 @@ function markFailed(tracker, tcId, reason) {
 module.exports = {
   TRACKER_PATH, SEED_TRACKER,
   loadTracker, saveTracker, resetTracker, getPendingStepsForActor,
-  setNcId, advanceStep, markFailed,
+  setNcId, setNcCode, advanceStep, markFailed,
 };

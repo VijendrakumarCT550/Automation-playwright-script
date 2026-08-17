@@ -40,15 +40,31 @@ class RFICreatePage extends BasePage {
   // Open a dropdown and return the listbox ONLY after data-state="open" is set.
   // This guarantees the CSS transform has moved the dropdown into the viewport
   // so that option clicks land at the correct coordinates.
+  //
+  // Uses short, explicit per-attempt timeouts inside a bounded poll (max
+  // 10s total — see BasePage.pollUntil) instead of one plain click/wait
+  // with no timeout. User-confirmed live: a plain click() with no timeout
+  // silently retries against playwright.config.js's global 30s
+  // actionTimeout underneath — with a second such click right after in
+  // selectOption below, that's what made simple Work-Location-dependent
+  // dropdown selection (Work Area, Package, Activity, ...) feel like it
+  // was "waiting 30-60 seconds," when the field was really just briefly
+  // blocked/loading for a couple of seconds after Work Location changed.
+  // Normal case now resolves in well under a second; a genuinely-still-
+  // loading dropdown fails clearly after 10s instead of hanging silently.
   async _openDropdown(trigger) {
-    await trigger.waitFor({ state: 'visible' });
-    await trigger.click();
-
+    await trigger.waitFor({ state: 'visible', timeout: 3000 });
     const listbox = this.page.locator('[role="listbox"][data-state="open"]');
-    if (!(await listbox.isVisible({ timeout: 2000 }).catch(() => false))) {
-      await trigger.press('Space');
-    }
-    await listbox.waitFor({ state: 'visible', timeout: 8000 });
+
+    const opened = await this.pollUntil(async () => {
+      await trigger.click({ timeout: 1500 }).catch(() => {});
+      if (await listbox.isVisible({ timeout: 300 }).catch(() => false)) return true;
+      await trigger.press('Space', { timeout: 1000 }).catch(() => {});
+      return await listbox.isVisible({ timeout: 300 }).catch(() => false);
+    });
+    // Real error (not silently swallowed) if it genuinely never opened
+    // within the 10s budget.
+    if (!opened) await listbox.waitFor({ state: 'visible', timeout: 500 });
     return listbox;
   }
 
@@ -57,32 +73,35 @@ class RFICreatePage extends BasePage {
     // Options are plain <div role="option"> elements — not <a> links, safe to click.
     // filter({ hasText }) is a plain substring match, safe for special chars like ()+
     const option = listbox.locator('[role="option"]').filter({ hasText: optionText }).first();
-    await option.waitFor({ state: 'visible', timeout: 5000 });
-    await option.click();
-    await this.page.waitForTimeout(300);
+    const found = await this.pollUntil(() => option.isVisible({ timeout: 300 }));
+    if (!found) await option.waitFor({ state: 'visible', timeout: 500 }); // real error
+    await option.click({ timeout: 1500 }).catch(() => option.click());
+    await this.page.waitForTimeout(100);
   }
 
   async selectFirstAvailable(dropdown) {
     const listbox = await this._openDropdown(dropdown);
     const first = listbox.locator('[role="option"]').first();
-    await first.waitFor({ state: 'visible', timeout: 5000 });
-    await first.click();
-    await this.page.waitForTimeout(30);
+    const found = await this.pollUntil(() => first.isVisible({ timeout: 300 }));
+    if (!found) await first.waitFor({ state: 'visible', timeout: 500 }); // real error
+    await first.click({ timeout: 1500 }).catch(() => first.click());
+    await this.page.waitForTimeout(100);
   }
 
   async selectWorkSection() {
     const listbox = await this._openDropdown(this.workSectionToggle);
     const first = listbox.locator('[role="option"]').first();
-    await first.waitFor({ state: 'visible', timeout: 5000 });
-    await first.click();
+    const found = await this.pollUntil(() => first.isVisible({ timeout: 300 }));
+    if (!found) await first.waitFor({ state: 'visible', timeout: 500 }); // real error
+    await first.click({ timeout: 1500 }).catch(() => first.click());
     // Multi-select combobox stays open after selection.
     // Click the toggle button again to close it.
     // DO NOT press Escape — the form's Escape handler navigates back to My Tasks.
-    await this.workSectionToggle.click();
+    await this.workSectionToggle.click({ timeout: 1500 }).catch(() => this.workSectionToggle.click());
     await this.page.locator('[role="listbox"][data-state="open"]')
-      .waitFor({ state: 'hidden', timeout: 5000 })
+      .waitFor({ state: 'hidden', timeout: 3000 })
       .catch(() => {});
-    await this.page.waitForTimeout(30);
+    await this.page.waitForTimeout(100);
   }
 
   async fillForm(data) {

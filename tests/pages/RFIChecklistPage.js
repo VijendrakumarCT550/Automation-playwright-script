@@ -11,8 +11,19 @@ class RFIChecklistPage extends BasePage {
     //   Cancel:  <button type="button" class="...destructive...">Cancel</button>
     this.confirmPopup     = page.locator('[role="dialog"], [data-scope="dialog"]')
       .filter({ hasText: /submit RFI/i }).first();
-    this.confirmYesButton = page.locator('button[type="submit"][form="rfi-form"]').first();
-    this.confirmNoButton  = page.locator('[role="dialog"] button[type="button"]:has-text("Cancel"), [data-scope="dialog"] button[type="button"]:has-text("Cancel")').first();
+    // MUST be scoped to confirmPopup, not a bare page-level selector —
+    // user-confirmed live: the underlying RFI create/checklist page has
+    // its OWN "Submit" button at the bottom of the form (the one that
+    // opens this very dialog), and `button[type="submit"][form="rfi-form"]`
+    // unscoped can resolve to THAT button instead of the dialog's — it's
+    // now covered by the dialog's own overlay and never becomes
+    // clickable, so .click() silently retried against it for the full 30s
+    // actionTimeout, timing out every time even with the real, clickable
+    // "Submit" button sitting right there in the dialog. Role-based
+    // (accessible name "Submit"), scoped to the dialog, is also more
+    // robust than depending on the exact type/form attributes holding.
+    this.confirmYesButton = this.confirmPopup.getByRole('button', { name: 'Submit' });
+    this.confirmNoButton  = this.confirmPopup.getByRole('button', { name: 'Cancel' });
   }
 
   async _dismissDialogIfOpen() {
