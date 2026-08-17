@@ -5,7 +5,7 @@ const MyTasksPage      = require('../pages/MyTasksPage');
 const RFICreatePage    = require('../pages/RFICreatePage');
 const RFIChecklistPage = require('../pages/RFIChecklistPage');
 
-const TOTAL_RFIS = 2;
+const TOTAL_RFIS = 10;
 
 const RFI_DATA = {
   // workLocation:         null,

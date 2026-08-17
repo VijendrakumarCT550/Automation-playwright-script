@@ -189,6 +189,27 @@ class BasePage {
     }
   }
 
+  // Polls `check()` every `intervalMs`, capped at `timeoutMs` total, instead
+  // of one single blocking wait/click with no explicit timeout — which
+  // silently inherits playwright.config.js's global `actionTimeout`
+  // (30000ms) underneath. Confirmed live: RFI's Work-Location-dependent
+  // dropdowns (Work Area, Package, Activity, ...) can sit briefly
+  // blocked/loading right after Work Location changes; a plain
+  // trigger.click() + option.click() with no timeout, one after another,
+  // each silently retrying against that 30s ceiling, is what made simple
+  // Work Area selection feel like it was "waiting 30-60 seconds" even
+  // though the real underlying wait needed was much shorter. Returns true
+  // as soon as `check()` resolves truthy, false if the deadline passes
+  // first — callers decide whether that's a real error.
+  async pollUntil(check, { timeoutMs = 10000, intervalMs = 300 } = {}) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      if (await check().catch(() => false)) return true;
+      await this.page.waitForTimeout(intervalMs);
+    }
+    return false;
+  }
+
   // Same "leftover UI blocks later clicks" pattern as closeAnyOpenListbox
   // above, but for a toast notification — confirmed live for NC: a toast
   // left open after an earlier action (e.g. CI's resubmit) can sit on top

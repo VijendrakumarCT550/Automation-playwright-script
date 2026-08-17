@@ -13,12 +13,28 @@ const LOCATION_FILTERS = {
 };
 
 const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
-'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
+'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
+'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
+'BL16', 'BL17', 'BL18', 'BL19', 'BL20'];
+
+// more work areas exist in the DB, but the test is limited to a smaller set to keep the test runtime reasonable. The full set of work areas is commented out below for reference.
+// const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
+// 'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
+// 'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
+// 'BL16', 'BL17', 'BL18', 'BL19', 'BL20',
+// 'BL21', 'BL22', 'BL23', 'BL24', 'BL25',
+// 'BL26', 'BL27', 'BL28', 'BL29', 'BL30',
+// 'BL31', 'BL32', 'BL33', 'BL34', 'BL35',
+// 'BL36', 'BL37', 'BL38', 'BL39', 'BL40'];
 
 const SCENARIOS = [
   // Roster has "Jay Kishan Suthar" (no exact "Jay Kishan Sutha" entry exists).
   { role: 'Execution Engineer', assignee: 'Jay Kishan Suthar' },
   { role: 'Quality Inspector',  assignee: 'Udit Sharma' },
+
+    // { role: 'Execution Engineer', assignee: 'Chetan Singh' },
+    // { role: 'Quality Inspector',  assignee: 'Gopal Jantua' },
+
 ];
 
 test.describe('Admin - Work Area Mapping (WAM)', () => {
