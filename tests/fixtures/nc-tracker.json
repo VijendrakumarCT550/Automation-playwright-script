@@ -4,7 +4,7 @@
     "ncCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "CI",
@@ -18,14 +18,15 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'CHOUHAN' }).first() to be visible\u001b[22m\n"
   },
   "TC-02": {
     "ncId": null,
     "ncCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "CI",
@@ -47,14 +48,15 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create NC\")').first() to be visible\u001b[22m\n"
   },
   "TC-03": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "ncId": "3ea2da3e-827c-4984-9fa3-ead34fe7cf17",
+    "ncCode": "NC-A-06c-BL01-CIV-20",
+    "currentStepIndex": 6,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",
@@ -83,11 +85,11 @@
     ]
   },
   "TC-04": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "ncId": "4564abb1-e06e-4770-b581-02007a9fd6c9",
+    "ncCode": "NC-A-06c-BL01-CIV-21",
+    "currentStepIndex": 8,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",

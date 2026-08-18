@@ -18,6 +18,25 @@ const RFIReviewPage    = require("../pages/RFIReviewPage");
 // pending for that actor, exactly once, then returns — the caller decides
 // how many times / how often to call it.
 
+// Confirmed live (single-session-login-fix-for-passes branch, NC side —
+// see nc-flow-turns.js's identical helper): an actor's very first couple of
+// actions right after a fresh login can hit a transient failure unrelated
+// to the action itself — the exact same action succeeded immediately after
+// for later TCs in the SAME session, consistent with the backend/app still
+// settling right after simultaneous role logins. Without a retry,
+// markFailed() is PERMANENT — getPendingStepsForActor() skips "failed" TCs
+// forever after, so a purely transient hiccup on attempt 1 gets zero
+// chances to recover. One retry, after a short pause, absorbs this; a
+// genuinely broken action still fails for real on the second attempt.
+async function withRetry(action) {
+  try {
+    return await action();
+  } catch (err) {
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    return await action();
+  }
+}
+
 // Same location/activity data used for all 9 TCs — the versioning/routing
 // logic under test doesn't depend on field values, only on reject/approve
 // sequencing, so every RFI can share one definition.
@@ -153,19 +172,21 @@ async function runCITurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      if (!tc.rfiId) {
-        const rfiId = await createNewRfi(page);
-        setRfiId(loadTracker(), tcId, rfiId);
-        pendingCodeBackfill.push({ tcId, rfiId, isResubmit: false });
-        continue;
-      }
+      await withRetry(async () => {
+        if (!tc.rfiId) {
+          const rfiId = await createNewRfi(page);
+          setRfiId(loadTracker(), tcId, rfiId);
+          pendingCodeBackfill.push({ tcId, rfiId, isResubmit: false });
+          return;
+        }
 
-      if (step.action === "resubmit") {
-        const lastRejectPage = getLastRejectPage(tc);
-        const { newRfiId } = await resubmitRfi(page, tc.rfiCode, lastRejectPage);
-        advanceStep(loadTracker(), tcId, { newRfiId, newRfiCode: null });
-        pendingCodeBackfill.push({ tcId, rfiId: newRfiId, isResubmit: true });
-      }
+        if (step.action === "resubmit") {
+          const lastRejectPage = getLastRejectPage(tc);
+          const { newRfiId } = await resubmitRfi(page, tc.rfiCode, lastRejectPage);
+          advanceStep(loadTracker(), tcId, { newRfiId, newRfiCode: null });
+          pendingCodeBackfill.push({ tcId, rfiId: newRfiId, isResubmit: true });
+        }
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
@@ -182,23 +203,25 @@ async function runEETurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      await openFromPendingWithMe(page, tc.rfiCode);
-      const review = new RFIReviewPage(page);
-      await review.expandAllChecklist();
+      await withRetry(async () => {
+        await openFromPendingWithMe(page, tc.rfiCode);
+        const review = new RFIReviewPage(page);
+        await review.expandAllChecklist();
 
-      if (step.action === "approve") {
-        await review.approve();
-        advanceStep(loadTracker(), tcId);
-      }
-
-      if (step.action === "reject") {
-        if (step.page === "P1") {
-          await review.rejectFromFirstPage("Automated EE rejection - P1");
-        } else {
-          await review.rejectFromChecklistPage("Automated EE rejection - checklist");
+        if (step.action === "approve") {
+          await review.approve();
+          advanceStep(loadTracker(), tcId);
         }
-        advanceStep(loadTracker(), tcId);
-      }
+
+        if (step.action === "reject") {
+          if (step.page === "P1") {
+            await review.rejectFromFirstPage("Automated EE rejection - P1");
+          } else {
+            await review.rejectFromChecklistPage("Automated EE rejection - checklist");
+          }
+          advanceStep(loadTracker(), tcId);
+        }
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
@@ -213,26 +236,28 @@ async function runQITurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      await openFromPendingWithMe(page, tc.rfiCode);
-      const review = new RFIReviewPage(page);
-      await review.expandAllChecklist();
+      await withRetry(async () => {
+        await openFromPendingWithMe(page, tc.rfiCode);
+        const review = new RFIReviewPage(page);
+        await review.expandAllChecklist();
 
-      if (step.action === "approve") {
-        await review.approve();
-        // QI approving is the final step — capture the version for the
-        // tracker record even though approval itself doesn't change it.
-        const newVersion = await review.getVersionBadge();
-        advanceStep(loadTracker(), tcId, { newVersion });
-      }
-
-      if (step.action === "reject") {
-        if (step.page === "P1") {
-          await review.rejectFromFirstPage("Automated QI rejection - P1");
-        } else {
-          await review.rejectFromChecklistPage("Automated QI rejection - checklist");
+        if (step.action === "approve") {
+          await review.approve();
+          // QI approving is the final step — capture the version for the
+          // tracker record even though approval itself doesn't change it.
+          const newVersion = await review.getVersionBadge();
+          advanceStep(loadTracker(), tcId, { newVersion });
         }
-        advanceStep(loadTracker(), tcId);
-      }
+
+        if (step.action === "reject") {
+          if (step.page === "P1") {
+            await review.rejectFromFirstPage("Automated QI rejection - P1");
+          } else {
+            await review.rejectFromChecklistPage("Automated QI rejection - checklist");
+          }
+          advanceStep(loadTracker(), tcId);
+        }
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }

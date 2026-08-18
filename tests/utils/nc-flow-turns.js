@@ -21,6 +21,27 @@ const NCReviewPage   = require("../pages/NCReviewPage");
 // Same field choices already validated in 14_nc_create_qi.spec.js — see
 // 15_nc_flow_qi.spec.js's original header comment for why workLocation is
 // explicit and workArea stays '__first__'.
+// Confirmed live (single-session-login-fix-for-passes branch): running QI's
+// very first couple of actions right after a fresh login can hit a
+// transient failure (a dropdown option not rendering in time, the Create NC
+// page not loading in time) that has nothing to do with the action itself —
+// the exact same actions succeeded immediately after for the next 2 TCs in
+// the SAME session. The backend/app appears to still be settling right
+// after 3 simultaneous role logins. Without a retry, markFailed() is
+// PERMANENT — getPendingStepsForActor() skips "failed" TCs forever after,
+// so a purely transient hiccup on attempt 1 gets zero chances to recover
+// even though attempt 2 would very likely succeed. One retry, after a short
+// pause, absorbs this whole class of hiccup; a genuinely broken action still
+// fails for real on the second attempt.
+async function withRetry(action) {
+  try {
+    return await action();
+  } catch (err) {
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    return await action();
+  }
+}
+
 const NC_DATA = {
   workLocation:     'A-06c',
   workArea:         '__first__',
@@ -119,25 +140,27 @@ async function runQITurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      if (!tc.ncId) {
-        const ncId = await createNewNc(page, tcId);
-        setNcId(loadTracker(), tcId, ncId);
-        pendingCodeBackfill.push({ tcId, ncId });
-        continue;
-      }
+      await withRetry(async () => {
+        if (!tc.ncId) {
+          const ncId = await createNewNc(page, tcId);
+          setNcId(loadTracker(), tcId, ncId);
+          pendingCodeBackfill.push({ tcId, ncId });
+          return;
+        }
 
-      const review = new NCReviewPage(page);
-      await openFromPendingWithMe(page, tc.ncCode);
+        const review = new NCReviewPage(page);
+        await openFromPendingWithMe(page, tc.ncCode);
 
-      if (step.action === "approve") {
-        await review.approve();
-        advanceStep(loadTracker(), tcId);
-      }
+        if (step.action === "approve") {
+          await review.approve();
+          advanceStep(loadTracker(), tcId);
+        }
 
-      if (step.action === "reject") {
-        await review.reject("Automated QI rejection - issue not properly addressed");
-        advanceStep(loadTracker(), tcId);
-      }
+        if (step.action === "reject") {
+          await review.reject("Automated QI rejection - issue not properly addressed");
+          advanceStep(loadTracker(), tcId);
+        }
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
@@ -156,13 +179,15 @@ async function runCITurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      const newNcId = await respondOrResubmit(page, tc.ncCode, tcId, step.action);
+      await withRetry(async () => {
+        const newNcId = await respondOrResubmit(page, tc.ncCode, tcId, step.action);
 
-      // Resubmitting creates a NEW CHILD RECORD with its OWN id, same as
-      // RFI's does. newNcCode deliberately null here — backfillNcCodesForCI
-      // below re-reads the real value once this turn's work is all done.
-      advanceStep(loadTracker(), tcId, { newNcId, newNcCode: null });
-      if (newNcId) pendingCodeBackfill.push({ tcId, ncId: newNcId });
+        // Resubmitting creates a NEW CHILD RECORD with its OWN id, same as
+        // RFI's does. newNcCode deliberately null here — backfillNcCodesForCI
+        // below re-reads the real value once this turn's work is all done.
+        advanceStep(loadTracker(), tcId, { newNcId, newNcCode: null });
+        if (newNcId) pendingCodeBackfill.push({ tcId, ncId: newNcId });
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
@@ -179,18 +204,20 @@ async function runEETurn(page) {
 
   for (const { tcId, tc, step } of myTurns) {
     try {
-      await openFromPendingWithMe(page, tc.ncCode);
-      const review = new NCReviewPage(page);
+      await withRetry(async () => {
+        await openFromPendingWithMe(page, tc.ncCode);
+        const review = new NCReviewPage(page);
 
-      if (step.action === "approve") {
-        await review.approve();
-        advanceStep(loadTracker(), tcId);
-      }
+        if (step.action === "approve") {
+          await review.approve();
+          advanceStep(loadTracker(), tcId);
+        }
 
-      if (step.action === "reject") {
-        await review.reject("Automated EE rejection - formwork not inspected correctly");
-        advanceStep(loadTracker(), tcId);
-      }
+        if (step.action === "reject") {
+          await review.reject("Automated EE rejection - formwork not inspected correctly");
+          advanceStep(loadTracker(), tcId);
+        }
+      });
     } catch (err) {
       markFailed(loadTracker(), tcId, err.message);
     }
