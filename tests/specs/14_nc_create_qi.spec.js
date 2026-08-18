@@ -14,7 +14,8 @@ const NC_DATA = {
   // Work Area list for NC creation doesn't start at BL01 (BL06 was first),
   // so specific area names aren't reliably present; any valid area works
   // equally well for exercising NC creation itself.
-  workArea:         '__first__',
+  // workArea:         '__first__',
+  workArea:         'BL02',
   vendorName:       'CHOUHAN',
   package:          'Civil',
   activity:         'Piling - Robotic Docking System',

@@ -47,7 +47,8 @@ const SERVICE_ORDER = 'M S CHOUHAN INFRAVENTURES';
 // single-select, so each needs its own separate fill->assign->submit pass
 // (user-specified for CIC/CM; the same constraint applies to the other
 // work-area-level roles for the same reason).
-const WORK_LOCATIONS = ['A-06c', 'S05b'];
+// const WORK_LOCATIONS = ['A-06c', 'S05b'];
+const WORK_LOCATIONS = ['A-06c'];
 const WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
 
 const WORK_AREA_ROLES = [

@@ -16,7 +16,7 @@ test.describe.configure({ mode: "serial" });
 // sequencing, so every RFI can share one definition.
 const RFI_DATA = {
   workLocation:         'A-06c',
-  workArea:             'BL01',
+  workArea:             'BL02',
   package:              'Civil',
   subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
   activity:             'Piling - MMS',

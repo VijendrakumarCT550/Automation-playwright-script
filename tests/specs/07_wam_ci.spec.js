@@ -22,6 +22,11 @@ const ASSIGNMENT_FILTERS = {
 };
 
 const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
+// 'Vikram Singh' isn't in this role/location's assignable-user roster
+// (confirmed live: only 'Vikas Sharma'/'Ompal Singh' are offered for
+// Contractor Incharge at this Cluster/Site/Work Location/Package/Service
+// Order combo) — 'Ompal Singh' picked deliberately because it differs from
+// whoever's already assigned, so the test still exercises a real change.
 const ASSIGNEE = 'Vikram Singh';
 
 test.describe('Admin - Work Area Mapping (WAM) - Contractor Incharge', () => {
