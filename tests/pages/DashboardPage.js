@@ -72,8 +72,14 @@ class DashboardPage extends BasePage {
 
     // Confirm actual app content is visible — either it already won the
     // race above, or we just navigated in after the spinner and need to
-    // check for real now.
-    await content.waitFor({ state: 'visible', timeout: 60000 });
+    // check for real now. Confirmed live (single-session-login-fix-for-passes
+    // branch, 3 roles logging in truly concurrently via Promise.all): running
+    // 3 simultaneous PWA installs on one machine can push this post-spinner
+    // content render well past 60s — one run hit this exact timeout after
+    // 4.5 total minutes of concurrent-login contention. Widened to 5 min to
+    // absorb that load instead of failing the whole login (and, upstream of
+    // here, the whole test) over a real-but-slow render.
+    await content.waitFor({ state: 'visible', timeout: 300000 });
     await this.page.waitForLoadState('networkidle');
   }
 

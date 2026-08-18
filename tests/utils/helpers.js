@@ -50,18 +50,28 @@ async function loginFreshRoleSession(browser, role) {
     permissions: ['geolocation'],
     geolocation: { latitude: 23.0225, longitude: 72.5714 },
   });
-  await context.clearCookies();
-  const page = await context.newPage();
 
-  const login = new LoginPage(page);
-  await login.goto();
-  await login.login(creds.email, creds.password);
+  // If anything below throws (a slow/broken login), close the context THIS
+  // call just opened before rethrowing — otherwise it leaks regardless of
+  // what the caller does, since the caller never gets a handle to it (the
+  // throw happens before this function returns anything).
+  try {
+    await context.clearCookies();
+    const page = await context.newPage();
 
-  const dashboard = new DashboardPage(page);
-  await dashboard.waitForLoad();
-  await dashboard.goToMyTasks();
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(creds.email, creds.password);
 
-  return { context, page };
+    const dashboard = new DashboardPage(page);
+    await dashboard.waitForLoad();
+    await dashboard.goToMyTasks();
+
+    return { context, page };
+  } catch (err) {
+    await context.close().catch(() => {});
+    throw err;
+  }
 }
 
 // Logs the test's own `page` fixture in as CI/EE/QI and lands on My Tasks.

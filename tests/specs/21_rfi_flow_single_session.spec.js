@@ -1,4 +1,4 @@
-const { test } = require("@playwright/test");
+const { test, expect } = require("@playwright/test");
 const { loginFreshRoleSession } = require("../utils/helpers");
 const { loadTracker, getPendingStepsForActor } = require("../utils/tracker-utils");
 const { runCITurn, runEETurn, runQITurn } = require("../utils/rfi-flow-turns");
@@ -28,11 +28,35 @@ test("RFI: full regression, one session per role (CI/EE/QI logged in once each)"
 
   // Parallelizes the slow login/PWA-load cost across all three roles instead
   // of paying it serially (3x) — let alone the pass-chain's up-to-9x.
-  const [ci, ee, qi] = await Promise.all([
-    loginFreshRoleSession(browser, "CI"),
-    loginFreshRoleSession(browser, "EE"),
-    loginFreshRoleSession(browser, "QI"),
-  ]);
+  //
+  // allSettled, not all() — confirmed live: with plain Promise.all, one
+  // role's login rejecting (e.g. a slow PWA install under 3-concurrent-
+  // login contention) makes the whole destructure throw immediately,
+  // BEFORE the try/finally below ever starts — so whichever of the other
+  // two roles DID finish logging in never gets its context closed. allSettled
+  // lets every login run to completion (success or failure) so any
+  // successfully-opened context can be closed here before failing loudly.
+  const roles = ["CI", "EE", "QI"];
+  const results = await Promise.allSettled(
+    roles.map(role => loginFreshRoleSession(browser, role))
+  );
+
+  const failures = results
+    .map((r, i) => ({ role: roles[i], r }))
+    .filter(({ r }) => r.status === "rejected");
+
+  if (failures.length > 0) {
+    await Promise.all(
+      results
+        .filter(r => r.status === "fulfilled")
+        .map(r => r.value.context.close().catch(() => {}))
+    );
+    throw new Error(
+      `Login failed for: ${failures.map(f => `${f.role} (${f.r.reason.message})`).join('; ')}`
+    );
+  }
+
+  const [ci, ee, qi] = results.map(r => r.value);
 
   try {
     // Safety cap, not a hardcoded round count — the loop naturally exits
@@ -47,7 +71,10 @@ test("RFI: full regression, one session per role (CI/EE/QI logged in once each)"
         actor => getPendingStepsForActor(tracker, actor).length > 0
       );
       if (!stillPending) {
-        console.log(`All TCs done/failed after round ${round - 1}.`);
+        const failed = Object.entries(tracker).filter(([, tc]) => tc.status === "failed");
+        console.log(failed.length === 0
+          ? `All TCs done after round ${round - 1}.`
+          : `Stopped after round ${round - 1}: ${failed.length} TC(s) FAILED — ${failed.map(([id]) => id).join(', ')}.`);
         break;
       }
 
@@ -73,4 +100,13 @@ test("RFI: full regression, one session per role (CI/EE/QI logged in once each)"
       qi.context.close(),
     ]);
   }
+
+  // Without this, a run where every single TC failed still exits 0 —
+  // getPendingStepsForActor() skips "failed" TCs exactly the same as "done"
+  // ones, so "nothing left pending" reads as success either way unless
+  // explicitly checked here. Confirmed live: this exact gap let a 0/9-passed
+  // run report as cleanly as a 9/9-passed one.
+  const finalTracker = loadTracker();
+  const failedTCs = Object.entries(finalTracker).filter(([, tc]) => tc.status === "failed");
+  expect(failedTCs.map(([id, tc]) => `${id}: ${tc.failureReason}`), 'Some TCs failed — see tracker for details').toEqual([]);
 });
