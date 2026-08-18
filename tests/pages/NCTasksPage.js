@@ -48,7 +48,17 @@ class NCTasksPage extends BasePage {
 
   async clickPendingWithMe() {
     await this.pendingWithMeTile.waitFor({ state: 'visible', timeout: 30000 });
-    await this.pendingWithMeTile.click();
+    // force: true — confirmed live (single-session-login-fix-for-passes
+    // branch): even with clickNcTab()'s scroll-reset mitigation, click()'s
+    // own internal "scroll into view if needed" actionability step can
+    // still flip this tile to reporting not-visible and never recover —
+    // the exact permanent quirk clickNcTab()'s header comment already
+    // describes, just not fully eliminated by that fix under this run's
+    // conditions. The tile passed its own explicit waitFor above (genuinely
+    // visible/enabled/stable at that point), so bypassing click()'s
+    // redundant re-check here is safe, same reasoning as
+    // RFIReviewPage.rejectFromChecklistPage()'s force-clicked radio.
+    await this.pendingWithMeTile.click({ force: true });
     await this.page.waitForLoadState('networkidle');
   }
 

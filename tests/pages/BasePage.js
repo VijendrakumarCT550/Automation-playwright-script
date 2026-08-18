@@ -67,7 +67,12 @@ class BasePage {
   async selectDropdownOption(dropdown, optionText) {
     const listbox = await this.openDropdown(dropdown);
     const option = listbox.locator('[role="option"]').filter({ hasText: optionText }).first();
-    await option.waitFor({ state: 'visible', timeout: 5000 });
+    // Confirmed live (single-session-login-fix-for-passes branch, NC's
+    // Work Location dropdown): under concurrent-session load this can take
+    // longer than 5000ms to render even though the listbox itself already
+    // opened fine — same class of fix as RFICreatePage's own
+    // _openDropdown timeout bump. Widened to 15000ms.
+    await option.waitFor({ state: 'visible', timeout: 15000 });
     await option.click();
     await this.page.waitForTimeout(150);
   }
@@ -75,7 +80,7 @@ class BasePage {
   async selectFirstDropdownOption(dropdown) {
     const listbox = await this.openDropdown(dropdown);
     const first = listbox.locator('[role="option"]').first();
-    await first.waitFor({ state: 'visible', timeout: 5000 });
+    await first.waitFor({ state: 'visible', timeout: 15000 });
     await first.click();
     await this.page.waitForTimeout(150);
   }
