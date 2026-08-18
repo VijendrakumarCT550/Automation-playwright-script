@@ -189,6 +189,22 @@ class WAMPage extends BasePage {
     return true;
   }
 
+  // Clears whatever's currently assigned to a Work Area row via its
+  // "Clear value" button (visible whenever the row has a value — see
+  // assignUserIfNeeded's row snapshot). No-ops if the row is already empty
+  // (no Clear value button to click). Does NOT call Submit — caller does
+  // that once, after clearing/reassigning every row it needs to.
+  async clearWorkAreaUser(areaCode) {
+    const row = this.getWorkAreaRow(areaCode);
+    const clearBtn = row.getByRole('button', { name: 'Clear value' });
+    if (await clearBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await clearBtn.click();
+      await this.page.waitForTimeout(150);
+      return true;
+    }
+    return false;
+  }
+
   // For rows that allow MULTIPLE simultaneous assignees — adds userName
   // without disturbing whoever else is already there (an Ark UI multi-
   // select combobox ADDS on a click of an unchecked option, it doesn't

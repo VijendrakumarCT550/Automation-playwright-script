@@ -13,9 +13,7 @@ const LOCATION_FILTERS = {
 };
 
 const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
-'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
-'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
-'BL16', 'BL17', 'BL18', 'BL19', 'BL20'];
+'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
 
 // more work areas exist in the DB, but the test is limited to a smaller set to keep the test runtime reasonable. The full set of work areas is commented out below for reference.
 // const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',

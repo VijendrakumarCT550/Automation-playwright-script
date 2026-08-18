@@ -30,40 +30,50 @@ class DashboardPage extends BasePage {
     this.userRoleLabel = page.locator('text=Admin').first();
   }
 
-  // Post-login the app shows a PWA loading spinner (0→100%).
-  // At 100% the Service Worker finishes installing but the page doesn't
-  // auto-transition — we navigate to /my-tasks to kick the app into gear.
-  // On subsequent runs (assets cached) the 100% mark is never reached and
-  // the app renders directly; the catch block handles that gracefully.
+  // Post-login the app shows a PWA loading spinner (0→100%) ONLY on a
+  // genuinely fresh install (no cached assets). At 100% the Service Worker
+  // finishes installing but the page doesn't auto-transition — we navigate
+  // to /my-tasks to kick the app into gear.
+  //
+  // Confirmed live on pulse-test: the spinner can simply never appear for
+  // CI/EE/QI too (not just the already-cached hierarchy-role accounts
+  // waitForContentOnly() was written for) — the dashboard renders directly.
+  // The OLD code waited for the spinner FIRST, sequentially, before ever
+  // checking content — so on a run where the spinner never shows, it sat
+  // dead for the full 10-minute timeout before its catch block let it fall
+  // through to check content that had actually been visible the whole
+  // time. Racing the two instead of sequencing them means whichever
+  // actually happens takes effect immediately.
   async waitForLoad() {
-    try {
-      // Wait up to 6 min for the 100% mark (first run with no cache)
-      await this.page.locator('text=100%').waitFor({
-        state: 'visible',
-        timeout: 600000,
-      });
-      // Give the SW a moment to register, then navigate into the app
-      await this.page.waitForTimeout(2000);
-      await this.page.goto(`${process.env.BASE_URL}/my-tasks`);
-      await this.page.waitForLoadState('networkidle');
-    } catch {
-      // 100% mark never appeared — assets already cached, app rendered directly
-    }
-
-    // Confirm actual app content is visible.
     // Use .or() — comma inside a single locator string is NOT an OR in Playwright.
     // "Pending with others" covers hierarchy/oversight roles (Cluster Admin,
     // Project Manager, etc.) — confirmed live their My Tasks page has no
     // "Create RFI" button and no "Pending with me" tile at all (they never
     // create or directly action RFI/NC items themselves), only "Pending
     // with others" + "Approved".
-    await this.page.locator('text=RFI Distribution')
+    const content = this.page.locator('text=RFI Distribution')
       .or(this.page.locator('text=Create RFI'))
       .or(this.page.locator('text=Pending with me'))
       .or(this.page.locator('text=Pending with others'))
-      .first()
-      .waitFor({ state: 'visible', timeout: 60000 });
+      .first();
+    const spinner = this.page.locator('text=100%');
 
+    const winner = await Promise.race([
+      spinner.waitFor({ state: 'visible', timeout: 600000 }).then(() => 'spinner').catch(() => 'timeout'),
+      content.waitFor({ state: 'visible', timeout: 600000 }).then(() => 'content').catch(() => 'timeout'),
+    ]);
+
+    if (winner === 'spinner') {
+      // Give the SW a moment to register, then navigate into the app
+      await this.page.waitForTimeout(2000);
+      await this.page.goto(`${process.env.BASE_URL}/my-tasks`);
+      await this.page.waitForLoadState('networkidle');
+    }
+
+    // Confirm actual app content is visible — either it already won the
+    // race above, or we just navigated in after the spinner and need to
+    // check for real now.
+    await content.waitFor({ state: 'visible', timeout: 60000 });
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -81,9 +91,44 @@ class DashboardPage extends BasePage {
     await this.page.waitForLoadState('networkidle');
   }
 
+  // Confirmed live: right after the dashboard finishes rendering (content
+  // visible + networkidle already satisfied), the app can sit unresponsive
+  // to real clicks for 1-3 more minutes — the page looks fully loaded but
+  // nothing happens when you click. A plain click + networkidle silently
+  // "succeeds" through this window (no request ever fires, so networkidle
+  // is trivially true) and the caller sails on to the next step, which then
+  // burns its own timeout waiting on a page that was never actually
+  // reached. Retry the click itself until My Tasks' own content is
+  // verifiably visible — same content signal used by waitForLoad/
+  // waitForContentOnly to detect the app is actually usable — instead of
+  // trusting one click to have landed.
   async goToMyTasks() {
+    const arrived = () => this.page.locator('text=Create RFI')
+      .or(this.page.locator('text=Pending with me'))
+      .or(this.page.locator('text=Pending with others'))
+      .first()
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+
+    const deadline = Date.now() + 3 * 60 * 1000;
+    do {
+      await this.navMyTasks.click();
+      await this.page.waitForLoadState('networkidle');
+      if (await arrived()) return;
+      await this.page.waitForTimeout(1000);
+    } while (Date.now() < deadline);
+
+    // Out of retries — throw for real rather than silently returning to a
+    // caller that's still stuck on the dashboard (same principle as
+    // RFIListPage.openRowByCode's final real-timeout attempt).
     await this.navMyTasks.click();
     await this.page.waitForLoadState('networkidle');
+    await this.page.locator('text=Create RFI')
+      .or(this.page.locator('text=Pending with me'))
+      .or(this.page.locator('text=Pending with others'))
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async goToDashboard() {

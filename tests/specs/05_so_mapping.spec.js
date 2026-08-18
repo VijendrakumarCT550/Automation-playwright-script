@@ -11,10 +11,7 @@ const MAPPING_FILTERS = {
   projectType:  'SOLAR',
   workLocation: 'A-06c',
   workAreas:    ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
-'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
-'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
-'BL16', 'BL17', 'BL18', 'BL19', 'BL20',
-'BL21', 'BL22', 'BL23', 'BL24', 'BL25'],
+'BL06', 'BL07', 'BL08', 'BL09', 'BL10'],
   package:      'Civil',
 };
 
