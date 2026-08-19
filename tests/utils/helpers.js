@@ -31,6 +31,54 @@ const ROLE_CREDENTIALS = {
   QI: { email: process.env.QI_EMAIL, password: process.env.QI_PASSWORD },
 };
 
+// Same shape as adminFreshLogin, but for CI/EE/QI — its own independent
+// context/page, logged in once, landed on My Tasks. Built for the
+// single-session flow spec (21_rfi_flow_single_session.spec.js): instead of
+// each role's turn re-logging in via loginAsRole(page, role) on the shared
+// `page` fixture (the pass-chain specs' model — one login PER PASS, up to 9
+// logins for a full 9-TC/3-round regression), this opens all three roles'
+// sessions ONCE up front and keeps them alive for the whole regression.
+// Confirmed no app-side idle-session timeout blocks this (user-confirmed
+// live) — otherwise a long-idle EE/QI session would need a keep-alive
+// heartbeat while waiting its turn, which this does NOT implement.
+// Caller is responsible for closing the returned context when done.
+async function loginFreshRoleSession(browser, role) {
+  const creds = ROLE_CREDENTIALS[role];
+  if (!creds) throw new Error(`Unknown role: ${role}`);
+
+  const context = await browser.newContext({
+    permissions: ['geolocation'],
+    geolocation: { latitude: 23.0225, longitude: 72.5714 },
+  });
+
+  // If anything below throws (a slow/broken login), close the context THIS
+  // call just opened before rethrowing — otherwise it leaks regardless of
+  // what the caller does, since the caller never gets a handle to it (the
+  // throw happens before this function returns anything).
+  try {
+    await context.clearCookies();
+    const page = await context.newPage();
+
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(creds.email, creds.password);
+
+    const dashboard = new DashboardPage(page);
+    await dashboard.waitForLoad();
+    // CI/EE/QI are this app's OFFLINE/PWA accounts (unlike Admin/hierarchy
+    // roles, which are "online") — occasionally show a "data didn't finish
+    // downloading" banner after login (user-confirmed live via screenshot).
+    // See DashboardPage.resolveIncompleteDownloadBanner()'s header comment.
+    await dashboard.resolveIncompleteDownloadBanner();
+    await dashboard.goToMyTasks();
+
+    return { context, page };
+  } catch (err) {
+    await context.close().catch(() => {});
+    throw err;
+  }
+}
+
 // Logs the test's own `page` fixture in as CI/EE/QI and lands on My Tasks.
 // Unlike adminFreshLogin, this doesn't create its own context — the RFI flow
 // specs (08/09/10) use the built-in `page` fixture directly, which already
@@ -49,6 +97,11 @@ async function loginAsRole(page, role) {
 
   const dashboard = new DashboardPage(page);
   await dashboard.waitForLoad();
+  // CI/EE/QI are this app's OFFLINE/PWA accounts (unlike Admin/hierarchy
+  // roles, which are "online") — occasionally show a "data didn't finish
+  // downloading" banner after login (user-confirmed live via screenshot).
+  // See DashboardPage.resolveIncompleteDownloadBanner()'s header comment.
+  await dashboard.resolveIncompleteDownloadBanner();
   // Give the dashboard a moment to finish rendering before navigating away.
   await page.waitForTimeout(2000);
   await dashboard.goToMyTasks();
@@ -122,4 +175,5 @@ module.exports = {
   adminFreshLogin,
   loginAsRole,
   loginAsUser,
+  loginFreshRoleSession,
 };

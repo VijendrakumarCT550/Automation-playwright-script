@@ -72,9 +72,49 @@ class DashboardPage extends BasePage {
 
     // Confirm actual app content is visible — either it already won the
     // race above, or we just navigated in after the spinner and need to
-    // check for real now.
-    await content.waitFor({ state: 'visible', timeout: 60000 });
+    // check for real now. Confirmed live (single-session-login-fix-for-passes
+    // branch, 3 roles logging in truly concurrently via Promise.all): running
+    // 3 simultaneous PWA installs on one machine can push this post-spinner
+    // content render well past 60s — one run hit this exact timeout after
+    // 4.5 total minutes of concurrent-login contention. Widened to 5 min to
+    // absorb that load instead of failing the whole login (and, upstream of
+    // here, the whole test) over a real-but-slow render.
+    await content.waitFor({ state: 'visible', timeout: 300000 });
     await this.page.waitForLoadState('networkidle');
+  }
+
+  // User-confirmed live (screenshot): CI/EE/QI (this app's OFFLINE/PWA
+  // accounts, unlike Admin/hierarchy roles which are "online") can
+  // occasionally show a "Some data didn't finish downloading" banner after
+  // login, with a "Download missing data" button — NOT guaranteed, only
+  // under slow connectivity or when the account has a lot of data to sync.
+  // Never wait FOR it (it may never appear) — reload once to force the
+  // banner's real state to show, do one short/quick presence check, act
+  // only if actually present, then continue either way. Caller is
+  // responsible for only calling this for CI/EE/QI logins, not Admin/
+  // hierarchy-role ones.
+  async resolveIncompleteDownloadBanner() {
+    await this.page.reload();
+    await this.page.waitForLoadState('networkidle');
+
+    // Confirmed live: a reload wipes the SPA's in-memory render state, and
+    // `networkidle` alone doesn't guarantee it's actually interactive again
+    // — the same "networkidle achieved, not yet clickable" gap waitForLoad()
+    // already had to fix once for the post-login case. Without this, the
+    // caller's next real click (e.g. the "My Tasks" nav link) can hit a
+    // sidebar that looks present but isn't responsive yet.
+    await this.page.locator('text=RFI Distribution')
+      .or(this.page.locator('text=Create RFI'))
+      .or(this.page.locator('text=Pending with me'))
+      .or(this.page.locator('text=Pending with others'))
+      .first()
+      .waitFor({ state: 'visible', timeout: 300000 });
+
+    const downloadButton = this.page.getByRole('button', { name: 'Download missing data' });
+    if (await downloadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await downloadButton.click();
+      await this.page.waitForLoadState('networkidle');
+    }
   }
 
   // Some accounts (already-cached/online sessions, e.g. Admin) never show the

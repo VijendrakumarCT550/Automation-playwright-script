@@ -53,7 +53,17 @@ class RFICreatePage extends BasePage {
   // Normal case now resolves in well under a second; a genuinely-still-
   // loading dropdown fails clearly after 10s instead of hanging silently.
   async _openDropdown(trigger) {
-    await trigger.waitFor({ state: 'visible', timeout: 3000 });
+    // Confirmed live (single-session-login-fix-for-passes branch): 3
+    // concurrently-live browser contexts (21_rfi_flow_single_session.spec.js
+    // logs in CI/EE/QI as 3 simultaneous sessions, unlike every other spec's
+    // one-context-at-a-time model) create enough CPU/render/backend
+    // contention to blow through the original 3000ms budget consistently —
+    // confirmed by a diagnostic run at 20000ms, where every TC that
+    // previously failed here succeeded instead. Bumped to 10000ms as a
+    // middle ground: still far more forgiving than 3000ms under concurrent-
+    // context load, without pushing genuine failures (a truly broken
+    // dropdown elsewhere in the suite) out to a full 20s before erroring.
+    await trigger.waitFor({ state: 'visible', timeout: 10000 });
     const listbox = this.page.locator('[role="listbox"][data-state="open"]');
 
     const opened = await this.pollUntil(async () => {
