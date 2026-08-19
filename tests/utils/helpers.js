@@ -65,6 +65,11 @@ async function loginFreshRoleSession(browser, role) {
 
     const dashboard = new DashboardPage(page);
     await dashboard.waitForLoad();
+    // CI/EE/QI are this app's OFFLINE/PWA accounts (unlike Admin/hierarchy
+    // roles, which are "online") — occasionally show a "data didn't finish
+    // downloading" banner after login (user-confirmed live via screenshot).
+    // See DashboardPage.resolveIncompleteDownloadBanner()'s header comment.
+    await dashboard.resolveIncompleteDownloadBanner();
     await dashboard.goToMyTasks();
 
     return { context, page };
@@ -92,6 +97,11 @@ async function loginAsRole(page, role) {
 
   const dashboard = new DashboardPage(page);
   await dashboard.waitForLoad();
+  // CI/EE/QI are this app's OFFLINE/PWA accounts (unlike Admin/hierarchy
+  // roles, which are "online") — occasionally show a "data didn't finish
+  // downloading" banner after login (user-confirmed live via screenshot).
+  // See DashboardPage.resolveIncompleteDownloadBanner()'s header comment.
+  await dashboard.resolveIncompleteDownloadBanner();
   // Give the dashboard a moment to finish rendering before navigating away.
   await page.waitForTimeout(2000);
   await dashboard.goToMyTasks();
