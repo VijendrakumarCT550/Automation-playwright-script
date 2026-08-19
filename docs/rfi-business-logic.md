@@ -6,10 +6,21 @@ which tracks the specific checks we're building and open questions.
 
 Sources: live EE-review-page inspection (`00_inspect_rfi_data_integrity.spec.js`,
 2026-08-19, RFI `RFI-A-06c-BL02-CIV-685`), the app owner's direct explanation
-(chat, 2026-08-19), and `tests/fixtures/Activity Master and Checklist
+(chat, 2026-08-19), `tests/fixtures/Activity Master and Checklist
 Mapping_Solar (1).xlsx` (sheets `Inter-process linkage for RFIs` and
 `Activity-Checklist_06.05.2026`, the latter being the most recently dated
-of several historical snapshots in that workbook).
+of several historical snapshots in that workbook), and the **PULSE User
+Manual** (shared 2026-08-19, not stored in this repo).
+
+**Caveat on the User Manual, per explicit app owner instruction**: use it
+for the general role hierarchy, WAM, SO Mapping, reassignment, and
+dashboard-tile overview (§§8-10 below) — that material is reliable. **Do
+NOT treat the manual's RFI/NC creation-form field lists or step-by-step
+sections as ground truth** — the app owner confirmed "so many changes have
+been done as per change request" since the manual was written, so those
+specific sections are known to be outdated. Live inspection and the app
+owner's direct confirmation remain the source of truth for RFI/NC form
+behavior specifically.
 
 ## 1. Field provenance — who actually sets each value CI sees on Page 1
 
@@ -65,16 +76,50 @@ Confirmed for our test scenario (Activity `A.1.1`, Sub-Activity
 just takes whichever option is first in the dropdown at creation time — and
 the live run captured `"R01-T71"` (Row 01, Table 71, presumably).
 
-**Open question for `rfi-data-integrity-scenarios.md`**: is picking "first
-available" acceptable for data-integrity purposes, or does a real
-data-integrity check need to capture the *specific* Work Section value at
-creation time and assert EE/QI see that same specific value (rather than
-asserting against a fixed expected string, since our automation doesn't
-target one)?
-
 Per app owner, the exact Work Section format is project-type-dependent —
 Solar is what we're covering; other project types would have different
 work-section vocabularies. Not in scope beyond Solar right now.
+
+### 3a. Work Section is fixed inventory, not a free choice — **resolved**
+
+Per app owner's direct explanation (2026-08-19), this closes the open
+question above:
+
+- For a given Work Area + Activity, the set of Work Sections is **fixed**
+  (a real, finite inventory of physical units — e.g. specific tables/rows)
+  — it doesn't change except when new ones are administratively added.
+- An RFI can be raised against **one or multiple** Work Sections at once
+  (matches `RFICreatePage`'s multi-select-capable Work Section field).
+- **Uniqueness rule**: for a given **Activity + Sub-Activity + Inspection
+  Checkpoint** combination, an RFI can be created for any one Work Section
+  **only once**. The app enforces this itself: once an RFI exists for a
+  Work Section under that combination, that Work Section is **removed
+  from the dropdown** for any further RFI creation attempt against the
+  same combination — not a validation error message, an actual option
+  disappearing from the list.
+- **Resubmit is the exception**: while resubmitting a rejected RFI, CI
+  *can* add, remove, or change the selected Work Section(s) — the only
+  constraint is the target Work Section must not already have an active
+  RFI for that same Activity/Sub-Activity/Checkpoint combination
+  elsewhere. Per app owner, this constraint is "well cared [for] in the
+  application itself" — we don't need to build defensive logic for it,
+  just be aware it exists.
+
+**Implication for data-integrity assertions**: `RFICreatePage.selectWorkSection()`
+picking "first available" is legitimate — it's just picking whichever
+still-unused physical unit happens to be first, which is a real, valid
+choice, not an arbitrary/meaningless one like initially suspected. A real
+data-integrity check should capture the *specific* Work Section value
+actually selected at creation time (read it back right after selection,
+same as the code already does for the visible RFI code) and assert EE/QI's
+screen shows that exact same value — not assert against a hardcoded
+expected string, since which one is "first" can change run to run as the
+available inventory is consumed.
+
+**Not yet automated / potential future test cases** (deferred — see
+`rfi-data-integrity-scenarios.md`'s scope note on validation-rule testing):
+verifying the "used Work Sections disappear from the dropdown" rule
+itself, and verifying the resubmit-time add/remove/change behavior.
 
 ## 4. Activity Master hierarchy (Solar) — Package → Sub-Package → Activity → Sub-Activity
 
@@ -162,3 +207,81 @@ Pattern: `lucide-layers` icon + name `<p>` + a children-count badge
 (`aria-label="N children"`). Noted for reference in case future work needs
 to target hierarchical tree nodes (Cluster → Site → Work Location → Work
 Area) by this shape rather than by exact text alone.
+
+## 8. Full role hierarchy (from PULSE User Manual)
+
+Confirms and extends what `project_wam_hierarchy_feature`/`18_wam_hierarchy.spec.js`
+already validated live. Full chain, top to bottom:
+
+```
+Super Admin
+ ├─ Cluster Admin → Site Admin → Plot Admin → Project Manager
+ │                                                 ├─ Execution Lead → Execution Engineer
+ │                                                 │                 → Contractor Manager → Contractor In-Charge
+ │                                                 └─ Quality Lead  → Quality Inspector
+ └─ Management User (view-only, jurisdiction set at Cluster/Site/Project
+    Type/Work Location level at creation time — NOT WAM-based, sits
+    outside this WAM chain entirely)
+```
+
+Each level can only assign roles *directly* below it, and only within its
+own already-assigned scope — matches what we validated in
+`18_wam_hierarchy.spec.js` (e.g. Cluster Admin's Role dropdown shows 9 of
+10 roles unfiltered, but the *assignment* itself still enforces the
+downward-only, own-scope-only rule).
+
+**Scope granularity differs by level**: Admin tiers (Cluster/Site/Plot)
+operate at their named geographic level; Project Manager operates at
+"assigned plots"; **Execution Lead, Quality Lead, Execution Engineer, and
+Quality Inspector all operate at Work Area level specifically** — the
+same granularity WAM assigns them at. Contractor Manager and Contractor
+In-Charge additionally require a **Service Order** selection during WAM
+(gating them to only the Work Areas/blocks where that SO is already
+mapped to at least one activity) — Execution Lead/Quality Lead/EE/QI do
+not have this SO gate.
+
+## 9. Dashboard tile definitions (Pending with Me / Others / Approved)
+
+Per-role tile contents, confirmed from the manual (general behavior,
+not RFI/NC form specifics, so trusted per the caveat above):
+
+| Role | Pending with Me (RFI) | Pending with Others (RFI) |
+|---|---|---|
+| CI | Rejected RFIs + drafts | Pending with EE or QI |
+| EE | Submitted by CI, awaiting EE | Rejected by EE/QI, or pending with QI |
+| QI | Approved by EE, awaiting QI | Rejected by EE/QI, or pending with EE |
+
+Same shape for NC, with CI/EE/QI substituted for "respond"/"review"
+accordingly, and QI's "Pending with Me" additionally including its own
+**draft NCs** (QI creates NC, unlike RFI where CI creates).
+
+**Relevant to test design**: this confirms `openFromPendingWithMe()`'s
+"Pending with me" tile is the correct one to target for every actor's own
+turn — no actor ever needs to look at "Pending with Others" to find their
+own work.
+
+## 10. RFI ↔ NC linkage (QI can raise NC directly from an RFI's checklist)
+
+Not yet reflected in our automation (`RFIReviewPage`/`RFI_DATA` have no
+concept of this) — a real cross-entity relationship worth being aware of
+for future data-integrity/dependency test cases:
+
+- During QI's RFI review, marking a checklist item **Not OK** reveals a
+  **"Raise NC"** checkbox for that specific item.
+- If QI checks it: NC Description becomes mandatory, an NC is created
+  **linked to that exact checklist question**, and the RFI is rejected
+  (this is now the *only* way to reject-with-NC — marking Not OK without
+  checking "Raise NC" is a normal reject, no NC).
+- **The RFI cannot be resubmitted by CI while any linked NC is still
+  open** — all linked NCs must complete their own full CI→EE→QI review
+  cycle and close first. Multiple checklist items can each spawn their own
+  independent linked NC within the same RFI.
+- The NC detail page shows the parent RFI's ID as a clickable link back.
+
+**Not yet automated**: our NC flow (`nc-flow-turns.js`) only covers
+QI-creates-a-standalone-NC-directly (matches `project_nc_creation_feature`).
+The *linked-from-RFI-checklist* NC creation path, and the
+"RFI-blocked-until-linked-NC-closes" dependency, are both real app
+behavior we haven't exercised. Deferred — not needed for the current
+field-values-persist-correctly phase, but relevant if we ever build a
+combined RFI+NC interaction test.

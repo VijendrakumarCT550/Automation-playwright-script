@@ -41,7 +41,7 @@ review-page text. Results:
 | Quantity / Unit / Sub-Contractor | ✅ `null` → renders as `-` | Confirmed this is the correct empty-state rendering, not data loss |
 | Inspection Checkpoint | ✅ exact | `Pre Pour Inspection - Pile` |
 | Inspection Checklist | ✅ exact | `Micro Pile Checklist` |
-| Work Section | ⚠️ **not a fixed value to assert against** | `RFICreatePage` picks "first available" (`R01-T71` this run), not a value from `RFI_DATA` — see open question below |
+| Work Section | ⚠️ picked "first available" (`R01-T71`), not from `RFI_DATA` | **Resolved as legitimate, not arbitrary** — see `rfi-business-logic.md` §3a. It's real fixed inventory; "first available" just means "first still-unused unit." Assertion strategy: capture the actual value at creation time, assert EE/QI see that same value — never a hardcoded expected string. |
 | Checklist observations (×16) | ✅ exact, all 16 | `"OK - as per standard 1"` through `"...16"`, matching `fillAllObservations()`'s suffix |
 | Contractor Name / Service Order | N/A — not CI input | Derived from SO Mapping, see `rfi-business-logic.md` §2. Not part of "CI's data reaching EE" — would need a different check (against SO Mapping config) if ever verified |
 | Project Name | N/A — skip | Fixed/global, not RFI-instance data |
@@ -59,11 +59,13 @@ see open questions.
 2. ~~Are Contractor Name / Service Order supposed to match CI's input?~~
    **Resolved**: they're derived from SO Mapping, not CI input at all —
    out of scope for this check (app owner, 2026-08-19).
-3. **Still open**: Work Section has no fixed expected value in our
-   automation. Do we (a) skip verifying it, (b) capture whatever CI's
-   session actually picked at creation time and assert EE/QI see that same
-   value (tests "it's consistent," not "it's correct"), or (c) something
-   else?
+3. ~~Work Section has no fixed expected value in our automation — is
+   "first available" acceptable?~~ **Resolved**: yes — Work Section is
+   real fixed inventory (per Work Area + Activity), not arbitrary; "first
+   available" is a legitimate pick of any still-unused unit. Capture the
+   actual value at creation time and assert consistency against it, don't
+   hardcode an expected string (app owner, 2026-08-19; see
+   `rfi-business-logic.md` §3a).
 4. ~~Is Project Name meaningful to verify?~~ **Resolved**: skip, it's fixed/global.
 5. **Still open**: does the app enforce Activity Dependency / Checkpoint
    Dependency (see `rfi-business-logic.md` §6), or is that master data
@@ -80,6 +82,36 @@ see open questions.
    CI's *edited* data after a reject correctly reach EE/QI, including any
    fields left unchanged from the original submission?), (c) QI's screen
    specifically (only EE was inspected so far).
+
+## Deferred (validation-rule / cross-entity phase, not current scope)
+
+Surfaced via the PULSE User Manual (2026-08-19) and app owner's Work
+Section clarification — real app behaviors worth testing eventually, but
+out of scope for the current "do values persist correctly" phase per the
+scope decision above:
+
+- Work Section uniqueness enforcement: does the app actually remove an
+  already-used Work Section from the dropdown for the same
+  Activity/Sub-Activity/Checkpoint combination? (see `rfi-business-logic.md` §3a)
+- Resubmit-time Work Section add/remove/change behavior, and its
+  "target Work Section must not already have an active RFI elsewhere"
+  constraint
+- RFI↔NC linkage: QI raising a linked NC from a checklist item during
+  review, and the "RFI cannot be resubmitted while a linked NC is open"
+  block (see `rfi-business-logic.md` §10)
+- Activity Dependency / Checkpoint Dependency enforcement (open question 5 above)
+
+## Sources
+
+- Live inspection: `00_inspect_rfi_data_integrity.spec.js`
+- App owner direct explanation (chat, 2026-08-19) — WAM/SO Mapping/RFI
+  relationship, Work Section semantics
+- `tests/fixtures/Activity Master and Checklist Mapping_Solar (1).xlsx`
+- **PULSE User Manual** (shared 2026-08-19, not stored in this repo) — used
+  for role hierarchy/WAM/SO Mapping/reassignment/dashboard-tile overview
+  only. Per explicit app owner instruction, its RFI/NC creation-form
+  sections are outdated (post-manual change requests) and are NOT used as
+  reference for RFI/NC form behavior specifically.
 
 ## Next steps
 
