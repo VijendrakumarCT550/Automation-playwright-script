@@ -47,8 +47,8 @@ const SERVICE_ORDER = 'M S CHOUHAN INFRAVENTURES';
 // single-select, so each needs its own separate fill->assign->submit pass
 // (user-specified for CIC/CM; the same constraint applies to the other
 // work-area-level roles for the same reason).
-// const WORK_LOCATIONS = ['A-06c', 'S05b'];
-const WORK_LOCATIONS = ['A-06c'];
+const WORK_LOCATIONS = ['A-06c', 'S05b'];
+// const WORK_LOCATIONS = ['A-06c'];
 const WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
 
 const WORK_AREA_ROLES = [
@@ -66,12 +66,23 @@ const WORK_LOCATION_ROW_ROLES = [
   { prefix: 'PAD', role: 'Plot Admin' },
 ];
 
+// Candidate lists, not a single fixed string — confirmed live (2026-08-21)
+// that the Site/Cluster-level rows' actual rendered label can differ from
+// what's typed into the Cluster FILTER field above (same deployment/
+// data-state naming variation as fillAssignmentFilters' own `cluster`
+// candidate-array param already accounts for, e.g. "Gujarat" vs
+// "KHAVDA" for the same location) — a row can render as "KHAVDA" even
+// when "Khavda"/"Gujarat" was what got typed into the filter. Resolved
+// via WAMPage.resolveRowLabel() at each call site below, not assumed
+// upfront, since which candidate is actually present can vary by run.
 const SITE_ROW = 'Khavda';
+const SITE_ROW_CANDIDATES = ['Khavda', 'KHAVDA'];
 const SITE_ROW_ROLES = [
   { prefix: 'SAD', role: 'Site Admin' },
 ];
 
 const CLUSTER_ROW = 'Gujarat';
+const CLUSTER_ROW_CANDIDATES = ['Gujarat', 'KHAVDA'];
 const CLUSTER_ROW_ROLES = [
   { prefix: 'CAD', role: 'Cluster Admin' },
 ];
@@ -188,20 +199,21 @@ test.describe('Admin - WAM assignment for all created roles', () => {
       await wam.openAddDetails();
       await wam.fillAssignmentFilters({ role, cluster: CLUSTER });
 
-      const changed = await wam.addAssigneeToRow(SITE_ROW, created.name);
-      await expect(wam.getWorkAreaRow(SITE_ROW).locator('[role="combobox"]')).toContainText(created.name);
+      const siteRowLabel = await wam.resolveRowLabel(SITE_ROW_CANDIDATES);
+      const changed = await wam.addAssigneeToRow(siteRowLabel, created.name);
+      await expect(wam.getWorkAreaRow(siteRowLabel).locator('[role="combobox"]')).toContainText(created.name);
 
       const toastText = await wam.clickSubmit();
-      logSubmitToast(toastText, changed, `${role} at Site ${SITE_ROW}`);
+      logSubmitToast(toastText, changed, `${role} at Site ${siteRowLabel}`);
 
       await wam.closeDialog();
       await wam.openAddDetails();
       await wam.fillAssignmentFilters({ role, cluster: CLUSTER });
-      const value = await wam.getWorkAreaUserValue(SITE_ROW);
+      const value = await wam.getWorkAreaUserValue(await wam.resolveRowLabel(SITE_ROW_CANDIDATES));
       expect(value).toContain(created.name);
       await wam.closeDialog();
 
-      console.log(`${role} "${created.name}" assigned at Site ${SITE_ROW}`);
+      console.log(`${role} "${created.name}" assigned at Site ${siteRowLabel}`);
     });
   }
 
@@ -213,20 +225,21 @@ test.describe('Admin - WAM assignment for all created roles', () => {
       await wam.openAddDetails();
       await wam.fillAssignmentFilters({ role });
 
-      const changed = await wam.addAssigneeToRow(CLUSTER_ROW, created.name);
-      await expect(wam.getWorkAreaRow(CLUSTER_ROW).locator('[role="combobox"]')).toContainText(created.name);
+      const clusterRowLabel = await wam.resolveRowLabel(CLUSTER_ROW_CANDIDATES);
+      const changed = await wam.addAssigneeToRow(clusterRowLabel, created.name);
+      await expect(wam.getWorkAreaRow(clusterRowLabel).locator('[role="combobox"]')).toContainText(created.name);
 
       const toastText = await wam.clickSubmit();
-      logSubmitToast(toastText, changed, `${role} at Cluster ${CLUSTER_ROW}`);
+      logSubmitToast(toastText, changed, `${role} at Cluster ${clusterRowLabel}`);
 
       await wam.closeDialog();
       await wam.openAddDetails();
       await wam.fillAssignmentFilters({ role });
-      const value = await wam.getWorkAreaUserValue(CLUSTER_ROW);
+      const value = await wam.getWorkAreaUserValue(await wam.resolveRowLabel(CLUSTER_ROW_CANDIDATES));
       expect(value).toContain(created.name);
       await wam.closeDialog();
 
-      console.log(`${role} "${created.name}" assigned at Cluster ${CLUSTER_ROW}`);
+      console.log(`${role} "${created.name}" assigned at Cluster ${clusterRowLabel}`);
     });
   }
 });

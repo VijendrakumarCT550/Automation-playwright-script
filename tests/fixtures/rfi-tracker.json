@@ -1,10 +1,10 @@
 {
   "TC-01": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "efd8ff3d-24ef-485d-a046-014d2375ff7b",
+    "rfiCode": "RFI-A-06c-BL02-CIV-731",
+    "currentStepIndex": 2,
+    "currentVersion": "v1",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -17,11 +17,11 @@
     ]
   },
   "TC-02": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "955062ce-ceba-4ebe-8739-971a75077677",
+    "rfiCode": "RFI-A-06c-BL02-CIV-732",
+    "currentStepIndex": 4,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -43,11 +43,11 @@
     ]
   },
   "TC-03": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "8df5461e-c967-4d54-b140-71cbe814cfe1",
+    "rfiCode": "RFI-A-06c-BL02-CIV-733",
+    "currentStepIndex": 4,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -69,11 +69,11 @@
     ]
   },
   "TC-04": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "ea778dcd-682e-49d3-992b-c35ee79e2953",
+    "rfiCode": "RFI-A-06c-BL02-CIV-734",
+    "currentStepIndex": 5,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -99,11 +99,11 @@
     ]
   },
   "TC-05": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "7b3db888-7568-42e5-899f-bd56c3fde903",
+    "rfiCode": "RFI-A-06c-BL02-CIV-735",
+    "currentStepIndex": 5,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -129,11 +129,11 @@
     ]
   },
   "TC-06": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "b909c148-eac0-41b4-8b5e-0df8c4f89520",
+    "rfiCode": "RFI-A-06c-BL02-CIV-736",
+    "currentStepIndex": 7,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -168,11 +168,11 @@
     ]
   },
   "TC-07": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "f75b109a-5f0b-4cee-973f-5ad55d946e79",
+    "rfiCode": "RFI-A-06c-BL02-CIV-737",
+    "currentStepIndex": 7,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -207,11 +207,11 @@
     ]
   },
   "TC-08": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "1f05ab72-f870-485f-b26e-88d32f3b3800",
+    "rfiCode": "RFI-A-06c-BL02-CIV-738",
+    "currentStepIndex": 7,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",
@@ -246,11 +246,11 @@
     ]
   },
   "TC-09": {
-    "rfiId": null,
-    "rfiCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "pending",
+    "rfiId": "2f5cc7b2-f969-42a2-8972-23f27026118e",
+    "rfiCode": "RFI-A-06c-BL02-CIV-739",
+    "currentStepIndex": 7,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "EE",

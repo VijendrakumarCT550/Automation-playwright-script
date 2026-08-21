@@ -21,7 +21,8 @@ const ASSIGNMENT_FILTERS = {
   serviceOrder: 'M S CHOUHAN INFRAVENTURES PVT LTD',
 };
 
-const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
+const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
+'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
 // 'Vikram Singh' 'Vikas Sharma' isn't in this role/location's assignable-user roster
 // (confirmed live: only 'Vikas Sharma'/'Ompal Singh' are offered for
 // Contractor Incharge at this Cluster/Site/Work Location/Package/Service

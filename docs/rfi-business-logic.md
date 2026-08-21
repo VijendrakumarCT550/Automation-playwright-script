@@ -38,29 +38,51 @@ directly picks on `RFICreatePage` at all:
 
 ## 2. WAM ↔ SO Mapping ↔ RFI relationship
 
-Per app owner (not yet automated as its own deep-dive — noted as a
-follow-up in `rfi-data-integrity-scenarios.md`):
+Per app owner's detailed walkthrough (2026-08-19) — concrete mechanics,
+superseding the earlier higher-level version of this section. Still not
+covered by our automation as its own cross-check (see the still-open item
+at the end).
 
-- **SO Mapping** decides, for a given Work Location + Work Area + Package,
-  which vendor (Service Order) is assigned to which **Activity**. This is
-  the `05_so_mapping.spec.js` flow — e.g. Activity "Piling - MMS" mapped to
-  SO `4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD`.
-- **WAM** decides which *user* (CI, CM, EE, QI, ...) is assigned to which
-  Work Location/Work Area, independent of vendor.
-- A CI can only create an RFI for an Activity if **both** are true: (a)
-  they're WAM-mapped to that Work Location, and (b) that Activity is
-  SO-mapped for that Work Location/Work Area. The Contractor Name +
-  Service Order shown on the RFI are the SO Mapping config's vendor for
-  that Activity, not something CI chooses on the create form.
-- CIC (Contractor In-Charge), CM (Contractor Manager), and the Service
-  Order are all related via the same vendor — e.g. everything under the
-  "M S CHOUHAN" vendor umbrella in our test data.
-- **Not yet covered by our automation**: verifying this linkage itself
-  (i.e. that the SO Mapping config the app actually used to derive
-  Contractor Name/Service Order matches what `05_so_mapping.spec.js` set
-  up). Currently we only observe the *result* on the RFI, not cross-check
-  it against the SO Mapping source. Flagged as a future deep-dive per app
-  owner ("we will go in deep dive for SO mapping WAM and RFI relation").
+- **Service Orders (SOs) are seeded in the backend**, per Work Location /
+  project, each tied to a specific vendor. CI/CM/EE/QI don't create SOs —
+  they're already there before any mapping happens.
+- **SO Mapping** (admin screen) is where an SO gets attached to a specific
+  Activity for a Work Location + Work Area + Package. The SO dropdown on
+  that screen only offers SOs already seeded for that project — you're
+  picking from what's available, not entering arbitrary values.
+- **Worked example, exactly as given**: vendor A's SO is mapped (via SO
+  Mapping) to Activity "Piling - MMS"; vendor B's SO is mapped to Activity
+  "Piling - Inverter" — two different vendors, two different Activities,
+  same Work Area.
+- **In WAM, assigning a CI (or CM) requires picking a Service Order** — the
+  vendor name auto-populates from that SO. This SO choice is what scopes
+  *which Activity* that CI can create RFIs for: continuing the example,
+  CI-A (mapped via vendor A's SO) can only create RFIs for "Piling - MMS"
+  (and its own Sub-Activity/Checkpoint/Work-Section combinations per §3a);
+  CI-B (vendor B's SO) can only create RFIs for "Piling - Inverter."
+- **This is exactly how two different CIs can be WAM-mapped to the SAME
+  Work Area at once without conflict** — each is scoped to a disjoint
+  Activity via their own SO, so there's no overlap in what either can
+  create RFIs for.
+- **EE and QI are NOT SO-scoped** (matches the User Manual's "Service
+  Order does not control EE/QI visibility," §9) — any EE/QI mapped to that
+  Work Location + Package sees and reviews every RFI from every CI/vendor
+  within their scope, regardless of which SO created it. This is why our
+  existing flow (one CI creates, EE/QI mapped to the same
+  location/package review, unaware of and unaffected by vendor) already
+  works correctly without any SO-awareness on the review side.
+- **Contractor Manager's actual role right now, per app owner**: WAM-maps
+  CI users within CM's own assigned Work Locations — that's it. No other
+  active involvement in the RFI flow itself currently.
+- **Scope note**: all of the above operates at Work Area granularity,
+  which sits under Work Location, which sits under Site, which sits under
+  Cluster — the same hierarchy WAM already uses elsewhere.
+
+**Still open / not yet automated**: cross-checking that the SO Mapping
+config the app actually *used* to derive an RFI's Contractor Name/Service
+Order matches what `05_so_mapping.spec.js` configured. We now understand
+the mechanics conceptually but still only observe the *result* on the RFI
+in our automation, not the source SO Mapping config it came from.
 
 ## 3. Work Section — what `"R01-T71"` actually means
 
@@ -166,27 +188,58 @@ shows. Either skip asserting this field for now, or match loosely (e.g.
 "contains the new name as a substring") until the app's naming migration
 is complete.
 
-## 6. Activity Dependency — two separate layers
+## 6. Activity Dependency — two layers, both **confirmed enforced** by the app
 
-Confirmed from the master sheet, two distinct dependency concepts exist
-(neither currently verified by our automation):
+Per app owner's direct explanation (2026-08-19) — this resolves the
+earlier open question: both layers are real, app-enforced blocks, not
+just informational master data.
 
-1. **Cross-Activity dependency** ("Activity Dependency" column) — e.g.
-   Activity `B.1.1` (MMS Installation) depends on `A.1.1` (Piling)
-   completing first. Some activities depend on multiple predecessors (e.g.
-   `C.3.1` depends on `D.1.1, D.1.2, D.1.3, D.1.4, D.1.5, D.2.1`).
-2. **Cross-Checkpoint dependency within one Activity** ("Preceding
-   Inspection Checkpoint" column) — e.g. within Activity A.1.1, checkpoint
-   "Pre Pour Inspection - Pile Cap" (`A.1.1.2`) has preceding checkpoint
-   `A.1.1.1` ("Pre Pour Inspection - Pile"); the first checkpoint in a
-   chain has `-` (no predecessor).
+### 6a. Checkpoint-level dependency (within one Activity, same Work Section)
 
-**Open question**: does the app actually *enforce* either dependency layer
-(e.g. block RFI creation for a dependent Activity/checkpoint until its
-predecessor's RFI is approved), or is this master data purely informational
-for humans right now? Not yet confirmed live — needs app owner input or a
-live experiment (try creating an RFI for a dependent activity before its
-predecessor is done, see what happens).
+Using Activity A.1.1 (Piling - MMS)'s checkpoint chain as the concrete
+example given:
+
+```
+1. Pre Pour Inspection - Pile      → checklist: C_14_1 Micro Pile Checklist
+2. Pre Pour Inspection - Pile Cap  → checklist: C_14_2 Micro Pile Cap Checklist
+3. Post Pour Inspection            → checklist: C_8 Post Pour Check
+4. Epoxy Coating                   → checklist: 87 Bitumen & Epoxy Paint Checklists
+5. Routine Testing                 → no checklist, testing report upload only
+```
+
+For a **specific Work Section**, the RFI for checkpoint N+1 cannot be
+created until the RFI for checkpoint N (**for that exact same Work
+Section**) has been approved by **both** EE and QI. This is scoped per
+Work Section, not per Activity as a whole — e.g. Table 71's checkpoint 2
+can proceed the moment Table 71's checkpoint 1 is fully approved, entirely
+independent of whether Table 72's checkpoint 1 has even started.
+
+### 6b. Cross-Activity dependency — scoped by Min-Unit-of-RFI type, matched at the same specific unit
+
+- **Table-type activities only depend on other Table-type activities**,
+  matched at the **same specific table** (Work Section). An Inverter-type
+  activity's RFI is never blocked by, or dependent on, a Table-type
+  activity's RFI, and vice versa — Table and Inverter dependency chains
+  never cross each other directly.
+- **Inverter-type activities only depend on other Inverter-type
+  activities**, matched at the same specific inverter, by the same logic.
+- **Block-type (work-area-level) activities can depend on Table-type
+  and/or Inverter-type activities.** In that case, *every* individual
+  Table and/or Inverter Work Section's RFI for the dependency
+  Activity — across the **entire Work Area** — must be approved before an
+  RFI can be created for the Block-level Activity. (Confirmed this is one
+  concept referred to consistently as "work area / Block level," not a
+  separate higher tier above Block.)
+- **Reference for which type an Activity is**: the Activity Master's "Min.
+  Unit of RFI" column (see §4) — check this before assuming which
+  dependency rule applies to a given Activity.
+
+**Not yet automated**: none of this dependency enforcement is exercised
+by our current specs (`RFI_DATA`'s single Activity/Sub-Activity combo has
+no dependency chain to trigger). Live-experiment validation (attempt to
+create an RFI for a dependent checkpoint/Activity before its
+prerequisite is approved, confirm the app blocks it) is still open —
+tracked in `rfi-data-integrity-scenarios.md`'s Deferred section.
 
 ## 7. UI pattern reference: hierarchical location pickers
 
@@ -285,3 +338,122 @@ The *linked-from-RFI-checklist* NC creation path, and the
 behavior we haven't exercised. Deferred — not needed for the current
 field-values-persist-correctly phase, but relevant if we ever build a
 combined RFI+NC interaction test.
+
+**Explicitly parked per app owner (2026-08-19)**: "wait for RFI linked NC
+we will do later along with different scenario" — do not start
+investigating or building this until the app owner brings it back up as
+its own scenario.
+
+## 11. Quantity / Unit of Measurement rules
+
+Per app owner (2026-08-19):
+
+- If **RFI Quantity** is entered, **Unit of Measurement becomes
+  mandatory** (matches the User Manual's general validation note, §32).
+- The **Unit dropdown is filtered by the app itself** — not a generic,
+  full unit list. Presumably filtered to the specific UOM already defined
+  for that Sub-Activity in the Activity Master (e.g. "EA" for
+  Piling-MMS, per §4's `Unit of Measure for Optional Qty. Input by
+  Contractor` column) — not yet confirmed live which exact value(s)
+  appear for a different Sub-Activity.
+- **RFI Quantity's meaning ties to the Work Section(s) selected** for that
+  RFI submission — exact semantics when *multiple* Work Sections are
+  selected in one submission (one aggregate quantity vs. implicitly
+  per-section) not yet clarified further. Not urgent: our automation's
+  `RFI_DATA` currently leaves Quantity `null` and only ever selects a
+  single Work Section, so this ambiguity doesn't block current work.
+
+## 12. Draft / autosave behavior
+
+Per app owner (2026-08-19) and confirmed live via direct investigation.
+Validated spec: `tests/specs/24_rfi_draft_autosave.spec.js`.
+
+- **Autosave, not a manual save**: navigating away from the Create RFI
+  form persists whatever's filled as a draft — no need to click the
+  explicit "Draft" button (`RFICreatePage.clickSaveDraft()` still exists
+  and works, but is a separate, deliberate action from this autosave).
+- **Minimal trigger confirmed**: even filling in ONLY Work Location (no
+  other field, not even a required one) and then navigating away is
+  enough to persist a draft.
+- **Two distinct "goes back" triggers both work identically**: the
+  browser Back button, and an in-app nav link click away (e.g. "My
+  Tasks" in the sidebar) without ever using Back. Confirmed live — no
+  observed behavioral difference between the two.
+- **Validation is NOT enforced for the draft-save** — this is the key
+  point, per app owner: `02_rfi_ci.spec.js`'s test 3 already established
+  that clicking **Proceed** with required fields missing is silently
+  blocked (stays on Page 1, no error toast — "the app validates by
+  preventing navigation rather than showing an error div"). Going back
+  from that exact same incomplete state, by contrast, saves a draft
+  without complaint. `24_rfi_draft_autosave.spec.js` asserts both halves
+  of this asymmetry directly, in one place.
+- **The draft is stored LOCALLY in the browser, not server-side.**
+  Logging out (or, equivalently, starting a brand-new browser
+  context/session — confirmed by two Playwright runs in a row: one that
+  created two drafts, and an immediately-following fresh-login run that
+  found zero) deletes it. Consequence for automation: create, verify,
+  resume, and complete a draft must all happen within ONE continuous
+  session — never split across separate logins/tests.
+- **Surfaced in "Pending with me" as an "In-Draft" status row** (exact
+  label text, confirmed live) — RFI ID column stays blank (no code is
+  assigned until a real submission happens).
+- **How resuming actually works**: the app owner confirmed (live
+  screenshot, 2026-08-19) opening a draft works the same as opening an
+  RFI for review/resubmission — an Actions-column eye icon, reached by
+  scrolling the grid right (this row has more columns than a first
+  glance suggests: Activity, Sub Activity, Created AT, Updated AT, Last
+  Reviewed By, then Actions). An earlier automated probe wrongly
+  concluded no such icon existed at all — it gave up scrolling right too
+  early and only ever inspected a truncated dump of the row's HTML.
+  `RFIListPage.openDraftRow()` reuses `openRowByCode()`'s proven
+  scroll-and-poll technique, just locating the row by its "In-Draft"
+  status text instead of a code. Clicking "Create RFI" again ALSO
+  resumes the same local draft (the app detects it and reloads it,
+  Work Location intact) — kept as an automatic fallback in
+  `24_rfi_draft_autosave.spec.js` in case the eye icon ever lands
+  somewhere not directly editable, but the eye icon is the primary,
+  confirmed-correct path.
+- **Sub-Contractor Name as a scenario marker** (app owner's suggestion):
+  since the draft is completed with the rest of `RFI_DATA` after
+  resuming, the free-text Sub-Contractor Name field is used to tag which
+  trigger produced this particular draft (e.g.
+  `"Draft-Autosave-Test (browser-back)"`), then verified unchanged at
+  EE's and QI's review screens — same "does CI's data reach EE/QI
+  unchanged" principle as `23_rfi_data_integrity.spec.js`, applied here
+  to a drafted-then-completed RFI.
+- **RFI code format** (app owner, 2026-08-19): `RFI-<Work Location>-<Work
+  Area>-<Package abbreviation, e.g. CIV for Civil>-<incremental
+  numerical suffix>`. The suffix increments per unique
+  Work-Location/Work-Area/Package combination; a different combination
+  starts its own suffix fresh from 1 (or wherever that combination's
+  history left off) rather than continuing a single shared counter.
+  Matches every code this suite has observed against the shared
+  `RFI_DATA` combo (`RFI-A-06c-BL02-CIV-685` through `-690` and
+  climbing). Not itself asserted on in any spec (the exact next number
+  isn't predictable) — recorded here as confirmed reference only.
+- **Two more test-infrastructure quirks found writing this spec:**
+  1. **Fixed** — the "Pending with me" tile can be unresponsive to
+     clicks right after certain SPA transitions — e.g. landing back on
+     `/my-tasks` fresh off a draft-save + un-bounce sequence — same
+     "looks fully loaded, isn't actually interactive yet" quirk
+     `DashboardPage.goToMyTasks()` already had to retry-click past for
+     the sidebar nav link (user-observed live, 2026-08-19). Fixed in
+     `MyTasksPage.clickPendingWithMe()` with the same click-and-verify
+     retry pattern (up to 60s, checking for the real URL change).
+  2. **Not fixed — deliberately dropped instead**, after 7 reproducible
+     failures: the "Pending with me" tile's COUNT badge never populated
+     a digit within this flow, no matter what was tried — a longer
+     wait, a 45-second poll, a Dashboard-then-My-Tasks round trip (an
+     in-app nav click, still just client-side routing once the PWA
+     shell is loaded), and a genuine `page.reload()` (the same "reload
+     wipes the SPA's in-memory render state" mechanism
+     `resolveIncompleteDownloadBanner()` relies on elsewhere). Direct
+     evidence: `pendingWithMeTile.textContent()` came back as literally
+     `"Pending with me"` with no digit anywhere, even after `networkidle`
+     had already resolved (so whatever count API call exists had
+     already finished — the DOM just never rendered the number
+     afterward in this exact rapid-navigation sequence). Rather than
+     keep guessing at fixes for a badge that isn't essential to what
+     this spec is proving, `24_rfi_draft_autosave.spec.js` asserts only
+     on the "In-Draft" row in the grid — which has been reliable on
+     every single run — and doesn't check the tile's count at all.

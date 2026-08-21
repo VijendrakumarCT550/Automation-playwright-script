@@ -95,7 +95,23 @@ class DashboardPage extends BasePage {
   // hierarchy-role ones.
   async resolveIncompleteDownloadBanner() {
     await this.page.reload();
-    await this.page.waitForLoadState('networkidle');
+
+    // Root-caused live (2026-08-19, resubmit-scenario data-integrity spec,
+    // 23_rfi_data_integrity.spec.js): on a page that has ALREADY been
+    // through a prior role login in this same test (service worker/PWA
+    // background sync already active from that earlier session), a reload
+    // here can leave network activity in flight indefinitely — `networkidle`
+    // never resolves. This call had no explicit timeout, and
+    // playwright.config.js's `actionTimeout` does NOT cover
+    // waitForLoadState (that's `navigationTimeout`, which isn't set), so it
+    // silently inherited the whole TEST timeout instead of failing fast:
+    // observed as a 20-minute stall with the stack trace pointing at this
+    // exact line. A single fresh login (no prior session on the page)
+    // does NOT reproduce this — an isolated instrumented rerun of one lone
+    // CI login finished this same reload+networkidle step in ~2s. Bound it
+    // and swallow a timeout here; the real gate is the content-visibility
+    // wait right below, which already has its own generous timeout.
+    await this.page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
 
     // Confirmed live: a reload wipes the SPA's in-memory render state, and
     // `networkidle` alone doesn't guarantee it's actually interactive again
@@ -113,7 +129,9 @@ class DashboardPage extends BasePage {
     const downloadButton = this.page.getByRole('button', { name: 'Download missing data' });
     if (await downloadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await downloadButton.click();
-      await this.page.waitForLoadState('networkidle');
+      // Same unbounded-networkidle risk as the reload above — bounded for
+      // the same reason.
+      await this.page.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
     }
   }
 

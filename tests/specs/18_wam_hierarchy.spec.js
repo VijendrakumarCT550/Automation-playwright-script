@@ -6,32 +6,41 @@ const WAMPage = require('../pages/WAMPage');
 
 test.describe.configure({ mode: 'serial' });
 
-// Role hierarchy (per app owner): Admin-tier (Cluster/Site/Plot Admin) can
-// each assign Project Manager within their own scope -> Project Manager
-// assigns Execution Lead + Quality Lead within their Work Location ->
-// Execution Lead assigns Execution Engineer + Contractor Manager, Quality
-// Lead assigns Quality Inspector, Contractor Manager assigns Contractor
-// In-Charge, all three within their own Work Area scope. Users cannot
-// assign roles above their level, and can only assign within their OWN
-// already-assigned scope (Cluster / Site / Work Location / Work Area) —
-// this spec starts at the top (Cluster Admin) and cascades down through
-// Work Location and Work Area level, all on one worker (test.describe
-// serial mode) since each step logs in as a DIFFERENT user.
+// Role hierarchy — CORRECTED/EXPANDED per app owner (2026-08-21), see
+// docs/wam-hierarchy-business-logic.md for the full writeup:
+//   Admin -> Cluster Admin -> Site Admin -> Plot Admin -> Project Manager
+//   -> (Execution Lead + Quality Lead) -> (Contractor Manager + Execution
+//   Engineer) / Quality Inspector -> Contractor In-Charge.
+// Key rule: EVERY tier above Project Manager (Admin, Cluster Admin, Site
+// Admin, Plot Admin) can assign Project Manager directly, each within
+// their own scope (Cluster contains multiple Sites, Site contains
+// multiple Plots/Work Locations — a higher tier simply has more Work
+// Locations available to map into). The FIRST test.describe below covers
+// this one-role-at-a-time CASCADE (each tier assigns only the next tier
+// down) for a single path starting at Cluster Admin.
+//
+// The SECOND part of this file (test.describe blocks per tier, appended
+// below) covers a DIFFERENT, broader angle the cascade tests don't:
+// each of Cluster Admin/Site Admin/Plot Admin can actually assign EVERY
+// role below its own tier at once (not just the next one down) — the
+// cascade tests' own role-restriction check already hinted at this for
+// Cluster Admin ("9 of the 10 possible roles" in its Role dropdown, not
+// just "Project Manager"). Mirrors 13_wam_all_roles.spec.js's structure
+// exactly (same WORK_AREA_ROLES/WORK_LOCATION_ROLES/SITE_ROLES groupings,
+// same assignUserIfNeeded/addAssigneeToRow idempotent "map if not already
+// mapped" pattern) — just scoped down per tier and logged in as that
+// tier's own bulk-created user instead of Admin. Per app owner: also
+// apply Cluster Admin/Site Admin/Plot Admin's authority to SO Mapping and
+// RFI/NC visibility/reassignment (they have Admin's full authority within
+// their own scope for those too) — planned as separate follow-up work in
+// 05_so_mapping.spec.js/11_reassign_rfi_nc.spec.js, not built here.
 //
 // Reuses the SAME already-created, already-WAM-mapped users from
 // [[project_user_management_feature]]/[[project_wam_all_roles_feature]]
 // (tests/fixtures/last-created-users.json) — this spec isn't about
 // creating new mappings, it's about confirming that a NON-ADMIN login can
 // perform the identical WAM assignment action, restricted to their own
-// subordinate roles and their own location scope. Unconfirmed prior to
-// this spec (all previous WAM automation ran as Admin only): whether the
-// Add Details dialog's Role dropdown is actually filtered by hierarchy.
-// Confirmed live: for Cluster Admin it is NOT — the dropdown showed 9 of
-// the 10 possible roles (everything except Cluster Admin itself), not
-// just "Project Manager". Logged (via logRoleRestrictionCheck below) but
-// never asserted, so a mismatch here is reported without blocking the
-// rest of the cascade from running and confirming whether the underlying
-// scope-restricted assignment mechanics work regardless.
+// subordinate roles and their own location scope.
 //
 // Requires each of these bulk-created users to be able to log in (the app
 // owner is adding them to user auth manually in the DB before this can
@@ -141,6 +150,15 @@ test.describe('WAM assignment follows the role hierarchy (Cluster Admin -> Proje
     await wam.goto(new DashboardPage(page));
     await wam.openAddDetails();
 
+    // Expected value here is deliberately still just ["Project Manager"]
+    // — this test only exercises the CASCADE (one role at a time down the
+    // chain), so a "mismatch" log here is EXPECTED and correct per the
+    // corrected hierarchy (Cluster Admin can see/assign every role below
+    // it, not just Project Manager) — see the "Part 2" describe blocks
+    // below, which exercise and confirm that broader capability directly.
+    // Not updated to the wider expectation here so this log keeps
+    // surfacing the original, narrower cascade-only assumption for
+    // anyone reading just this one test in isolation.
     const availableRoles = await wam.getAvailableRoleOptions();
     logRoleRestrictionCheck('Cluster Admin', availableRoles, ['Project Manager']);
 
@@ -248,3 +266,190 @@ test.describe('WAM assignment follows the role hierarchy (Cluster Admin -> Proje
     console.log(`Contractor Manager "${cm.name}" assigned Contractor Incharge "${cic.name}" at Work Area ${WORK_AREA}`);
   });
 });
+
+// ─── Part 2: each upper tier assigns EVERY role below its own, not just
+// the next one down (app owner, 2026-08-21) ───────────────────────────────
+//
+// Mirrors 13_wam_all_roles.spec.js exactly — same role groupings by row
+// granularity, same idempotent assignUserIfNeeded/addAssigneeToRow "map
+// if not already mapped" pattern, same reopen-and-reverify — just logged
+// in as the tier's own bulk-created user instead of Admin, and with the
+// role list narrowed to exclude that tier's own role and anything above
+// it (a tier can't assign itself or its superiors).
+//
+// CAD/SAD/PAD are already pre-mapped into this exact same Gujarat/
+// Khavda/A-06c scope by 13_wam_all_roles.spec.js's own Admin-driven runs
+// (SAD -> Site "Khavda", PAD -> Work Location "A-06c", CAD -> Cluster
+// "Gujarat") — same CLUSTER/SITE/WORK_LOCATION/PACKAGE/SERVICE_ORDER
+// constants already defined above are reused unchanged.
+const WORK_AREAS_ALL_ROLES = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
+
+const WORK_AREA_ROLES_ALL = [
+  { prefix: 'EE',  role: 'Execution Engineer' },
+  { prefix: 'QI',  role: 'Quality Inspector' },
+  { prefix: 'EL',  role: 'Execution Lead' },
+  { prefix: 'QL',  role: 'Quality Lead' },
+  { prefix: 'CIC', role: 'Contractor Incharge', serviceOrder: SERVICE_ORDER },
+  { prefix: 'CM',  role: 'Contractor Manager',  serviceOrder: SERVICE_ORDER },
+];
+const WORK_LOCATION_ROLES_ALL = [
+  { prefix: 'PM',  role: 'Project Manager' },
+  { prefix: 'PAD', role: 'Plot Admin' },
+];
+const SITE_ROLES_ALL = [
+  { prefix: 'SAD', role: 'Site Admin' },
+];
+
+// Every tier assigns every WORK_AREA_ROLES_ALL role (Execution Engineer/
+// Quality Inspector/Execution Lead/Quality Lead/Contractor Incharge/
+// Contractor Manager) — none of those sit above any of CAD/SAD/PAD in the
+// hierarchy, so nothing to exclude there. Only the WORK_LOCATION/SITE
+// groupings shrink as the tier gets narrower (a tier can't assign its own
+// role or anything above it).
+const TIERS_ALL_ROLES = [
+  {
+    prefix: 'CAD', loginRole: 'Cluster Admin',
+    workAreaRoles: WORK_AREA_ROLES_ALL,
+    workLocationRoles: WORK_LOCATION_ROLES_ALL, // PM, PAD
+    siteRoles: SITE_ROLES_ALL,                  // SAD
+  },
+  {
+    prefix: 'SAD', loginRole: 'Site Admin',
+    workAreaRoles: WORK_AREA_ROLES_ALL,
+    workLocationRoles: WORK_LOCATION_ROLES_ALL, // PM, PAD
+    siteRoles: [],                              // SAD is this tier itself — excluded
+  },
+  {
+    prefix: 'PAD', loginRole: 'Plot Admin',
+    workAreaRoles: WORK_AREA_ROLES_ALL,
+    workLocationRoles: [{ prefix: 'PM', role: 'Project Manager' }], // PAD excluded (itself)
+    siteRoles: [],                              // SAD excluded (above this tier)
+  },
+];
+
+// Same non-asserting toast check as 13_wam_all_roles.spec.js's
+// logSubmitToast — an empty toast can be a real gateway/502 blip on a
+// large payload even though the write succeeded server-side, so this is
+// only ever a heads-up log, never a failure. The real proof is always the
+// reopen-and-reverify step that follows every call site.
+function logAllRolesToast(toastText, changed, context) {
+  if (!toastText) {
+    console.log(`${context}: no toast text (possible gateway/502 blip) — verifying persisted state directly`);
+    return;
+  }
+  if (!/assigned successfully|no changes to save/i.test(toastText)) {
+    console.log(`${context}: unexpected toast text "${toastText}"`);
+  }
+}
+
+for (const tier of TIERS_ALL_ROLES) {
+  test.describe(`${tier.loginRole} - WAM assignment for every role below its own tier`, () => {
+    let context, page, loginUser;
+
+    test.beforeAll(async ({ browser }) => {
+      loginUser = requireUser(tier.prefix);
+      context = await browser.newContext({
+        permissions: ['geolocation'],
+        geolocation: { latitude: 23.0225, longitude: 72.5714 },
+      });
+      page = await context.newPage();
+      // Same first-time PWA install spinner concern as Part 1's tests —
+      // these bulk-created accounts may be logging in for the first time.
+      await loginAsUser(page, loginUser.email, PASSWORD);
+    });
+
+    test.afterAll(async () => {
+      await context.close();
+    });
+
+    for (const { prefix, role, serviceOrder } of tier.workAreaRoles) {
+      test(`${tier.loginRole} can assign ${role} (${prefix}) to work areas at ${WORK_LOCATION}`, async () => {
+        test.setTimeout(20 * 60 * 1000);
+        const created = requireUser(prefix);
+        const wam = new WAMPage(page);
+        await wam.goto(new DashboardPage(page));
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({
+          role, cluster: CLUSTER, site: SITE, workLocation: WORK_LOCATION, package: PACKAGE, serviceOrder,
+        });
+
+        let anyChanged = false;
+        for (const area of WORK_AREAS_ALL_ROLES) {
+          const changed = await wam.assignUserIfNeeded(area, created.name);
+          anyChanged = anyChanged || changed;
+        }
+        for (const area of WORK_AREAS_ALL_ROLES) {
+          await expect(wam.getWorkAreaRow(area).locator('[role="combobox"]')).toContainText(created.name);
+        }
+
+        const toastText = await wam.clickSubmit();
+        logAllRolesToast(toastText, anyChanged, `${tier.loginRole} -> ${role} at ${WORK_LOCATION}`);
+
+        await wam.closeDialog();
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({
+          role, cluster: CLUSTER, site: SITE, workLocation: WORK_LOCATION, package: PACKAGE, serviceOrder,
+        });
+        for (const area of WORK_AREAS_ALL_ROLES) {
+          const value = await wam.getWorkAreaUserValue(area);
+          expect(value).toContain(created.name);
+        }
+        await wam.closeDialog();
+
+        console.log(`${tier.loginRole} "${loginUser.name}" assigned ${role} "${created.name}" to ${WORK_LOCATION}: ${WORK_AREAS_ALL_ROLES.join(', ')}`);
+      });
+    }
+
+    for (const { prefix, role } of tier.workLocationRoles) {
+      test(`${tier.loginRole} can assign ${role} (${prefix}) at Work Location ${WORK_LOCATION}`, async () => {
+        test.setTimeout(20 * 60 * 1000);
+        const created = requireUser(prefix);
+        const wam = new WAMPage(page);
+        await wam.goto(new DashboardPage(page));
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({ role, cluster: CLUSTER, site: SITE });
+
+        const changed = await wam.addAssigneeToRow(WORK_LOCATION, created.name);
+        await expect(wam.getWorkAreaRow(WORK_LOCATION).locator('[role="combobox"]')).toContainText(created.name);
+
+        const toastText = await wam.clickSubmit();
+        logAllRolesToast(toastText, changed, `${tier.loginRole} -> ${role} at Work Location ${WORK_LOCATION}`);
+
+        await wam.closeDialog();
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({ role, cluster: CLUSTER, site: SITE });
+        const value = await wam.getWorkAreaUserValue(WORK_LOCATION);
+        expect(value).toContain(created.name);
+        await wam.closeDialog();
+
+        console.log(`${tier.loginRole} "${loginUser.name}" assigned ${role} "${created.name}" at Work Location ${WORK_LOCATION}`);
+      });
+    }
+
+    for (const { prefix, role } of tier.siteRoles) {
+      test(`${tier.loginRole} can assign ${role} (${prefix}) at Site ${SITE}`, async () => {
+        test.setTimeout(20 * 60 * 1000);
+        const created = requireUser(prefix);
+        const wam = new WAMPage(page);
+        await wam.goto(new DashboardPage(page));
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({ role, cluster: CLUSTER });
+
+        const changed = await wam.addAssigneeToRow(SITE, created.name);
+        await expect(wam.getWorkAreaRow(SITE).locator('[role="combobox"]')).toContainText(created.name);
+
+        const toastText = await wam.clickSubmit();
+        logAllRolesToast(toastText, changed, `${tier.loginRole} -> ${role} at Site ${SITE}`);
+
+        await wam.closeDialog();
+        await wam.openAddDetails();
+        await wam.fillAssignmentFilters({ role, cluster: CLUSTER });
+        const value = await wam.getWorkAreaUserValue(SITE);
+        expect(value).toContain(created.name);
+        await wam.closeDialog();
+
+        console.log(`${tier.loginRole} "${loginUser.name}" assigned ${role} "${created.name}" at Site ${SITE}`);
+      });
+    }
+  });
+}

@@ -154,14 +154,119 @@ class WAMPage extends BasePage {
 
   // Scopes to the grid row for a given Work Area code (e.g. "BL01") — same
   // div.d_grid + exact-text pattern as SOMappingPage.getActivityRow.
+  //
+  // Case-INSENSITIVE exact match (a regex, not Playwright's plain
+  // `exact: true` string form, which is case-sensitive) — confirmed live
+  // (2026-08-21) that a row can render as "KHAVDA" while callers pass
+  // "Khavda", same casing-only variation as Cluster/Site dropdown
+  // OPTIONS already tolerate (selectDropdownOption's `.filter({hasText})`
+  // is case-insensitive by default for a string). Still "exact" in the
+  // sense that it anchors the whole trimmed text, so it won't accidentally
+  // match an unrelated row whose label merely contains areaCode as a
+  // substring.
   getWorkAreaRow(areaCode) {
+    const escaped = areaCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return this.dialog.locator('div.d_grid')
-      .filter({ has: this.page.getByText(areaCode, { exact: true }) });
+      .filter({ has: this.page.getByText(new RegExp(`^${escaped}$`, 'i')) });
+  }
+
+  // For GENUINELY different names, not just a casing difference — e.g.
+  // "Gujarat" vs "KHAVDA" for what's meant to be the same Cluster, a real
+  // database/deployment data discrepancy (app owner independently
+  // confirmed this live, 2026-08-21 — not something case-insensitivity
+  // alone can paper over, since those are two different words, not case
+  // variants of the same one). getWorkAreaRow above already handles pure
+  // casing variation on its own now, so candidates passed here should
+  // only ever be genuinely-different labels for the same location.
+  //
+  // This — not "too many existing assignees" as first suspected — is
+  // what actually caused Cluster Admin's and Site Admin's own
+  // WAM-mapping assignments to time out waiting for their row.
+  // Deliberately stays exact-per-candidate (via the same case-insensitive
+  // getWorkAreaRow) rather than switching to fuzzy/substring matching,
+  // to avoid a different class of bug (accidentally matching an
+  // unrelated row that merely contains the candidate text). Returns the
+  // first candidate's row that actually exists; throws if none do, so a
+  // genuine miss still fails loudly.
+  async getWorkAreaRowAny(candidates) {
+    for (const candidate of candidates) {
+      const row = this.getWorkAreaRow(candidate);
+      if (await row.count() > 0) return row;
+    }
+    throw new Error(`None of the candidate row labels [${candidates.join(', ')}] were found in this dialog`);
+  }
+
+  // Convenience wrapper returning just the matching LABEL string (not the
+  // Locator) — for callers that pass a row label into the existing
+  // string-based methods (addAssigneeToRow, getWorkAreaUserValue, etc.)
+  // rather than chaining off the Locator directly.
+  async resolveRowLabel(candidates) {
+    for (const candidate of candidates) {
+      if (await this.getWorkAreaRow(candidate).count() > 0) return candidate;
+    }
+    throw new Error(`None of the candidate row labels [${candidates.join(', ')}] were found in this dialog`);
   }
 
   async selectWorkAreaUser(areaCode, userName) {
     const combo = this.getWorkAreaRow(areaCode).locator('[role="combobox"]');
     await this.selectDropdownOption(combo, userName);
+  }
+
+  // Ark UI appends a checkmark to the currently-SELECTED option's own
+  // innerText (confirmed live, and already independently documented as
+  // a false-alarm artifact in 18_wam_hierarchy.spec.js's role-restriction
+  // log: "Quality Inspector\n✓" was the same option, not an extra role).
+  // Strip it before comparing an option's text against a plain value —
+  // without this, code that picks "whichever option ISN'T already
+  // selected" can misidentify the checkmark-suffixed CURRENT option as a
+  // different/unassigned one and pick that instead of a genuinely new
+  // option. Only affects the COMPARISON; the raw (unstripped) text is
+  // still what gets returned/logged for a genuinely different option,
+  // which never carries the artifact since it isn't selected.
+  static _stripSelectedMarker(text) {
+    return text.replace(/\s*✓\s*$/, '').trim();
+  }
+
+  // For testing a PATCH/update (replacing whoever's currently assigned
+  // with someone else) on a single-assignee row, without needing a
+  // second known bulk-created user of that exact role — picks whichever
+  // option the dropdown offers that ISN'T the current value, selects it,
+  // and returns the name actually picked. Single-select only (a plain
+  // pick always fully replaces) — not meant for multi-assignee rows,
+  // where "update" means adding someone alongside existing assignees
+  // instead (see addAssigneeToRow/addAnyUnassignedUser).
+  //
+  // Confirmed live (2026-08-21): without stripping the checkmark
+  // artifact (see _stripSelectedMarker above), this could pick the
+  // ALREADY-selected option right back (its raw text, e.g.
+  // "QLjsxUser49\n✓", never equals the plain currentValue) — re-clicking
+  // an already-selected single-select option is a no-op, which silently
+  // "succeeded" at picking *something* while never actually changing the
+  // assignment. That's what caused Quality Lead's and Contractor
+  // Manager's update tests to see the OLD value still there afterward.
+  //
+  // Real edge case, not just a hypothetical: if the dropdown genuinely
+  // has only ONE selectable option (the current value itself), there is
+  // NO alternative to update to — that's a legitimate "can't test update
+  // here" state, not a bug. Returns `null` rather than throwing, so
+  // callers can `test.skip()` with a clear reason instead of the test
+  // reading as a failure over missing test data.
+  async selectDifferentWorkAreaUser(areaCode, currentValue) {
+    const combo = this.getWorkAreaRow(areaCode).locator('[role="combobox"]');
+    const listbox = await this.openDropdown(combo);
+    const options = listbox.locator('[role="option"]');
+    const texts = (await options.allInnerTexts()).map(t => t.trim());
+    const target = currentValue.trim();
+    const differentIndex = texts.findIndex(t => t && WAMPage._stripSelectedMarker(t) !== target);
+    if (differentIndex === -1) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      return null;
+    }
+    const differentName = texts[differentIndex];
+    await options.nth(differentIndex).click();
+    await this.page.waitForTimeout(150);
+    return differentName;
   }
 
   async getWorkAreaUserValue(areaCode) {
@@ -244,6 +349,61 @@ class WAMPage extends BasePage {
       }
     }
     return true;
+  }
+
+  // Same shape as addAssigneeToRow, but for testing a multi-assignee row's
+  // PATCH/update semantics — app owner's explicit choice (2026-08-21):
+  // "update" for these rows means adding a new person ALONGSIDE existing
+  // assignees, not replacing anyone (there's no single-person-replace
+  // action in this UI). Picks whichever option ISN'T already in the row's
+  // current comma-joined value, rather than needing a specific known
+  // not-yet-assigned user name. Returns the name actually picked.
+  //
+  // Confirmed live (2026-08-21) — this is the destructive version of the
+  // same checkmark-artifact bug _stripSelectedMarker exists for: an
+  // ALREADY-selected option's raw text (e.g. "CADdckUser49\n✓") never
+  // matches its plain form in currentNames, so without stripping it here
+  // too, this could misidentify an already-selected person as
+  // "unassigned" and click them — which for Ark UI's multi-select
+  // TOGGLES THEM OFF instead of adding someone new. That's what wiped
+  // Cluster Admin's row to empty and dropped names from Site
+  // Admin's/Project Manager's rows the first time this ran.
+  //
+  // Real edge case, not just hypothetical: if literally every possible
+  // person is already assigned to this row, there's no one left to add —
+  // a legitimate "can't test update here" state, not a bug. Returns
+  // `null` rather than throwing, same reasoning as
+  // selectDifferentWorkAreaUser, so callers can test.skip() instead of
+  // this reading as a failure.
+  async addAnyUnassignedUser(rowLabel) {
+    const combo = this.getWorkAreaRow(rowLabel).locator('[role="combobox"]');
+    const currentText = (await combo.innerText()).trim();
+    const currentNames = currentText ? currentText.split(',').map(n => n.trim()) : [];
+
+    const listbox = await this.openDropdown(combo);
+    const options = listbox.locator('[role="option"]');
+    const texts = (await options.allInnerTexts()).map(t => t.trim());
+    const unassignedIndex = texts.findIndex(t => t && !currentNames.includes(WAMPage._stripSelectedMarker(t)));
+    if (unassignedIndex === -1) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      return null;
+    }
+    const pickedName = texts[unassignedIndex];
+    await options.nth(unassignedIndex).click();
+    await this.page.waitForTimeout(300);
+
+    const stillOpen = await listbox.isVisible({ timeout: 500 }).catch(() => false);
+    if (stillOpen) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      const closed = await listbox.waitFor({ state: 'hidden', timeout: 3000 })
+        .then(() => true).catch(() => false);
+      if (!closed) {
+        await combo.click().catch(() => {});
+        await listbox.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      }
+    }
+    return pickedName;
   }
 
   // Returns the Submit toast's text (e.g. "Assigned successfully" or

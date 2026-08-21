@@ -72,6 +72,113 @@ class RFIReviewPage extends BasePage {
     }
   }
 
+  // --- Read-back for data-integrity checks (23_rfi_data_integrity.spec.js) ---
+  //
+  // Confirmed live: this page renders as plain label-then-value text, NOT
+  // a queryable dt/dd or label+sibling DOM shape — a generic `label` /
+  // `dt+dd` query mostly matched irrelevant radio-button pairs ("Ok"/"Not
+  // Ok", "Capture Photo"/"Use Camera") instead of the real fields. Reading
+  // the whole page's visible text and walking it line-by-line is what
+  // actually works: every real field is a label line immediately followed
+  // by its value line.
+  //
+  // The one wrinkle: an EMPTY field renders two different ways depending
+  // on which field it is — Quantity/Unit render the literal placeholder
+  // "-", but Sub-Contractor Name renders NOTHING (the very next line is
+  // already the next field's label). KNOWN_LABELS lets _fieldAfter tell
+  // the difference: if the line right after a label IS itself another
+  // known label, the field in between is empty, not "whatever text
+  // happened to be next."
+  static KNOWN_LABELS = [
+    'Project Name', 'Work Location', 'Work Area', 'Contractor Name',
+    'Sub-Contractor Name', 'Service Order', 'Package', 'Sub-Package',
+    'Activity', 'Sub-Activity', 'Quantity', 'Unit of Measurement',
+    'Inspection Checkpoint', 'Inspection Checklist',
+  ];
+
+  async _visibleLines() {
+    const text = await this.page.locator('body').innerText();
+    return text.split('\n').map(l => l.trim()).filter(Boolean);
+  }
+
+  _isLabelLine(line) {
+    return RFIReviewPage.KNOWN_LABELS.includes(line) || /^Work Section\b/.test(line);
+  }
+
+  // Returns the value for `label`, or null if the field is empty (the next
+  // line is itself another label) or the label isn't present at all.
+  _fieldAfter(lines, label) {
+    const idx = lines.indexOf(label);
+    if (idx === -1) return null;
+    const next = lines[idx + 1];
+    if (next === undefined || this._isLabelLine(next)) return null;
+    return next;
+  }
+
+  async getFieldValue(label) {
+    return this._fieldAfter(await this._visibleLines(), label);
+  }
+
+  // Work Section's label isn't a fixed string — it's "Work Section - ( N )
+  // *" where N is however many sections are selected — so it needs its own
+  // regex-based lookup rather than KNOWN_LABELS' exact match.
+  async getWorkSectionValue() {
+    const lines = await this._visibleLines();
+    const idx = lines.findIndex(l => /^Work Section\b/.test(l));
+    if (idx === -1) return null;
+    const next = lines[idx + 1];
+    return next === undefined || this._isLabelLine(next) ? null : next;
+  }
+
+  // Every checklist item repeats the same "Observation/Measured Value"
+  // label — collect ALL of them, in the order they appear (matches
+  // RFIChecklistPage.fillAllObservations()'s per-item fill order).
+  async getAllObservationValues() {
+    const lines = await this._visibleLines();
+    const values = [];
+    lines.forEach((line, i) => {
+      if (line === 'Observation/Measured Value') values.push(lines[i + 1] ?? null);
+    });
+    return values;
+  }
+
+  // Convenience: every field this data-integrity spec cares about, in one
+  // read (one single innerText() call, not one per field). Deliberately
+  // excludes Project Name (fixed/global) — not useful to compare against
+  // anything.
+  async readAllFields() {
+    const lines = await this._visibleLines();
+    const field = label => this._fieldAfter(lines, label);
+
+    const workSectionIdx = lines.findIndex(l => /^Work Section\b/.test(l));
+    const workSectionNext = workSectionIdx === -1 ? undefined : lines[workSectionIdx + 1];
+    const workSection = workSectionNext === undefined || this._isLabelLine(workSectionNext)
+      ? null : workSectionNext;
+
+    const observations = [];
+    lines.forEach((line, i) => {
+      if (line === 'Observation/Measured Value') observations.push(lines[i + 1] ?? null);
+    });
+
+    return {
+      workLocation: field('Work Location'),
+      workArea: field('Work Area'),
+      contractorName: field('Contractor Name'),
+      subContractor: field('Sub-Contractor Name'),
+      serviceOrder: field('Service Order'),
+      package: field('Package'),
+      subPackage: field('Sub-Package'),
+      activity: field('Activity'),
+      subActivity: field('Sub-Activity'),
+      quantity: field('Quantity'),
+      unit: field('Unit of Measurement'),
+      inspectionCheckpoint: field('Inspection Checkpoint'),
+      inspectionChecklist: field('Inspection Checklist'),
+      workSection,
+      observations,
+    };
+  }
+
   // networkidle alone is NOT a reliable "the action actually finished and
   // persisted" signal here — confirmed live: approving, then moving on right
   // after networkidle resolved, left the RFI still showing as pending with

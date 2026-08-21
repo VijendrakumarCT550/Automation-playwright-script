@@ -97,6 +97,57 @@ class RFIListPage extends BasePage {
     await eyeButton.click();
     await this.page.waitForLoadState('networkidle');
   }
+
+  // Opens an "In-Draft" row — same Actions-column eye icon as
+  // openRowByCode, but located by its status text instead of a visible
+  // code, since a still-local draft has no RFI ID/code assigned yet
+  // (confirmed live, 2026-08-19: the ID column is blank for these rows).
+  // App-owner-confirmed (2026-08-19, live screenshot): this row DOES have
+  // a working eye icon in its Actions column, same as any submitted
+  // row — an earlier automated probe missed it only because it gave up
+  // scrolling too early; this row genuinely has more columns than a
+  // first glance suggests (Activity, Sub Activity, Created AT, Updated
+  // AT, Last Reviewed By, then Actions).
+  getRowByStatus(statusText) {
+    return this.grid.locator('.rdg-row[role="row"]').filter({ hasText: statusText });
+  }
+
+  async scrollToRowByStatus(statusText) {
+    const row = this.getRowByStatus(statusText);
+    for (let i = 0; i < 30; i++) {
+      if (await row.count() > 0) break;
+      const atEnd = await this.grid.evaluate(el => {
+        const before = el.scrollTop;
+        el.scrollTop = el.scrollHeight;
+        return el.scrollTop === before;
+      });
+      await this.page.waitForTimeout(400);
+      if (atEnd) break;
+    }
+    return row;
+  }
+
+  async openDraftRow() {
+    const row = await this.scrollToRowByStatus('In-Draft');
+    await row.first().waitFor({ state: 'visible', timeout: 15000 });
+    const rowIndex = await row.first().getAttribute('aria-rowindex');
+
+    let eyeButton = this.getRowByAriaIndex(rowIndex).locator('[role="gridcell"]').last()
+      .locator('button:has(svg.lucide-eye)').first();
+    for (let i = 0; i < 20; i++) {
+      if (await eyeButton.isVisible({ timeout: 500 }).catch(() => false)) break;
+      const atEnd = await this.grid.evaluate(el => {
+        const before = el.scrollLeft;
+        el.scrollLeft = el.scrollWidth;
+        return el.scrollLeft === before;
+      });
+      await this.page.waitForTimeout(400);
+      if (atEnd) break;
+    }
+    await eyeButton.waitFor({ state: 'visible', timeout: 10000 });
+    await eyeButton.click();
+    await this.page.waitForLoadState('networkidle');
+  }
 }
 
 module.exports = RFIListPage;

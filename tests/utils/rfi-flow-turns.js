@@ -4,6 +4,7 @@ const {
   markFailed, getLastRejectPage,
 } = require("./tracker-utils");
 const { openFromPendingWithMe } = require("./rfi-nav");
+const { loginAsRole } = require("./helpers");
 const DashboardPage    = require("../pages/DashboardPage");
 const MyTasksPage      = require("../pages/MyTasksPage");
 const RFICreatePage    = require("../pages/RFICreatePage");
@@ -33,6 +34,26 @@ async function withRetry(action) {
     return await action();
   } catch (err) {
     await new Promise(resolve => setTimeout(resolve, 3000));
+    return await action();
+  }
+}
+
+// App owner confirmed live (2026-08-19): RFICreatePage.clickProceed()'s
+// "already exists for the workSections" rejection is a known symptom of
+// cookies not being fully cleared before login — the fix is a fresh
+// re-login, not picking a different Work Section. Only retries on that
+// specific tagged error (`err.staleWorkSection`, see clickProceed's
+// comments); anything else rethrows immediately so this doesn't mask
+// unrelated failures. `action` is re-run from scratch after the relogin —
+// it must be safe to call again from the top (createNewRfi/resubmitRfi
+// both are: they start from My Tasks / the RFI's own row, not from
+// mid-form state).
+async function withLoginRetryOnStaleWorkSection(page, role, action) {
+  try {
+    return await action();
+  } catch (err) {
+    if (!err.staleWorkSection) throw err;
+    await loginAsRole(page, role);
     return await action();
   }
 }
@@ -174,7 +195,7 @@ async function runCITurn(page) {
     try {
       await withRetry(async () => {
         if (!tc.rfiId) {
-          const rfiId = await createNewRfi(page);
+          const rfiId = await withLoginRetryOnStaleWorkSection(page, "CI", () => createNewRfi(page));
           setRfiId(loadTracker(), tcId, rfiId);
           pendingCodeBackfill.push({ tcId, rfiId, isResubmit: false });
           return;
@@ -182,7 +203,9 @@ async function runCITurn(page) {
 
         if (step.action === "resubmit") {
           const lastRejectPage = getLastRejectPage(tc);
-          const { newRfiId } = await resubmitRfi(page, tc.rfiCode, lastRejectPage);
+          const { newRfiId } = await withLoginRetryOnStaleWorkSection(
+            page, "CI", () => resubmitRfi(page, tc.rfiCode, lastRejectPage)
+          );
           advanceStep(loadTracker(), tcId, { newRfiId, newRfiCode: null });
           pendingCodeBackfill.push({ tcId, rfiId: newRfiId, isResubmit: true });
         }
@@ -266,5 +289,5 @@ async function runQITurn(page) {
 
 module.exports = {
   RFI_DATA, createNewRfi, resubmitRfi, backfillRfiCodes,
-  runCITurn, runEETurn, runQITurn,
+  runCITurn, runEETurn, runQITurn, withLoginRetryOnStaleWorkSection,
 };

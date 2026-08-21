@@ -98,12 +98,61 @@ class RFICreatePage extends BasePage {
     await this.page.waitForTimeout(100);
   }
 
-  async selectWorkSection() {
+  // `label`, when given, picks the option matching that exact text instead
+  // of "whatever is first" — needed by the Activity Dependency chain spec
+  // (29_rfi_activity_dependency.spec.js), which must reuse the SAME Work
+  // Section across a whole checkpoint chain (the app's checkpoint
+  // dependency is scoped per Work Section, so checkpoint N and N+1 must be
+  // filed against the identical Work Section for the dependency to ever
+  // resolve). Returns the selected option's trimmed label so a caller with
+  // no `label` (i.e. every existing caller — fillForm()'s no-arg call is
+  // unaffected) can capture "whatever got picked" for reuse later.
+  //
+  // `label === '__random__'` picks a uniformly random option instead of
+  // the first — also for the dependency chain spec: confirmed live
+  // (00_inspect_rfi_work_sections_per_checkpoint.spec.js) that this
+  // dropdown does NOT reliably drop already-used options, so "first
+  // available" can keep re-picking a Work Section a PREVIOUS run of that
+  // spec already fully created+approved for checkpoint[0] — making a
+  // rerun's very first "should be blocked" check false (the dependency
+  // really would already be satisfied for that recycled section). Random
+  // selection makes colliding with a specific prior run's single choice
+  // very unlikely without needing the dropdown to filter anything.
+  async selectWorkSection(label) {
     const listbox = await this._openDropdown(this.workSectionToggle);
-    const first = listbox.locator('[role="option"]').first();
-    const found = await this.pollUntil(() => first.isVisible({ timeout: 300 }));
-    if (!found) await first.waitFor({ state: 'visible', timeout: 500 }); // real error
-    await first.click({ timeout: 1500 }).catch(() => first.click());
+    // This list is a real scrollable list (also has a "Select All (N)"
+    // control at the top — the app owner's other suggested strategy), NOT
+    // a short virtualized window — confirmed live that every option exists
+    // in the DOM at once, just clipped by the scroll container. A deep
+    // option (by random index OR by a specific label re-selected later in
+    // a chain — same repro either way, confirmed live: even the labeled
+    // branch failed the same way) is very likely scrolled OFF-SCREEN, and
+    // Playwright's visibility check on an off-screen-but-present element
+    // fails/times out — scroll it into view first, in BOTH branches.
+    let option;
+    if (label === '__random__') {
+      const options = listbox.locator('[role="option"]');
+      // Give the (potentially large) list a moment to finish rendering
+      // before counting — otherwise a random index chosen against a
+      // still-growing count can end up stale.
+      await this.page.waitForTimeout(300);
+      const count = await options.count();
+      option = options.nth(Math.floor(Math.random() * Math.max(count, 1)));
+    } else if (label) {
+      option = listbox.locator('[role="option"]').filter({ hasText: label }).first();
+    } else {
+      option = listbox.locator('[role="option"]').first();
+    }
+    await option.scrollIntoViewIfNeeded().catch(() => {});
+    await this.page.waitForTimeout(150);
+    const found = await this.pollUntil(() => option.isVisible({ timeout: 300 }));
+    if (!found) {
+      const err = new Error(`WORK_SECTION_NOT_FOUND: option matching "${label}" not visible in the Work Section list after polling`);
+      err.workSectionNotFound = true;
+      throw err;
+    }
+    const selectedLabel = (await option.innerText()).trim();
+    await option.click({ timeout: 1500 }).catch(() => option.click());
     // Multi-select combobox stays open after selection.
     // Click the toggle button again to close it.
     // DO NOT press Escape — the form's Escape handler navigates back to My Tasks.
@@ -112,6 +161,7 @@ class RFICreatePage extends BasePage {
       .waitFor({ state: 'hidden', timeout: 3000 })
       .catch(() => {});
     await this.page.waitForTimeout(100);
+    return selectedLabel;
   }
 
   async fillForm(data) {
@@ -148,16 +198,89 @@ class RFICreatePage extends BasePage {
 
     await pick(this.inspectionCheckpointDropdown, data.inspectionCheckpoint);
     await pick(this.inspectionChecklistDropdown,  data.inspectionChecklist);
-    await this.selectWorkSection();
+    // `data.workSection`, when given, pins the SAME Work Section across a
+    // whole dependency chain (see selectWorkSection()'s comment) — every
+    // existing caller leaves this unset, so behavior is unchanged (picks
+    // "whatever is first," same as before this returned a value at all).
+    return await this.selectWorkSection(data.workSection);
   }
 
   async clickProceed() {
     await this.proceedButton.waitFor({ state: 'visible' });
     await this.proceedButton.click();
+
     // "Answer all the questions" is the heading of the checklist panel on page 2.
     // It appears ONLY after a successful Proceed navigation, not during page-1 validation.
-    await this.page.locator('text=Answer all the questions')
-      .waitFor({ state: 'visible', timeout: 30000 });
+    //
+    // Confirmed live (2026-08-19, app owner): the Work Section dropdown can
+    // offer an option the backend then rejects with a "Validation Error: An
+    // RFI already exists for the workSections: <code>" toast instead of
+    // navigating to page 2 — app owner confirmed this is a known symptom of
+    // cookies not being fully cleared before login, and the fix is simply to
+    // retry via a fresh login, not to pick a different Work Section. Race
+    // the two outcomes so this fails fast and distinguishably (callers key
+    // off `err.staleWorkSection` to retry-via-relogin) instead of silently
+    // burning the full 30s timeout waiting for a navigation that was never
+    // going to happen.
+    const success = this.page.locator('text=Answer all the questions');
+    const staleWorkSectionError = this.page.getByText(/already exists for the workSections/i);
+
+    const winner = await Promise.race([
+      success.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'success').catch(() => 'timeout'),
+      staleWorkSectionError.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'stale').catch(() => 'timeout'),
+    ]);
+
+    if (winner === 'stale') {
+      const err = new Error('STALE_WORK_SECTION: backend rejected a Work Section the dropdown offered as available — retry via fresh login');
+      err.staleWorkSection = true;
+      throw err;
+    }
+
+    // Neither outcome showed up within 30s — re-check for real so a
+    // genuinely stuck page still throws Playwright's own clear timeout
+    // error (with its usual screenshot/error-context attachments).
+    await success.waitFor({ state: 'visible', timeout: 1000 });
+  }
+
+  // NEW, for the Activity Dependency chain spec only — clickProceed() above
+  // assumes the outcome is either success or the known "stale Work
+  // Section" backend glitch, and THROWS otherwise. Here a third, deliberately
+  // provoked outcome is the one under test: the app's real checkpoint-
+  // dependency validation toast. Its exact wording isn't hardcoded anywhere
+  // in this repo yet (confirmed via repo-wide search), so this never asserts
+  // on specific text — it just reports whether Proceed actually navigated,
+  // and if not, whatever toast text (if any) showed up, so the caller can
+  // log/assert on the real, live wording instead of a guessed one.
+  async clickProceedAndCheckOutcome() {
+    await this.proceedButton.waitFor({ state: 'visible', timeout: 10000 });
+    await this.proceedButton.click();
+
+    const success = this.page.locator('text=Answer all the questions');
+    // Broader than clickProceed()'s toast-only check — same selector
+    // LoginPage.js uses for its own error detection — since the exact
+    // presentation of a dependency-validation error (toast vs. inline
+    // alert) isn't confirmed yet.
+    const toast = this.page.locator('[data-scope="toast"], [role="alert"], [class*="error"]').first();
+
+    await Promise.race([
+      success.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {}),
+      toast.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {}),
+    ]);
+
+    if (await success.isVisible({ timeout: 500 }).catch(() => false)) {
+      return { proceeded: true, toastText: '' };
+    }
+
+    // Blocked (or nothing rendered yet) — poll for toast/error text; a
+    // toast can take a beat to paint its final text after the container
+    // mounts.
+    let toastText = '';
+    for (let i = 0; i < 40; i++) {
+      toastText = (await toast.innerText().catch(() => '')).trim();
+      if (toastText) break;
+      await this.page.waitForTimeout(300);
+    }
+    return { proceeded: false, toastText };
   }
 
   async clickSaveDraft() {

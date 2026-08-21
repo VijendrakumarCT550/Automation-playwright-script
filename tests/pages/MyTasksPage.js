@@ -62,9 +62,35 @@ class MyTasksPage extends BasePage {
     await this.page.waitForLoadState('networkidle');
   }
 
+  // Confirmed live (2026-08-19, user watching): right after certain SPA
+  // transitions — e.g. landing back on /my-tasks fresh off a draft-save +
+  // un-bounce sequence — this tile can look fully loaded but not yet be
+  // responsive to a click. Same "looks ready, isn't yet" quirk
+  // DashboardPage.goToMyTasks() already had to retry-click past for the
+  // sidebar nav link. Retry the click itself until the list page is
+  // verifiably reached (URL change), instead of trusting one click to
+  // have landed — a plain click + networkidle can silently "succeed"
+  // through this window (no request ever fires, so networkidle is
+  // trivially true) while the page never actually navigated.
   async clickPendingWithMe() {
+    const arrived = () => this.page.waitForURL(/\/my-tasks\/rfi\/list\/pending-with-me/, { timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+
+    const deadline = Date.now() + 60000;
+    do {
+      await this.pendingWithMeTile.click();
+      await this.page.waitForLoadState('networkidle');
+      if (await arrived()) return;
+      await this.page.waitForTimeout(1000);
+    } while (Date.now() < deadline);
+
+    // Out of retries — throw for real rather than silently returning to a
+    // caller that's still stuck on the tiles page (same principle as
+    // RFIListPage.openRowByCode's final real-timeout attempt).
     await this.pendingWithMeTile.click();
     await this.page.waitForLoadState('networkidle');
+    await this.page.waitForURL(/\/my-tasks\/rfi\/list\/pending-with-me/, { timeout: 15000 });
   }
 
   async clickPendingWithOthers() {
