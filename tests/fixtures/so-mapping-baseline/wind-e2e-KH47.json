@@ -1,0 +1,84 @@
+{
+  "profile": "wind-e2e",
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "projectType": "WIND",
+  "workLocation": "WTG-Khavda",
+  "workArea": "KH 47",
+  "targetServiceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD",
+  "packages": {
+    "Civil": [
+      {
+        "activity": "Stone Column Installation",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Plate Load Test",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Excavation",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Blanket Layer/GSB Layer",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Plum Concrete",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "PCC",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Bottom Anchor Flange",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Reinforcement Binding",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "WTG Foundation",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Top Flange Grouting",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Backfilling (Before Mesh)",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Earthing Mesh",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Backfilling (After Mesh)",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "DT",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "HT Foundation",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Burnt Oil Tank",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Fencing",
+        "serviceOrder": "5710014678 - ODHAV ENTERPRISE"
+      },
+      {
+        "activity": "Crane Pad",
+        "serviceOrder": "5710012742 - G P PROJECT"
+      }
+    ]
+  }
+}
