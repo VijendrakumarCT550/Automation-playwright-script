@@ -771,16 +771,34 @@ Struck through where recon answered them.
    `Stone Blanket Layer Checklist`. Sub-activity sets match the sheet exactly,
    7 vs 7, no difference in either direction. **Selection must therefore always
    be by (Sub-Activity, Checkpoint), never by checkpoint name alone.**
-5. **Is the `Optional? = Y` column real?** Still open — needs actually
-   submitting RFIs and observing whether a missing predecessor blocks. If every
-   wind checkpoint is genuinely optional there is no wind equivalent of
-   `29_rfi_activity_dependency.spec.js` to write.
+5. ~~Is the `Optional? = Y` column real?~~ **Answered: NO — it is an unfilled
+   default, not a business rule. Wind DOES enforce the preceding-checkpoint
+   dependency.** Measured by
+   `tests/specs/00_inspect_wind_dependency_enforcement.spec.js`: attempting
+   `A1.1.2` (Stone Column Work / "Inspection of Stone Column") while its
+   predecessor `A1.1.1` had never been created was **blocked**, with the real
+   toast:
+
+   > Validation Error
+   > Missing an RFI for Dependent Inspection Point: Pre-Activity Checkpoint of the Activity: 1. Stone Column Installation
+
+   Same message shape as solar's (`docs/rfi-activity-dependency-chain.md`) but
+   **without** solar's trailing "on the workSections X" clause, and note the
+   activity name carries its position prefix (`1. Stone Column Installation`).
+   So a wind counterpart to `29_rfi_activity_dependency.spec.js` IS writable —
+   and it must use the **two-Work-Areas** strategy, since there is only one Work
+   Section per Work Area and nothing spare to sacrifice for the
+   deliberately-blocked attempts.
 6. ~~What is a wind Work Section, given `Per WTG` granularity?~~ **Answered**:
    exactly one per Work Area, named after the Work Area. Wind therefore needs
    the two-Work-Areas dependency strategy.
 7. **Does the "selecting a Work Section permanently consumes it" bug apply to
-   wind?** Still open — deliberately not probed, since probing it costs the
-   only Work Section a Work Area has.
+   wind?** Strong indirect evidence that it does, not directly probed (probing
+   it costs the only Work Section a Work Area has). Stage 5 raised `A1.18.1` on
+   `KH 34`; on its next run the same chain-walk found `A1.18.1` no longer
+   raisable and moved on to `A1.18.2`. That is exactly the consumed-pair
+   behaviour, and it is why the stage is not idempotent and why the dependency
+   spec needs two Work Areas.
 8. **How is the multi-valued `A1.17.1` AND-dependency enforced and reported?**
    Still open. No solar precedent.
 9. ~~Which column feeds the Inspection Checklist dropdown, and is a code prefix

@@ -1,5 +1,5 @@
 const { test, expect } = require('../config/test-base');
-const { loginAsFlowUser } = require('../utils/helpers');
+const { loginAsFlowUser, stripLabelPrefix } = require('../utils/helpers');
 const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
 const { fillPageOne, getVisibleCodeFor } = require('../utils/rfi-dependency-flow');
 const { openFromPendingWithMe } = require('../utils/rfi-nav');
@@ -270,7 +270,9 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
       // prefix stripped and case-insensitively: the create form renders
       // "1. Crane Pad" / "1.1 Pre-Activity Work" and the review screen's
       // rendering of the same values is not assumed identical.
-      const strip = (s) => String(s == null ? '' : s).replace(/^\s*\d+(\.\d+)*\.?\s*/, '').trim().toLowerCase();
+      // stripLabelPrefix handles the inconsistent prefix formats ("1.2 OGL" vs
+      // "1. 2 Stone Column Work"); see its comment in helpers.js.
+      const strip = (s) => stripLabelPrefix(s).toLowerCase();
       const fields = await review.readAllFields().catch((err) => {
         console.log(`  (readAllFields failed, continuing to the approval: ${String(err.message || err).split('\n')[0]})`);
         return null;

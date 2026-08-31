@@ -1,0 +1,27 @@
+{
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "question": "Does wind enforce the preceding-checkpoint dependency?",
+  "target": {
+    "subPackage": "Stone Column",
+    "activity": "Stone Column Installation",
+    "subActivity": "Stone Column Work",
+    "checkpoint": "Inspection of Stone Column",
+    "checklist": "Stone Column Inspection Protocol for Vibro-Non Vibro Method",
+    "predecessor": "A1.1.1 Pre-Activity Checkpoint (never created)"
+  },
+  "loggedInAs": "CIWTGxglUser59",
+  "live": {
+    "subPackage": "Stone Column",
+    "activity": "1. Stone Column Installation",
+    "subActivity": "1. 2 Stone Column Work",
+    "checkpoint": "Inspection of Stone Column",
+    "checklists": [
+      "Stone Column Inspection Protocol for Vibro-Non Vibro Method"
+    ]
+  },
+  "outcome": {
+    "proceeded": false,
+    "toastText": "Validation Error\nMissing an RFI for Dependent Inspection Point: Pre-Activity Checkpoint of the Activity: 1. Stone Column Installation"
+  },
+  "verdict": "ENFORCED"
+}

@@ -180,6 +180,41 @@ async function loginAsFlowUser(page, email, password, { navigateToMyTasks = true
   return dashboard;
 }
 
+// Strips the position prefix the WIND RFI form puts on Activity and
+// Sub-Activity labels, so a label can be compared against the activity master
+// (tests/fixtures/wind-activity-checklist.json) or against a profile value.
+//
+// The prefix format is NOT consistent, which is why this lives in one place.
+// Confirmed live 2026-08-31, all from the same Work Location / Package:
+//   "1. Crane Pad"                -> "Crane Pad"
+//   "1.1 Pre-Activity Work"       -> "Pre-Activity Work"
+//   "1.2 OGL"                     -> "OGL"
+//   "1. 2 Stone Column Work"      -> "Stone Column Work"   <-- note the SPACE
+//   "1. 3 Post-Activity Work"     -> "Post-Activity Work"  <-- inside the prefix
+//   "11. Backfilling (After Mesh)"-> "Backfilling (After Mesh)"
+//   "Re-Verification Audit"       -> "Re-Verification Audit" (no prefix at all)
+//
+// Stone Column's sub-activities render as "1. 2 ..."/"1. 3 ..." while Crane
+// Pad's render as "1.1 ..."/"1.2 ...", so an expression that only handles
+// "<n>.<n>" silently leaves a stray digit on the front ("2 Stone Column Work")
+// and every name comparison then fails. Casing also differs from the activity
+// master (live "Boulder laying" vs sheet "Boulder Laying"), so callers should
+// compare case-insensitively too — see sameLabel below.
+//
+// Also worth knowing: the Sub-Activity dropdown is ordered LEXICOGRAPHICALLY by
+// that prefix, not by chain order — "1. 2", "1. 3", then "1.1" — so never rely
+// on dropdown position to mean sequence.
+function stripLabelPrefix(text) {
+  return String(text == null ? '' : text)
+    .replace(/^\s*\d+(\s*\.\s*\d+)*\s*\.?\s*/, '')
+    .trim();
+}
+
+// Prefix-insensitive, case-insensitive label comparison.
+function sameLabel(a, b) {
+  return stripLabelPrefix(a).toLowerCase() === stripLabelPrefix(b).toLowerCase();
+}
+
 async function waitAndClick(page, selector, timeout = 10000) {
   await page.waitForSelector(selector, { timeout });
   await page.click(selector);
@@ -221,4 +256,6 @@ module.exports = {
   loginAsUser,
   loginAsFlowUser,
   loginFreshRoleSession,
+  stripLabelPrefix,
+  sameLabel,
 };

@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const MyTasksPage = require('../pages/MyTasksPage');
 const RFICreatePage = require('../pages/RFICreatePage');
-const { loginAsFlowUser } = require('../utils/helpers');
+const { loginAsFlowUser, stripLabelPrefix } = require('../utils/helpers');
 const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
 const { WIND_E2E } = require('../config/projects');
 
@@ -38,15 +38,14 @@ const { WIND_E2E } = require('../config/projects');
 const OUT_DIR = path.join(__dirname, '..', 'fixtures', 'so-mapping-baseline');
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
-// The RFI form renders Activity and Sub-Activity with a numeric prefix
-// ("1. Crane Pad", "1.3 Boulder laying") while the activity master has neither
-// the prefix nor the same casing ("Crane Pad", "Boulder Laying"). Comparing raw
-// strings therefore matched nothing — the first run of this spec reported
-// "sheet says (0 rows)" for an activity that has five. Strip a leading
-// "<n>." / "<n>.<n>" and compare case-insensitively.
-function normalizeFormLabel(text) {
-  return String(text).replace(/^\s*\d+(\.\d+)*\.?\s*/, '').trim();
-}
+// The RFI form renders Activity and Sub-Activity with a position prefix
+// ("1. Crane Pad", "1.3 Boulder laying", and inconsistently "1. 2 Stone Column
+// Work") while the activity master has neither the prefix nor the same casing
+// ("Crane Pad", "Boulder Laying"). Comparing raw strings matched nothing — the
+// first run of this spec reported "sheet says (0 rows)" for an activity that has
+// five. Delegates to helpers.js's stripLabelPrefix, which is the single
+// canonical implementation and documents every prefix form seen live.
+const normalizeFormLabel = stripLabelPrefix;
 
 // Read straight off the extracted activity master so the comparison is against
 // the real sheet rather than a hand-copied list.
