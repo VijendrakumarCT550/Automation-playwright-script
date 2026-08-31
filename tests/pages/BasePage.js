@@ -367,11 +367,48 @@ class BasePage {
   // resolve against a temporarily-last-but-not-final element while the DOM
   // is still settling. The current page's own path is unique and stable
   // the instant we're actually on it, sidestepping that race entirely.
+  // MOBILE has no breadcrumb at all — the header renders a back chevron plus the
+  // code instead (confirmed live 2026-09-01: a wind RFI created at a phone
+  // viewport submitted fine and then died here, because
+  // `a[aria-current="page"]` simply does not exist). So fall back to reading the
+  // code out of the page itself.
+  //
+  // Read via textContent, NOT innerText: on mobile the header code is visually
+  // TRUNCATED with a CSS ellipsis ("RFI-WTG-Khavda-KH 52-CIV-30…"). CSS
+  // truncation does not change textContent, so the full string is still there —
+  // but innerText is rendering-aware and can give back the clipped form.
   async getVisibleCode() {
     const path = new URL(this.page.url()).pathname;
     const crumb = this.page.locator(`a[aria-current="page"][href="${path}"]`);
-    await crumb.waitFor({ state: 'visible', timeout: 10000 });
-    return (await crumb.innerText()).trim();
+
+    const gotCrumb = await crumb.waitFor({ state: 'visible', timeout: 10000 })
+      .then(() => true).catch(() => false);
+    if (gotCrumb) return (await crumb.innerText()).trim();
+
+    const fromHeader = await this.page.evaluate(() => {
+      // A record code looks like "RFI-<work location>-<work area>-<pkg>-<n>" or
+      // "NC-...". Work locations contain hyphens and wind work areas contain a
+      // SPACE, so the pattern has to allow both.
+      const rx = /^(RFI|NC)-[A-Za-z0-9][A-Za-z0-9 ._/-]*\d$/;
+      const seen = [];
+      for (const el of document.querySelectorAll('h1,h2,h3,h4,p,span,div,a,button')) {
+        if (el.children.length) continue;            // leaf nodes only
+        const t = (el.textContent || '').trim();     // NOT innerText — see above
+        if (t.length >= 10 && rx.test(t)) seen.push(t);
+      }
+      // Longest match wins: if any element does hold a clipped copy, the full
+      // one is longer.
+      seen.sort((a, b) => b.length - a.length);
+      return seen[0] || null;
+    });
+
+    if (fromHeader) return fromHeader;
+
+    throw new Error(
+      `Could not read the record's visible code. No breadcrumb matched ` +
+      `a[aria-current="page"][href="${path}"] (expected on mobile, which has no ` +
+      `breadcrumb) and no element's textContent looked like an RFI/NC code either.`
+    );
   }
 }
 

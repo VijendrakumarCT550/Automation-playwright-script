@@ -74,25 +74,56 @@ async function discardCreateForm(page) {
   if (!(await cancelBtn.isVisible({ timeout: 2000 }).catch(() => false))) return false;
 
   await cancelBtn.click();
-  await page.waitForTimeout(500);
 
-  // The confirmation popup is the half that actually releases the Work Section.
-  // Scope the button to the dialog so this cannot re-click the form's own
-  // "Cancel" underneath it.
-  const confirmPopup = page.locator('[role="dialog"], [data-scope="dialog"]').first();
-  if (await confirmPopup.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const confirmBtn = confirmPopup
-      .getByRole('button', { name: /^(yes|confirm|discard|ok)/i }).first();
-    if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await confirmBtn.click();
-    } else {
-      // Fall back to any affirmative-looking button in the dialog rather than
-      // leaving the popup open (which would block every later click).
-      await confirmPopup.getByRole('button').last().click().catch(() => {});
+  // Confirming this popup is the half that actually releases the Work Section,
+  // so it must not be missed. The real dialog (screenshot-confirmed) reads
+  // "Are you sure you want to Cancel RFI?" with "Yes" / "No" buttons.
+  //
+  // DO NOT locate it as `.first()` of a generic dialog selector: several dialog
+  // elements are open on this app at once (the mobile recon measured THREE), so
+  // .first() can resolve to an unrelated one, the Yes button is then not found
+  // inside it, and the popup is left open — which wedges the page and blocks
+  // every later click. That is exactly what happened live.
+  //
+  // Find the dialog by its OWN TEXT, and click "Yes" by exact accessible name so
+  // "No" can never match.
+  const yesButton = page.getByRole('button', { name: /^\s*yes\s*$/i }).first();
+  const confirmDialog = page.locator('[role="dialog"], [data-scope="dialog"]')
+    .filter({ hasText: /cancel\s*rfi/i }).first();
+
+  // Prefer the page-level Yes (unambiguous while this popup is up); fall back to
+  // a dialog-scoped affirmative if the app ever renames it.
+  if (await yesButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await yesButton.click();
+  } else if (await confirmDialog.isVisible({ timeout: 2000 }).catch(() => false)) {
+    const alt = confirmDialog
+      .getByRole('button', { name: /^(yes|confirm|discard|ok|proceed)\b/i }).first();
+    if (await alt.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await alt.click();
     }
-    await page.waitForTimeout(500);
-    await confirmPopup.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
   }
+
+  // Verify the popup actually went away. Leaving it open is worse than not
+  // having tried: its backdrop intercepts every subsequent click, and the caller
+  // would fail somewhere unrelated with no hint why.
+  const stillOpen = await confirmDialog.isVisible({ timeout: 1000 }).catch(() => false)
+    || await yesButton.isVisible({ timeout: 500 }).catch(() => false);
+  if (stillOpen) {
+    // Last resort: Escape, then report honestly rather than pretending success.
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(300);
+    const wedged = await yesButton.isVisible({ timeout: 500 }).catch(() => false);
+    if (wedged) {
+      throw new Error(
+        'The "Are you sure you want to Cancel RFI?" popup could not be confirmed — ' +
+        'the page is wedged behind its backdrop, and the Work Section has NOT been ' +
+        'released. Confirming this popup is what frees the section, so this must not ' +
+        'be swallowed.'
+      );
+    }
+  }
+
+  await page.waitForTimeout(300);
   return true;
 }
 

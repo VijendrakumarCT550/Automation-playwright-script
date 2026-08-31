@@ -56,6 +56,33 @@ class RFIListPage extends BasePage {
     });
   }
 
+  // Every code currently rendered in the grid's column 1, after scrolling to the
+  // bottom (newly touched rows sort there — see scrollToRowByCode).
+  //
+  // Added for the review-queue drain utility, which has to act on whatever is
+  // pending WITHOUT knowing the codes in advance — the normal flow always knows
+  // the code it just created, but an orphaned RFI (created by a run that died
+  // before capturing its code) can only be found by enumeration.
+  async listRowCodes() {
+    await this.waitForGrid();
+    // Same bottom-scroll as scrollToRowByCode: react-data-grid virtualizes rows,
+    // so codes further down do not exist in the DOM until scrolled into range.
+    for (let i = 0; i < 30; i++) {
+      const atEnd = await this.grid.evaluate((el) => {
+        const before = el.scrollTop;
+        el.scrollTop = el.scrollHeight;
+        return el.scrollTop === before;
+      });
+      await this.page.waitForTimeout(300);
+      if (atEnd) break;
+    }
+    const cells = this.grid.locator('[role="gridcell"][aria-colindex="1"]');
+    const texts = await cells.allInnerTexts();
+    return texts
+      .map((t) => t.trim())
+      .filter((t) => /^(RFI|NC)-/.test(t));
+  }
+
   // Rows survive horizontal scroll unchanged — only their cells virtualize
   // in/out — so aria-rowindex is a stable handle for re-finding the same row
   // once its ID column (used to locate it originally) scrolls out of view.
