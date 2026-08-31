@@ -44,9 +44,12 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
     }
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
+    const areas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
+      ? profile.workAreas.filter(Boolean)
+      : [profile.primaryWorkArea].filter(Boolean);
     console.log(
-      `\n=== Smoke WAM: profile "${profile.key}" -> ` +
-      `${profile.workLocations[0]} / ${profile.primaryWorkArea} ===`
+      `\n=== Smoke WAM: profile "${profile.key}" -> ${profile.workLocations[0]} / ` +
+      `${areas.length} work area(s): ${areas.join(', ')} ===`
     );
     for (const roleKey of ROLE_ORDER) {
       console.log(`    ${roleKey} (${users[roleKey].role}): ${users[roleKey].name}`);

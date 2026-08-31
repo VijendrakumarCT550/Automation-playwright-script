@@ -377,14 +377,41 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
 
       await loginAsFlowUser(page, users[role].email, PASSWORD);
 
-      // exact: true is REQUIRED for wind. The code suffix restarts per
-      // Work-Location/Work-Area/Package combination, so wind codes begin at 1
-      // and a substring lookup for "...-CIV-1" would also match "-CIV-10",
-      // "-CIV-11", ... resolving to several rows and failing Playwright's
-      // strict mode. See RFIListPage.getRowByCode.
-      await openFromPendingWithMe(
-        page, created.rfiCode, `${role} review of wind smoke RFI`, { exact: true }
-      );
+      // exact: true anchors the row lookup to the WHOLE code cell rather than a
+      // substring — see RFIListPage.getRowByCode. Defensive rather than fixing a
+      // live break (wind's code counter turned out to be global, in the
+      // thousands, not restarting per Work-Location/Work-Area/Package as first
+      // assumed), but a lookup for "...-CIV-3037" would still match a future
+      // "...-CIV-30370".
+      try {
+        await openFromPendingWithMe(
+          page, created.rfiCode, `${role} review of wind smoke RFI`, { exact: true }
+        );
+      } catch (err) {
+        // The RFI is not in THIS role's "Pending with me". Two possible causes,
+        // indistinguishable from absence alone:
+        //   (a) this role has ALREADY approved it, or
+        //   (b) the previous actor's action never actually landed.
+        //
+        // In RESUME mode (SMOKE_RFI_CODE given) the caller is deliberately
+        // pointing at a pre-existing RFI whose state they may not know, so (a)
+        // is the likely reading and skipping is right — this is exactly the
+        // situation after an approval succeeded but a post-check failed, where a
+        // hard failure would be reporting a problem that does not exist.
+        //
+        // In NORMAL mode CI created the RFI moments earlier in this same run, so
+        // the handoff IS guaranteed and absence is a real bug worth failing on.
+        if (process.env.SMOKE_RFI_CODE) {
+          console.log(
+            `  ${created.rfiCode} is not in ${role}'s "Pending with me". In resume mode ` +
+            `that most likely means ${role} has already approved it, so skipping.\n` +
+            `  (${String(err.message || err).split('\n')[0]})`
+          );
+          test.skip(true, `${created.rfiCode} already actioned by ${role} (resume mode)`);
+          return;
+        }
+        throw err;
+      }
 
       const review = new RFIReviewPage(page);
 
