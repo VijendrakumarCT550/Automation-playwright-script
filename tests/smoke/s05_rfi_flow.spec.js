@@ -1,7 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser, stripLabelPrefix } = require('../utils/helpers');
 const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
-const { fillPageOne, getVisibleCodeFor } = require('../utils/rfi-dependency-flow');
+const { fillPageOne, getVisibleCodeFor, discardCreateForm } = require('../utils/rfi-dependency-flow');
 const { openFromPendingWithMe } = require('../utils/rfi-nav');
 const RFIChecklistPage = require('../pages/RFIChecklistPage');
 const RFIReviewPage = require('../pages/RFIReviewPage');
@@ -253,6 +253,21 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
         const toast = String(outcome.toastText || '');
         console.log(`      BLOCKED: "${toast}"`);
         attempts.push({ workArea, code: cp.code, stage: 'proceed', blocked: true, toast });
+
+        // RELEASE THE WORK SECTION IMMEDIATELY, before doing anything else.
+        //
+        // App owner: navigating away from a filled create form AUTOSAVES a draft
+        // and permanently consumes the Work Section it holds — but clicking
+        // Cancel AND confirming the "are you sure you want to cancel RFI?" popup
+        // RELEASES it. So a blocked attempt only costs a Work Section if the form
+        // is abandoned sloppily. Discarding it properly right here is what makes
+        // the walk non-destructive.
+        //
+        // Done at the point of the block rather than relying on the next
+        // iteration's resetToMyTasks, because the walk may `break` out entirely
+        // and never reach another iteration.
+        const released = await discardCreateForm(page).catch(() => false);
+        console.log(`      work section released via Cancel+confirm: ${released}`);
 
         // THE TOAST REASON DECIDES WHETHER TO WALK ON OR ABANDON THIS AREA, and
         // getting this wrong is expensive. Three distinct messages, all captured

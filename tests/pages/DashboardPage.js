@@ -294,10 +294,19 @@ class DashboardPage extends BasePage {
     // path a pointless click.
     //
     // Guarded on the URL as well as the content, deliberately: arrived() matches
-    // the TEXT "Pending with me"/"Pending with others", which could in principle
-    // appear in the dashboard's own Detail Records grid. Requiring a /my-tasks
-    // URL too means this can only short-circuit when we really are there.
-    if (/\/my-tasks/i.test(this.page.url()) && await arrived()) return;
+    // the TEXT "Pending with me"/"Pending with others", which also appears on
+    // sub-pages of My Tasks and could appear in the dashboard's Detail Records
+    // grid.
+    //
+    // The URL test must match ONLY the My Tasks tiles page — note the anchoring.
+    // A loose /\/my-tasks/ also matches sub-routes like
+    // "/my-tasks/rfi/list/pending-with-me", and that caused a real failure:
+    // after EE approved an RFI the app left the browser on that LIST route, the
+    // loose test passed, the list's own "Pending with me" heading satisfied
+    // arrived(), so goToMyTasks returned early while NOT on the tiles page — and
+    // the caller's wait for the Pending-with-me TILE then timed out.
+    const onMyTasksTilesPage = /\/my-tasks\/?(?:[?#]|$)/i.test(this.page.url());
+    if (onMyTasksTilesPage && await arrived()) return;
 
     const clickMyTasks = async () => {
       // Desktop sidebar link when present — byte-identical to the original

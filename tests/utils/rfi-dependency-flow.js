@@ -50,39 +50,63 @@ async function withCIRetryOnMissingWorkSection(page, action) {
   }
 }
 
-// Same defensive draft-reset pattern as createNewRfi() in
-// rfi-flow-turns.js — cancels any auto-resumed draft before starting a
-// fresh page-1 fill. Needed here MORE than there: every "expect blocked"
-// attempt in this spec deliberately leaves a filled-but-never-submitted
-// draft behind, which must be discarded before the next step reuses the
-// same session for a different checkpoint.
+// Discards an OPEN RFI create form the way the app actually wants: click Cancel
+// and then confirm the "are you sure you want to cancel RFI?" popup. Per the app
+// owner, doing BOTH is what RELEASES the Work Section back for reuse.
 //
-// App owner confirmed live: clicking Cancel alone isn't enough — it opens
-// a confirmation popup, and unless THAT is also confirmed, the draft
-// (and whichever Work Section it's holding) never actually gets
-// discarded. This suite's design already avoids depending on that Work
-// Section being freed again (every blocked-attempt uses a throwaway
-// Work Section it never needs back — see runDependencyChainForActivity's
-// header comment), but leaving orphaned drafts behind is still bad
-// hygiene, so confirm the popup anyway.
+// Returns true if it actually discarded a form.
+//
+// THIS ORDER MATTERS AND USED TO BE WRONG. resetToMyTasks below previously did
+//   page.goto('/my-tasks'); if (!url.includes('/create')) break;
+// i.e. it NAVIGATED AWAY FIRST and only clicked Cancel if the navigation had
+// failed to leave the form. In the normal case it therefore abandoned a filled
+// form by navigating, which AUTOSAVES the draft and permanently consumes the
+// Work Section that form was holding (app owner, confirmed by watching a run).
+// The solar dependency specs survived that because they deliberately use
+// throwaway Work Sections they never need back; on wind, where a Work Area has
+// exactly ONE Work Section, it destroys the area.
+//
+// So: discard while still ON the form, THEN navigate.
+async function discardCreateForm(page) {
+  if (!page.url().includes('/create')) return false;
+
+  const cancelBtn = page.getByRole('button', { name: 'Cancel' });
+  if (!(await cancelBtn.isVisible({ timeout: 2000 }).catch(() => false))) return false;
+
+  await cancelBtn.click();
+  await page.waitForTimeout(500);
+
+  // The confirmation popup is the half that actually releases the Work Section.
+  // Scope the button to the dialog so this cannot re-click the form's own
+  // "Cancel" underneath it.
+  const confirmPopup = page.locator('[role="dialog"], [data-scope="dialog"]').first();
+  if (await confirmPopup.isVisible({ timeout: 3000 }).catch(() => false)) {
+    const confirmBtn = confirmPopup
+      .getByRole('button', { name: /^(yes|confirm|discard|ok)/i }).first();
+    if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await confirmBtn.click();
+    } else {
+      // Fall back to any affirmative-looking button in the dialog rather than
+      // leaving the popup open (which would block every later click).
+      await confirmPopup.getByRole('button').last().click().catch(() => {});
+    }
+    await page.waitForTimeout(500);
+    await confirmPopup.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  }
+  return true;
+}
+
 async function resetToMyTasks(page) {
+  // Discard FIRST, while the form is still open — see discardCreateForm.
+  await discardCreateForm(page).catch(() => {});
+
   for (let attempt = 0; attempt < 5; attempt++) {
     await page.goto(`${process.env.BASE_URL}/my-tasks`);
     await page.waitForTimeout(300);
     if (!page.url().includes('/create')) break;
-    const cancelBtn = page.getByRole('button', { name: 'Cancel' });
-    if (await cancelBtn.isVisible({ timeout: 500 }).catch(() => false)) {
-      await cancelBtn.click();
-      await page.waitForTimeout(300);
-      const confirmPopup = page.locator('[role="dialog"], [data-scope="dialog"]').first();
-      if (await confirmPopup.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const confirmBtn = confirmPopup.getByRole('button', { name: /yes|confirm|discard|cancel/i }).first();
-        if (await confirmBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await confirmBtn.click();
-          await page.waitForTimeout(300);
-        }
-      }
-    }
+    // Still on a create form after navigating (the app can re-open an autosaved
+    // draft) — discard that one too, then try again.
+    if (!(await discardCreateForm(page).catch(() => false))) break;
   }
 }
 
@@ -341,6 +365,7 @@ async function runDependencyChainForScarceWorkSectionActivity(page, activityChai
 
 module.exports = {
   resetToMyTasks,
+  discardCreateForm,
   fillPageOne,
   attemptCheckpoint,
   createAndSubmitCheckpoint,
