@@ -73,9 +73,23 @@ test.describe.configure({ mode: 'serial' });
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
 // Shared across the serial tests: what CI created, for EE and QI to act on.
-const created = { rfiId: null, rfiCode: null, checkpoint: null, observationCount: null };
+//
+// Seeded from SMOKE_RFI_CODE at MODULE scope, not inside the CI test, so that
+// running a subset (e.g. `--grep "QI approves"`) still has the code available
+// even though the CI test never executes.
+const created = {
+  rfiId: null,
+  rfiCode: process.env.SMOKE_RFI_CODE || null,
+  checkpoint: process.env.SMOKE_RFI_CODE ? { code: '(pre-existing)', subActivity: '(pre-existing)' } : null,
+  observationCount: null,
+};
 
-test.describe('Smoke stage 5 - RFI flow (CI creates, EE approves, QI approves)', () => {
+// Describe title deliberately avoids the words "CI"/"EE"/"QI approves": the
+// per-role tests below are generated from one template, and a describe title
+// containing those phrases makes `--grep "QI approves"` match EVERY test in the
+// file (grep tests the full title path, describe included), which silently runs
+// the roles you were trying to exclude.
+test.describe('Smoke stage 5 - RFI flow end to end', () => {
   let profile, users;
 
   test.beforeAll(async ({ profile: p }) => {
@@ -122,9 +136,26 @@ test.describe('Smoke stage 5 - RFI flow (CI creates, EE approves, QI approves)',
   });
 
   test('CI creates and submits a wind RFI on the next free checkpoint', async ({ page }) => {
-    // Five PWA logins across this file at up to ~6 minutes each, plus form and
+    // Three PWA logins across this file at up to ~6 minutes each, plus form and
     // grid work — the config's 10-minute default is not enough.
     test.setTimeout(25 * 60 * 1000);
+
+    // SMOKE_RFI_CODE lets this stage act on an RFI that ALREADY exists and is
+    // pending with EE, skipping creation entirely.
+    //
+    // This exists because creation is the expensive, irreversible half: each
+    // run permanently consumes one of only ~5 (checkpoint, "KH 34") pairs. When
+    // iterating on the EE/QI review steps — which is where the fiddly UI work
+    // is — re-creating an RFI every attempt would exhaust the activity in a
+    // handful of debug cycles for no benefit.
+    if (process.env.SMOKE_RFI_CODE) {
+      console.log(
+        `\n  >>> SMOKE_RFI_CODE set — skipping creation and reviewing ` +
+        `${created.rfiCode} instead. No checkpoint is consumed.\n`
+      );
+      test.skip(true, 'SMOKE_RFI_CODE supplied; reusing an existing RFI');
+      return;
+    }
 
     await loginAsFlowUser(page, users.CI.email, PASSWORD);
 
@@ -258,12 +289,51 @@ test.describe('Smoke stage 5 - RFI flow (CI creates, EE approves, QI approves)',
         }
       }
 
-      const toastText = await review.approve();
-      console.log(`  ${role} approve toast: "${toastText}"`);
+      // expandAllChecklist() BEFORE approve() — this is the established order
+      // in rfi-dependency-flow.js's approveAsRole, not decoration.
+      await review.expandAllChecklist();
+
+      // RFIReviewPage.approve() returns NOTHING. It clicks Submit, waits for the
+      // confirm popup to appear (10s) and waits for it to close — so it throws
+      // if the approval does not go through, and that is its assertion. An
+      // earlier version of this spec expected a toast string back and failed on
+      // `undefined` AFTER the approval had already succeeded.
+      await review.approve();
+      console.log(`  ${role} approval submitted and the confirm popup closed`);
+
+      // Positive confirmation that the approval actually moved the RFI on:
+      // it must no longer sit in THIS role's "Pending with me". For EE the RFI
+      // moves to QI; for QI it leaves the review queue entirely.
+      const stillPending = await isStillPendingWithMe(page, created.rfiCode);
       expect(
-        toastText,
-        `${role}'s approval should report success (got "${toastText}")`
-      ).toMatch(/success|approved/i);
+        stillPending,
+        `After ${role} approved, ${created.rfiCode} should no longer be in ${role}'s "Pending with me" list`
+      ).toBe(false);
+      console.log(`  ${role}: confirmed ${created.rfiCode} has left "Pending with me"\n`);
     });
   }
 });
+
+// Re-checks the current role's "Pending with me" grid for a code. Uses the same
+// exact-match lookup as the navigation above, for the same reason.
+async function isStillPendingWithMe(page, rfiCode) {
+  const DashboardPage = require('../pages/DashboardPage');
+  const MyTasksPage = require('../pages/MyTasksPage');
+  const RFIListPage = require('../pages/RFIListPage');
+
+  const dashboard = new DashboardPage(page);
+  await dashboard.closeAnyOpenDialog();
+  await dashboard.dismissToastIfPresent();
+  await dashboard.goToMyTasks();
+
+  const myTasks = new MyTasksPage(page);
+  await myTasks.pendingWithMeTile.waitFor({ state: 'visible', timeout: 30000 });
+  await myTasks.clickPendingWithMe();
+
+  const list = new RFIListPage(page);
+  await list.waitForGrid();
+  // scrollToRowByCode scrolls to the bottom looking for it — newly touched rows
+  // sort there — and returns a zero-count locator if it genuinely isn't present.
+  const row = await list.scrollToRowByCode(rfiCode, { exact: true });
+  return (await row.count()) > 0;
+}
