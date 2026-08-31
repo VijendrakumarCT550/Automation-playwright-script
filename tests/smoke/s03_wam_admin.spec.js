@@ -59,86 +59,86 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
   });
 
   for (const roleKey of ROLE_ORDER) {
-    test(`assign the ${roleKey} user to the work area`, async () => {
+    test(`assign the ${roleKey} user to every work area`, async () => {
       const user = users[roleKey];
-      // Iterates profile.workAreas for the same reason s02 does: wind has one
-      // Work Section per Work Area, so the checkpoint-dependency stage will
-      // need a second (throwaway + real) area, and a user must be WAM'd onto
-      // an area before they can see it at all — confirmed live, the WTG CI's
-      // Work Area dropdown offered exactly the one area it was WAM'd onto.
-      // The list currently holds one entry, so this is behaviourally identical
-      // to before.
       const workAreas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
         ? profile.workAreas.filter(Boolean)
         : [profile.primaryWorkArea].filter(Boolean);
       expect(workAreas.length, `Profile "${profile.key}" has no work areas set`).toBeGreaterThan(0);
 
+      // ONE dialog, ALL work area rows, ONE Submit.
+      //
+      // The work areas are ROWS inside a single WAM dialog, so assigning several
+      // needs no more dialogs than assigning one — which is exactly how
+      // 07_wam_ci.spec.js has always done solar (ten BL0x rows, then a single
+      // clickSubmit). An earlier version of this spec opened a fresh dialog,
+      // submitted, closed, reopened and re-verified PER work area, which for
+      // 4 roles x 2 areas meant 8 full dialog cycles instead of 4 — double the
+      // work for no extra coverage.
+      const wam = new WAMPage(page);
+      const filters = {
+        role: user.role,
+        cluster: profile.cluster,
+        site: profile.site,
+        workLocation: profile.workLocations[0],
+        package: profile.packages[0],
+        // Precise SO string first, vendor name as fallback — the dialog's
+        // rendering of this field isn't confirmed, and BAUER has five SOs.
+        serviceOrder: user.userType === 'VENDOR'
+          ? [profile.vendor.serviceOrder, profile.vendor.name]
+          : null,
+      };
+
+      await wam.goto(dashboard);
+      await wam.openAddDetails();
+      await wam.fillAssignmentFilters(filters);
+
+      // Only change a row if it isn't already this user — the same
+      // leave-it-alone rule the existing WAM specs use, so a re-run is a no-op
+      // rather than churn. Tracked across all rows so the expected Submit toast
+      // can be asserted precisely: "Assigned successfully" only if something
+      // actually changed, otherwise "No changes to save" is equally valid.
+      let anyChanged = false;
       for (const workArea of workAreas) {
-        await assignOneWorkArea({ user, roleKey, workArea });
+        const changed = await wam.assignUserIfNeeded(workArea, user.name);
+        anyChanged = anyChanged || changed;
+        console.log(`  ${roleKey} @ ${workArea}: changed=${changed}`);
       }
+
+      // Every row must show the user BEFORE submitting, so a silent
+      // assign-failure is caught here rather than being blamed on the submit.
+      for (const workArea of workAreas) {
+        await expect(
+          wam.getWorkAreaRow(workArea).locator('[role="combobox"]'),
+          `${user.name} should be selected on row ${workArea} before Submit`
+        ).toContainText(user.name);
+      }
+
+      const toastText = await wam.clickSubmit();
+      console.log(`  ${roleKey}: anyChanged=${anyChanged}, toast="${toastText}"`);
+      expect(
+        toastText,
+        `Submit should report either a successful assignment or no-change for ${user.name}`
+      ).toMatch(anyChanged ? /Assigned successfully/i : /Assigned successfully|No changes to save/i);
+
+      // Submit resets the dialog's fields but does NOT close it — close and
+      // reopen from scratch so this confirms server-side persistence rather than
+      // still-populated front-end form state (same reasoning as
+      // 07_wam_ci.spec.js). Once for all rows, not once per row.
+      await wam.closeDialog();
+      await wam.openAddDetails();
+      await wam.fillAssignmentFilters(filters);
+
+      for (const workArea of workAreas) {
+        const persisted = await wam.getWorkAreaUserValue(workArea);
+        expect(
+          persisted,
+          `${user.role} "${user.name}" should still be assigned to ${workArea} after reopening the dialog`
+        ).toContain(user.name);
+      }
+      console.log(`  ${roleKey}: confirmed on ${workAreas.length} work area(s) after reopen`);
+
+      await wam.closeDialog();
     });
-  }
-
-  // Extracted so the per-work-area body reads identically whether the profile
-  // lists one work area or several.
-  async function assignOneWorkArea({ user, roleKey, workArea }) {
-    const wam = new WAMPage(page);
-
-    await wam.goto(dashboard);
-    await wam.openAddDetails();
-
-    await wam.fillAssignmentFilters({
-      role: user.role,
-      cluster: profile.cluster,
-      site: profile.site,
-      workLocation: profile.workLocations[0],
-      package: profile.packages[0],
-      // Precise SO string first, vendor name as fallback — the dialog's
-      // rendering of this field isn't confirmed, and BAUER has five SOs.
-      serviceOrder: user.userType === 'VENDOR'
-        ? [profile.vendor.serviceOrder, profile.vendor.name]
-        : null,
-    });
-
-    // Only change the row if it isn't already this user — same
-    // leave-it-alone rule the existing WAM specs use, so a re-run is a
-    // no-op rather than a churn.
-    const changed = await wam.assignUserIfNeeded(workArea, user.name);
-
-    await expect(
-      wam.getWorkAreaRow(workArea).locator('[role="combobox"]')
-    ).toContainText(user.name);
-
-    const toastText = await wam.clickSubmit();
-    console.log(`  ${roleKey}: changed=${changed}, toast="${toastText}"`);
-    expect(
-      toastText,
-      `Submit should report either a successful assignment or no-change for ${user.name}`
-    ).toMatch(changed ? /Assigned successfully/i : /Assigned successfully|No changes to save/i);
-
-    // Submit resets the dialog's fields but does NOT close it — close and
-    // reopen from scratch so this confirms server-side persistence rather
-    // than still-populated front-end form state (same reasoning as
-    // 07_wam_ci.spec.js).
-    await wam.closeDialog();
-    await wam.openAddDetails();
-    await wam.fillAssignmentFilters({
-      role: user.role,
-      cluster: profile.cluster,
-      site: profile.site,
-      workLocation: profile.workLocations[0],
-      package: profile.packages[0],
-      serviceOrder: user.userType === 'VENDOR'
-        ? [profile.vendor.serviceOrder, profile.vendor.name]
-        : null,
-    });
-
-    const persisted = await wam.getWorkAreaUserValue(workArea);
-    expect(
-      persisted,
-      `${user.role} "${user.name}" should still be assigned to ${workArea} after reopening the dialog`
-    ).toContain(user.name);
-
-    await wam.closeDialog();
   }
 });

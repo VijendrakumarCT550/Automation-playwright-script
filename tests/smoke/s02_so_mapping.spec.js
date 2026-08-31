@@ -78,23 +78,36 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
     const so = new SOMappingPage(page);
     await so.goto(dashboard);
 
+    // ---- Phase 1: capture each work area's pre-change state, READ-ONLY ----
+    //
+    // Done per area because that is the only way to know what EACH area held
+    // before it was overwritten — with several areas selected at once the
+    // activity row shows the union, not the individual values. This phase never
+    // mutates anything, so it is cheap: one cascade and one row read per area,
+    // no dropdown selections.
     for (const workArea of workAreas) {
-      console.log(`\n\n########## Work Area: ${workLocation} / ${workArea} ##########`);
-      await mapOneWorkArea({ so, workLocation, workArea, serviceOrder });
+      console.log(`\n########## baseline: ${workLocation} / ${workArea} ##########`);
+      await captureBaseline({ so, workLocation, workArea, serviceOrder });
     }
+
+    // ---- Phase 2: map ALL work areas in ONE pass ----
+    //
+    // Work Area is a multi-select, so every named area can be selected together
+    // and the Service Order set once per activity for all of them — which is how
+    // 05_so_mapping.spec.js has always done solar (ten BL0x areas in a single
+    // pass). Mapping per area instead would repeat the expensive part (one
+    // dropdown open + select per activity, ~16 per package) once per area for no
+    // benefit.
+    console.log(`\n########## mapping ${workAreas.length} work area(s) in one pass: ${workAreas.join(', ')} ##########`);
+    await mapAllWorkAreas({ so, workLocation, workAreas, serviceOrder });
   });
 
-  // Extracted so the per-work-area body reads the same whether the profile
-  // lists one area or several.
-  async function mapOneWorkArea({ so, workLocation, workArea, serviceOrder }) {
-    // Reload before each work area, and this is NOT belt-and-braces.
-    //
-    // Work Area is a MULTI-select, and selectWorkAreas now (correctly) skips
-    // options that are already checked. So without a reset, the second work area
-    // would be ADDED to the first rather than replacing it — both selected at
-    // once — and the activity rows, the baseline and the verification would all
-    // silently be about the union of two areas instead of the one named. A fresh
-    // page load is the simplest way to guarantee an empty multi-select.
+  // READ-ONLY. Records what one work area currently holds, per package.
+  async function captureBaseline({ so, workLocation, workArea, serviceOrder }) {
+    // Reload first: Work Area is a MULTI-select and selectWorkAreas correctly
+    // skips already-checked options, so without a reset the next area would be
+    // ADDED to the previous one and this baseline would describe the union
+    // instead of the area it names.
     await page.goto(`${process.env.BASE_URL}/so-mapping`);
     await page.waitForLoadState('networkidle');
     await so.waitForLoad();
@@ -107,26 +120,26 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
       targetServiceOrder: serviceOrder,
       packages: {},
     };
-    const summary = {};
 
     fs.mkdirSync(BASELINE_DIR, { recursive: true });
     const baselineFile = path.join(
       BASELINE_DIR, `${profile.key}-${workArea.replace(/\s+/g, '')}.json`
     );
-    // Flushed after EVERY package, before that package is mutated — not once
-    // at the end. Learned the hard way: the first run of this spec failed on
-    // the second package, after Civil had already been fully remapped, and
-    // because the write was after the loop NO baseline was saved for the
-    // package it had already changed. A baseline that only exists on success
-    // is not a baseline.
+    // Flushed after EVERY package rather than once at the end. Learned the hard
+    // way: an early run of this spec died on the second package after the first
+    // had already been remapped, and because the write came after the loop NO
+    // baseline existed for the package it had already changed. A baseline that
+    // only exists on success is not a baseline. (Now that capture is a separate
+    // read-only phase this is less critical, but a per-package flush still costs
+    // nothing and keeps the guarantee.)
     const flushBaseline = () =>
       fs.writeFileSync(baselineFile, JSON.stringify(baseline, null, 2));
 
-    // Run the filter cascade ONCE, for the first package. Subsequent packages
-    // switch only the Package dropdown (so.selectPackage) — re-running the
-    // whole cascade re-clicks the already-selected Work Area in its
-    // multi-select and TOGGLES IT OFF, after which the page renders zero
-    // activity rows. Confirmed live; see SOMappingPage.selectWorkAreas.
+    // Cascade ONCE, for the first package. Later packages switch only the
+    // Package dropdown (so.selectPackage) — re-running the whole cascade
+    // re-clicks the already-selected Work Area in its multi-select and TOGGLES
+    // IT OFF, after which the page renders zero activity rows. Confirmed live;
+    // see SOMappingPage.selectWorkAreas.
     await so.selectMappingFilters({
       cluster: profile.cluster,
       site: profile.site,
@@ -149,40 +162,81 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
         `Package "${pkg}" rendered no activity rows for ${workLocation} / ${workArea}`
       ).toBeGreaterThan(0);
 
-      console.log(`\n  --- ${pkg}: ${before.length} activities, current state ---`);
+      console.log(`  ${pkg}: ${before.length} activities`);
       for (const r of before) console.log(`    ${r.name}  ->  ${r.currentServiceOrder}`);
-
-      const result = await so.selectServiceOrderForAllActivities(serviceOrder);
-      summary[pkg] = result;
-
-      console.log(`  --- ${pkg}: remapped ${result.changed.length}, already correct ${result.alreadySet.length} ---`);
-      for (const c of result.changed) console.log(`    ${c.name}: "${c.from}" -> "${c.to}"`);
-
-      await so.clickSave();
     }
 
-    console.log(`\n  [baseline saved] ${path.relative(path.join(__dirname, '..', '..'), baselineFile)}`);
+    console.log(`  [baseline saved] ${path.relative(path.join(__dirname, '..', '..'), baselineFile)}`);
+  }
 
-    // ---- Verify persistence by re-opening each package fresh ----
-    // Each Service Order selection auto-saves via its own POST (see
-    // SOMappingPage.selectServiceOrder's comment); Save is clicked because
-    // that is the real workflow, but the persistence guarantee comes from
-    // re-reading, not from the button.
+  // MUTATES. Selects EVERY named work area at once and sets the Service Order
+  // once per activity, for all of them together.
+  async function mapAllWorkAreas({ so, workLocation, workAreas, serviceOrder }) {
     await page.goto(`${process.env.BASE_URL}/so-mapping`);
+    await page.waitForLoadState('networkidle');
     await so.waitForLoad();
 
-    // Same cascade-once-then-switch-package rule as above: after the reload
-    // nothing is selected, so the first call is a fresh selection and every
-    // later package only swaps the Package dropdown.
+    // All areas in one multi-select, exactly as 05_so_mapping.spec.js does for
+    // solar's ten BL0x areas.
     await so.selectMappingFilters({
       cluster: profile.cluster,
       site: profile.site,
       projectType: profile.projectType,
       workLocation,
-      workAreas: [workArea],
+      workAreas,
       package: profile.packages[0],
     });
 
+    for (const [i, pkg] of profile.packages.entries()) {
+      if (i > 0) await so.selectPackage(pkg);
+
+      const before = await so.listActivityRows();
+      expect(
+        before.length,
+        `Package "${pkg}" rendered no activity rows for ${workLocation} / ${workAreas.join(' + ')}`
+      ).toBeGreaterThan(0);
+
+      // With several areas selected, an activity's combobox reflects the UNION
+      // of their values — the app even has a "Multiple SOs" option for that
+      // state — so a row only reads as already-correct when EVERY selected area
+      // already holds the target. That makes the existing skip logic behave
+      // correctly here without special-casing: mixed rows don't match the target
+      // string and get mapped, uniform-and-correct rows are skipped.
+      const result = await so.selectServiceOrderForAllActivities(serviceOrder);
+      console.log(
+        `  ${pkg}: remapped ${result.changed.length}, already correct ${result.alreadySet.length} ` +
+        `(across ${workAreas.length} work area(s))`
+      );
+      for (const c of result.changed) console.log(`    ${c.name}: "${c.from}" -> "${c.to}"`);
+
+      await so.clickSave();
+    }
+
+    // ---- Verify persistence by re-opening fresh ----
+    // Each Service Order selection auto-saves via its own POST (see
+    // SOMappingPage.selectServiceOrder's comment); Save is clicked because that
+    // is the real workflow, but the persistence guarantee comes from re-reading.
+    //
+    // Verified PER AREA, not on the union: a union read cannot distinguish "both
+    // areas correct" from "one correct, one not" for any row the app chooses to
+    // render optimistically, and this is the assertion that the overwrite
+    // actually took.
+    for (const workArea of workAreas) {
+      await page.goto(`${process.env.BASE_URL}/so-mapping`);
+      await so.waitForLoad();
+      await so.selectMappingFilters({
+        cluster: profile.cluster,
+        site: profile.site,
+        projectType: profile.projectType,
+        workLocation,
+        workAreas: [workArea],
+        package: profile.packages[0],
+      });
+      await verifyOneWorkArea({ so, workLocation, workArea, serviceOrder });
+    }
+  }
+
+  async function verifyOneWorkArea({ so, workLocation, workArea, serviceOrder }) {
     for (const [i, pkg] of profile.packages.entries()) {
       if (i > 0) await so.selectPackage(pkg);
 

@@ -72,22 +72,33 @@ const SMOKE_VIEWPORTS = [
   { id: 'mobile', device: (({ defaultBrowserType, ...d }) => d)(devices['Pixel 7']) },
 ];
 
-// Builds ONE linear ordered chain per profile:
+// Builds the projects for one profile:
 //
-//   users -> so -> wam [-> wam-hierarchy]
-//         -> rfi-desktop -> nc-desktop
-//         -> rfi-mobile  -> nc-mobile
-//         [-> dependency]
+//   users -> so -> wam [-> wam-hierarchy]        setup, strictly sequential
+//                   |
+//                   +-> rfi-desktop              each flow stage depends ONLY
+//                   +-> nc-desktop                on the last setup stage
+//                   +-> rfi-mobile
+//                   +-> nc-mobile
+//                   +-> dependency
 //
-// Every stage depends on the previous one, so Playwright runs them strictly in
-// sequence. That matters for more than ordering: the app is
-// one-session-at-a-time, so the viewport variants must NOT run concurrently.
-// Chaining mobile behind desktop rather than branching keeps that guaranteed.
+// WHY THE FLOW STAGES DO NOT CHAIN TO EACH OTHER, even though a single linear
+// chain would look tidier: Playwright re-runs a project's `dependencies` on
+// EVERY invocation, and the flow stages are NOT idempotent — each RFI run
+// permanently consumes one (checkpoint, Work Section) pair. If rfi-mobile
+// depended on rfi-desktop, then every attempt at the mobile variant would also
+// burn a desktop checkpoint, which defeats the whole point of giving each
+// viewport its own Work Area. Depending only on the setup tail keeps each of the
+// four combinations genuinely independently runnable — the app owner's explicit
+// requirement — and the replayed prefix is cheap because the setup stages ARE
+// idempotent (s01 reuses existing users, s02 reports "remapped 0", s03 reports
+// "No changes to save").
 //
-// Each of the four flow projects is independently runnable
-// (--project=smoke-wind-rfi-mobile), which replays its dependency prefix — cheap,
-// because the setup stages are idempotent (s01 reuses existing users, s02
-// reports "remapped 0", s03 reports "No changes to save").
+// CONSEQUENCE: run smoke projects with --workers=1. The app is
+// one-session-at-a-time, and without the cross-stage chain it is the worker cap
+// — not the dependency graph — that stops two flow stages overlapping. Each
+// smoke spec is additionally test.describe.configure({ mode: 'serial' }), which
+// only serialises WITHIN a file.
 //
 // Only stages whose spec file exists are emitted, so the chain can be built up
 // incrementally without the config referencing files that aren't written yet — a
@@ -113,20 +124,28 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
 
   const desktop = SMOKE_VIEWPORTS[0].device;
 
+  // Setup: strictly sequential, each depending on the previous.
   for (const stage of SMOKE_SETUP_STAGES) {
     if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
+  // Everything after setup hangs off the LAST setup stage, not off each other.
+  const setupTail = previous;
+  const pushLeaf = (name, file, device) => {
+    previous = setupTail;
+    push(name, file, device);
+  };
+
   for (const viewport of SMOKE_VIEWPORTS) {
     for (const stage of SMOKE_FLOW_STAGES) {
       if (exists(stage.file)) {
-        push(`smoke-${chainName}-${stage.id}-${viewport.id}`, stage.file, viewport.device);
+        pushLeaf(`smoke-${chainName}-${stage.id}-${viewport.id}`, stage.file, viewport.device);
       }
     }
   }
 
   for (const stage of SMOKE_TAIL_STAGES) {
-    if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
+    if (exists(stage.file)) pushLeaf(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
   return projects;

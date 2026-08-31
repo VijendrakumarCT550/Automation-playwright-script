@@ -61,6 +61,38 @@ class DashboardPage extends BasePage {
     return this.page.getByRole('treeitem', { name, exact: true }).first();
   }
 
+  // "The app is loaded and usable" content signal, shared by waitForLoad,
+  // waitForContentOnly, resolveIncompleteDownloadBanner and goToMyTasks — which
+  // had each grown their own copy of the same 4-way .or() chain.
+  //
+  // Every alternative is filtered with `>> visible=true`, and that is
+  // load-bearing rather than tidy: without it the chain resolves to the first
+  // DOM match REGARDLESS of visibility and then waits for that element to
+  // become visible. Confirmed live on mobile 2026-08-31 — My Tasks renders
+  // RFI/NC tabs, so a HIDDEN copy of "Pending with me" exists, the chain latched
+  // onto it, and the wait logged "33 x locator resolved to hidden <p>Pending
+  // with me</p>" before timing out, on a page where a visible "Pending with me"
+  // tile was on screen the entire time.
+  //
+  // Desktop behaviour is unchanged: there the first match is already the visible
+  // one, and every caller was passing state:'visible' anyway, so this only makes
+  // the locator do what the callers always meant.
+  //
+  // "Pending with others" covers hierarchy/oversight roles (Cluster Admin,
+  // Project Manager, ...) — confirmed live their My Tasks has no "Create RFI"
+  // button and no "Pending with me" tile at all, only "Pending with others" +
+  // "Approved". "RFI Distribution" covers the dashboard itself.
+  appReadyContent({ includeDashboard = true } = {}) {
+    const vis = (sel) => this.page.locator(`${sel} >> visible=true`);
+    let chain = includeDashboard
+      ? vis('text=RFI Distribution').or(vis('text=Create RFI'))
+      : vis('text=Create RFI');
+    return chain
+      .or(vis('text=Pending with me'))
+      .or(vis('text=Pending with others'))
+      .first();
+  }
+
   // Opens the mobile nav drawer, but ONLY when the nav items aren't already
   // reachable. Returns true if it actually opened something.
   //
@@ -71,8 +103,17 @@ class DashboardPage extends BasePage {
   // check is what we WANT (see the isVisible-does-not-poll gotcha) — the
   // question is literally "is the nav reachable right now, or do I need to
   // open the drawer", not "will it become visible eventually".
-  async revealNavIfCollapsed() {
-    if (await this.navItem('Dashboard').isVisible().catch(() => false)) return false;
+  // IMPORTANT LIMITATION, confirmed live 2026-08-31: on mobile the hamburger
+  // exists only on TOP-LEVEL screens. On a sub-page (e.g. My Tasks) the header
+  // renders a BACK CHEVRON instead, so `.lucide-menu` is absent and the drawer
+  // cannot be opened from there at all. This returns false in that case rather
+  // than hanging, and callers must have a fallback (see goToMyTasks).
+  //
+  // `targetName` is the item the caller actually wants. It defaults to
+  // 'Dashboard' but should be passed: gating on a hardcoded 'Dashboard' is wrong
+  // for any role whose nav does not include it.
+  async revealNavIfCollapsed(targetName = 'Dashboard') {
+    if (await this.navItem(targetName).isVisible().catch(() => false)) return false;
 
     if (!(await this.menuTrigger.isVisible().catch(() => false))) return false;
 
@@ -80,14 +121,17 @@ class DashboardPage extends BasePage {
     // Wait on a nav item rather than the drawer container: several dialogs
     // exist on this page at once (confirmed live: 3 open after the drawer
     // opens), so the item becoming visible is the reliable signal.
-    await this.navItem('Dashboard').waitFor({ state: 'visible', timeout: 10000 });
+    await this.navItem(targetName).waitFor({ state: 'visible', timeout: 10000 });
     return true;
   }
 
   // Navigate by nav-entry name on either viewport. Prefer this over the
   // individual navX locators in new code.
   async navigateTo(name) {
-    await this.revealNavIfCollapsed();
+    // Pass the ACTUAL target, not the default 'Dashboard': gating the reveal on
+    // an item this role may not even have would either skip opening the drawer
+    // or wait for something that never appears.
+    await this.revealNavIfCollapsed(name);
     await this.navItem(name).click();
     await this.page.waitForLoadState('networkidle');
   }
@@ -113,11 +157,7 @@ class DashboardPage extends BasePage {
     // "Create RFI" button and no "Pending with me" tile at all (they never
     // create or directly action RFI/NC items themselves), only "Pending
     // with others" + "Approved".
-    const content = this.page.locator('text=RFI Distribution')
-      .or(this.page.locator('text=Create RFI'))
-      .or(this.page.locator('text=Pending with me'))
-      .or(this.page.locator('text=Pending with others'))
-      .first();
+    const content = this.appReadyContent();
     const spinner = this.page.locator('text=100%');
 
     const winner = await Promise.race([
@@ -181,12 +221,7 @@ class DashboardPage extends BasePage {
     // already had to fix once for the post-login case. Without this, the
     // caller's next real click (e.g. the "My Tasks" nav link) can hit a
     // sidebar that looks present but isn't responsive yet.
-    await this.page.locator('text=RFI Distribution')
-      .or(this.page.locator('text=Create RFI'))
-      .or(this.page.locator('text=Pending with me'))
-      .or(this.page.locator('text=Pending with others'))
-      .first()
-      .waitFor({ state: 'visible', timeout: 300000 });
+    await this.appReadyContent().waitFor({ state: 'visible', timeout: 300000 });
 
     const downloadButton = this.page.getByRole('button', { name: 'Download missing data' });
     if (await downloadButton.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -201,12 +236,7 @@ class DashboardPage extends BasePage {
   // first-run "100%" PWA install spinner, so skip that wait entirely and just
   // confirm the dashboard content itself is visible.
   async waitForContentOnly(timeout = 60000) {
-    await this.page.locator('text=RFI Distribution')
-      .or(this.page.locator('text=Create RFI'))
-      .or(this.page.locator('text=Pending with me'))
-      .or(this.page.locator('text=Pending with others'))
-      .first()
-      .waitFor({ state: 'visible', timeout });
+    await this.appReadyContent().waitFor({ state: 'visible', timeout });
 
     await this.page.waitForLoadState('networkidle');
   }
@@ -223,10 +253,27 @@ class DashboardPage extends BasePage {
   // waitForContentOnly to detect the app is actually usable — instead of
   // trusting one click to have landed.
   async goToMyTasks() {
-    const arrived = () => this.page.locator('text=Create RFI')
-      .or(this.page.locator('text=Pending with me'))
-      .or(this.page.locator('text=Pending with others'))
-      .first()
+    // `>> visible=true` on each alternative is load-bearing, not decoration.
+    //
+    // Without it the chain is `locator(A).or(B).or(C).first()`, which resolves to
+    // the first DOM match regardless of visibility — and then waits for THAT
+    // element to become visible. Confirmed live on mobile 2026-08-31: My Tasks
+    // renders RFI/NC tabs, so a HIDDEN copy of "Pending with me" exists, the
+    // chain latched onto it, and the wait logged
+    //   33 x locator resolved to hidden <p ...>Pending with me</p>
+    // before timing out — on a page where a perfectly visible "Pending with me"
+    // tile was on screen the whole time.
+    //
+    // Filtering to visible matches first means .first() can only ever pick
+    // something already visible. This is what the code always intended (it waits
+    // for state:'visible'), so desktop behaviour is unchanged — there the first
+    // match is the visible one anyway.
+    // includeDashboard:false — "RFI Distribution" is the DASHBOARD's signal, and
+    // matching it here would let goToMyTasks conclude it had arrived while still
+    // on the dashboard.
+    const myTasksContent = () => this.appReadyContent({ includeDashboard: false });
+
+    const arrived = () => myTasksContent()
       .waitFor({ state: 'visible', timeout: 5000 })
       .then(() => true)
       .catch(() => false);
@@ -239,13 +286,38 @@ class DashboardPage extends BasePage {
     // resolves to NOTHING (confirmed live: 0 of 8 DashboardPage nav locators
     // resolve at a phone viewport), so without this the click would just burn
     // its timeout every iteration.
+    // Confirmed live 2026-08-31 on mobile: after login the app ALREADY lands on
+    // My Tasks, so there is nothing to click — and worse, the mobile header on a
+    // sub-page shows a back chevron instead of the hamburger, so the drawer
+    // cannot be opened from there and the nav click can never succeed. Checking
+    // "am I already there" BEFORE clicking fixes that and also saves the desktop
+    // path a pointless click.
+    //
+    // Guarded on the URL as well as the content, deliberately: arrived() matches
+    // the TEXT "Pending with me"/"Pending with others", which could in principle
+    // appear in the dashboard's own Detail Records grid. Requiring a /my-tasks
+    // URL too means this can only short-circuit when we really are there.
+    if (/\/my-tasks/i.test(this.page.url()) && await arrived()) return;
+
     const clickMyTasks = async () => {
+      // Desktop sidebar link when present — byte-identical to the original
+      // behaviour for every existing caller.
       if (await this.navMyTasks.isVisible().catch(() => false)) {
         await this.navMyTasks.click();
         return;
       }
-      await this.revealNavIfCollapsed();
-      await this.navItem('My Tasks').click();
+
+      // Mobile: open the drawer and use the treeitem.
+      await this.revealNavIfCollapsed('My Tasks');
+      if (await this.navItem('My Tasks').isVisible().catch(() => false)) {
+        await this.navItem('My Tasks').click();
+        return;
+      }
+
+      // Neither route available — the drawer is unreachable from this screen
+      // (mobile sub-page: back chevron, no hamburger). Navigate by URL, the same
+      // fallback rfi-flow-turns.js's createNewRfi already uses.
+      await this.page.goto(`${process.env.BASE_URL}/my-tasks`);
     };
 
     const deadline = Date.now() + 3 * 60 * 1000;
@@ -261,11 +333,9 @@ class DashboardPage extends BasePage {
     // RFIListPage.openRowByCode's final real-timeout attempt).
     await clickMyTasks();
     await this.page.waitForLoadState('networkidle');
-    await this.page.locator('text=Create RFI')
-      .or(this.page.locator('text=Pending with me'))
-      .or(this.page.locator('text=Pending with others'))
-      .first()
-      .waitFor({ state: 'visible', timeout: 15000 });
+    // Same visible-only filtering as arrived() above — a hidden duplicate here
+    // is exactly what made this wait burn its full timeout on mobile.
+    await myTasksContent().waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async goToDashboard() {
