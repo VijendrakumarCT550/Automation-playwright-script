@@ -142,5 +142,65 @@
       "WTG-Khavda"
     ],
     "vendor": null
+  },
+  "CISL": {
+    "name": "CISLwttUser60",
+    "email": "CISLwttUser60@adani.com",
+    "phone": "7067868797",
+    "number": 60,
+    "role": "Contractor Incharge",
+    "userType": "VENDOR",
+    "profileKey": "solar-e2e",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "A-06c",
+      "S05b"
+    ],
+    "vendor": "M S CHOUHAN INFRAVENTURES"
+  },
+  "CMSL": {
+    "name": "CMSLlrsUser60",
+    "email": "CMSLlrsUser60@adani.com",
+    "phone": "6806564689",
+    "number": 60,
+    "role": "Contractor Manager",
+    "userType": "VENDOR",
+    "profileKey": "solar-e2e",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "A-06c",
+      "S05b"
+    ],
+    "vendor": "M S CHOUHAN INFRAVENTURES"
+  },
+  "EESL": {
+    "name": "EESLzntUser60",
+    "email": "EESLzntUser60@adani.com",
+    "phone": "8706191650",
+    "number": 60,
+    "role": "Execution Engineer",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "A-06c",
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "QISL": {
+    "name": "QISLeubUser60",
+    "email": "QISLeubUser60@adani.com",
+    "phone": "7934731078",
+    "number": 60,
+    "role": "Quality Inspector",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "A-06c",
+      "S05b"
+    ],
+    "vendor": null
   }
 }

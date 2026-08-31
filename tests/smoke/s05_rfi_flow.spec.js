@@ -43,17 +43,28 @@ const RFIReviewPage = require('../pages/RFIReviewPage');
 // and hops roles sequentially, like specs 08/23/29.
 //
 // ---------------------------------------------------------------------------
-// WHY THIS STAGE IS NOT IDEMPOTENT (unlike s01-s03)
+// THE TWO PROJECT TYPES BEHAVE VERY DIFFERENTLY HERE
 // ---------------------------------------------------------------------------
-// Wind has exactly ONE Work Section per Work Area, and it is the Work Area's
-// own name (confirmed live: Work Area "KH 34" => Work Section "KH 34"). Per
-// docs/rfi-activity-dependency-chain.md, merely SELECTING a Work Section
-// permanently consumes that (checkpoint, Work Section) pair — submitting is not
-// required. So there is no spare section to retry with, and each run spends one
-// checkpoint of profile.rfi.checkpointChain. The chain has 5 entries, giving
-// roughly 5 runs before this activity is exhausted and a fresh Work Area is
-// needed (which would first have to be SO-mapped and WAM'd — a CI only sees
-// work areas it was WAM'd onto).
+// Driven by profile.workSectionGranularity, not by a project-type check, so a
+// future project type declares its own behaviour rather than inheriting one.
+//
+//   SOLAR — many-per-work-area. ~492 Work Sections for Piling - MMS on one area
+//     (confirmed live: "total=492 selectedForRfi=0 pendingRfi=492"). Every run
+//     takes a FRESH section, so nothing meaningful is consumed, no area is ever
+//     exhausted, and the same checkpoint can be re-run indefinitely. Its
+//     checkpointChain is a single entry for that reason — there is never a need
+//     to walk on looking for a free section. This is why solar carries the
+//     repeated MOBILE coverage.
+//
+//   WIND — one-per-work-area, and the section is NAMED after the area
+//     ("KH 34" => "KH 34"). Per docs/rfi-activity-dependency-chain.md, merely
+//     SELECTING a Work Section consumes that (checkpoint, Work Section) pair —
+//     submitting is not required, though a proper Cancel+confirm DOES release it
+//     (see discardCreateForm). So there is no spare to retry with and each
+//     successful run spends one checkpoint. Several work areas are provisioned
+//     precisely so the walk can move on; a CI only sees areas it was WAM'd onto.
+//
+// So this stage is NOT idempotent for wind, and effectively is for solar.
 //
 // Consequences encoded below:
 //   * The walk covers (WORK AREA x CHECKPOINT), most-preferred area first, and
@@ -194,7 +205,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     return profile.workSectionGranularity === 'one-per-work-area' ? workArea : null;
   };
 
-  test('CI creates and submits a wind RFI on the next free checkpoint', async ({ page, isMobileViewport }) => {
+  test('CI creates and submits an RFI on the next free checkpoint', async ({ page, isMobileViewport }) => {
     // Three PWA logins across this file at up to ~6 minutes each, plus form and
     // grid work — the config's 10-minute default is not enough.
     test.setTimeout(25 * 60 * 1000);
@@ -427,7 +438,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
   // both reviewers act the same way — so this is one parameterised loop rather
   // than two near-copies.
   for (const role of ['EE', 'QI']) {
-    test(`${role} approves the wind RFI`, async ({ page, isMobileViewport }) => {
+    test(`${role} approves the RFI`, async ({ page, isMobileViewport }) => {
       test.setTimeout(25 * 60 * 1000);
 
       expect(created.rfiCode, `CI's step did not produce an RFI code, so ${role} has nothing to review`)
@@ -443,7 +454,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
       // "...-CIV-30370".
       try {
         await openFromPendingWithMe(
-          page, created.rfiCode, `${role} review of wind smoke RFI`, { exact: true }
+          page, created.rfiCode, `${role} review of the smoke RFI`, { exact: true }
         );
       } catch (err) {
         // The RFI is not in THIS role's "Pending with me". Two possible causes,

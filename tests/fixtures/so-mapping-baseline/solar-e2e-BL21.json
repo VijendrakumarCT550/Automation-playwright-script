@@ -1,0 +1,104 @@
+{
+  "profile": "solar-e2e",
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "projectType": "SOLAR",
+  "workLocation": "A-06c",
+  "workArea": "BL21",
+  "targetServiceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD",
+  "packages": {
+    "Civil": [
+      {
+        "activity": "Piling - MMS",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Piling - Inverter",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Piling - Robotic Docking System",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Piling - LT Cable Hanger System",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "IDT Civil & Structural",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "MMS Installation",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Module Installation",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Robot Structure Installation",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "IDT Fencing & Gravel Laying",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Anti-Corrosion Protection - for Stubs",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Anti-Corrosion Protection - for MMS Structural Components",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Inverter Height Extension",
+        "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+      },
+      {
+        "activity": "Road Works - IDT Road OGL Layer",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 1",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 2",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 3",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 4",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 5",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Soil Layer 6",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road GSB",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Road Works - IDT Road Macadam",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Drain Work",
+        "serviceOrder": "Select Service Order"
+      },
+      {
+        "activity": "Culvert Works",
+        "serviceOrder": "Select Service Order"
+      }
+    ]
+  }
+}
