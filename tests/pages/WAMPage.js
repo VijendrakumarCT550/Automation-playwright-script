@@ -149,12 +149,32 @@ class WAMPage extends BasePage {
     if (pkg != null && await this.dialogPackageDropdown.isVisible({ timeout: 7000 }).catch(() => false)) {
       await this.selectDropdownOption(this.dialogPackageDropdown, pkg);
     }
-    if (serviceOrder) {
+    // `serviceOrder` may be a single string or an array of acceptable
+    // candidates, mirroring how `cluster` already works. The array form was
+    // added for WIND: BAUER ENGINEERING INDIA PVT LTD holds FIVE different SO
+    // numbers (confirmed live), so matching on vendor name alone can pick the
+    // wrong service order — but it is not yet confirmed whether this dialog's
+    // Service Order combobox renders the full "<number> - <VENDOR>" string the
+    // way SO Mapping does, or just one part. Passing
+    // [fullServiceOrderString, vendorName] tries the precise form first and
+    // falls back to the name.
+    //
+    // Visibility guard added for the same reason every other field here has
+    // one: only some roles render a Service Order field (Contractor Incharge
+    // does, Execution Engineer / Quality Inspector don't), and without the
+    // guard, passing a serviceOrder for a role that has no such field threw
+    // instead of being ignored.
+    if (serviceOrder
+        && await this.dialogServiceOrderDropdown.isVisible({ timeout: 7000 }).catch(() => false)) {
       await this.page.waitForLoadState('networkidle');
       // 1000 -> 300: the networkidle above already guarantees a 500ms
       // quiet network window, so this is only a render buffer on top.
       await this.page.waitForTimeout(300);
-      await this.selectDropdownOption(this.dialogServiceOrderDropdown, serviceOrder);
+      if (Array.isArray(serviceOrder)) {
+        await this.selectDropdownOptionAny(this.dialogServiceOrderDropdown, serviceOrder);
+      } else {
+        await this.selectDropdownOption(this.dialogServiceOrderDropdown, serviceOrder);
+      }
     }
     await this.page.waitForLoadState('networkidle');
     // 2000 -> 500, same reasoning: redundant with the networkidle above.

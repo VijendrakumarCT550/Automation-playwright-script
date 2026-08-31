@@ -4,44 +4,55 @@ Reference extraction of `tests/fixtures/Activity Master and Checklist Mapping_Wi
 the wind-project counterpart of the solar sheet already mined for
 `docs/rfi-activity-dependency-chain.md` and `tests/utils/rfi-dependency-data.js`.
 
-**Status: spreadsheet extraction only. Nothing here is live-confirmed.**
-The solar equivalent was cross-checked against the real Inspection Checkpoint
-/ Inspection Checklist dropdowns before being trusted, and several
-spreadsheet-implied behaviours turned out not to match the app (see the
-"multi-option checklist" and "Routine Testing" notes in
-`docs/rfi-activity-dependency-chain.md`). No wind project has been opened in
-the app yet, so every statement below is *what the sheet says*, not what
-PULSE does. The "Open questions" section at the end lists what must be
-confirmed live before writing any wind RFI spec.
+**Status: the Activity/Sub-Package/Package layer is live-confirmed on pulse-dev
+(2026-08-31). The checkpoint/checklist layer is still spreadsheet-only.**
+The confirmed part is everything SO Mapping exposes — packages, sub-packages,
+activity names and their ordering (see "Live confirmation" below). The
+Inspection Checkpoint and Inspection Checklist columns cannot be confirmed
+until a WIND CI exists who is SO-mapped and WAM'd, because only the RFI create
+form renders them; that is a second recon pass, not done yet.
 
-Machine-readable form of the same data: `tests/fixtures/wind-activity-checklist.json`
-(146 objects, one per sheet row, keys `sheetRow, srNo, package, subPackage,
-activity, subActivity, unitOfRfi, uom, code, checkpoint, description,
-checklist, checklistDoc, optional, preceding, remarks`). The full
+Machine-readable form: **`tests/fixtures/wind-activity-checklist.json`** — the
+Current sheet, the one the app actually serves (144 objects, one per sheet row,
+keys `sheetRow, srNo, package, subPackage, activity, subActivity, unitOfRfi,
+uom, code, checkpoint, description, checklist, checklistDoc, optional,
+preceding, remarks`). `tests/fixtures/wind-activity-checklist-draft.json` holds
+the not-yet-deployed Draft sheet in the same shape. The full
 `Inspection Checkpoint Description` text — long, and only useful for eyeballing
 what an inspector actually checks — is kept in the JSON only, not reproduced in
 the tables below.
 
-## Which sheet is authoritative
+## Which sheet is authoritative — the Current sheet, confirmed against the app
 
 The workbook has 6 sheets, 2 of which hold data, separated by the same
 `Current >>` / `Draft >>` / `Archive >>` divider tabs the solar workbook uses:
 
-| Sheet | Section | Data rows | Used here |
-| --- | --- | --- | --- |
-| `Current >>` | divider | 0 | — |
-| `Activity-Checklist_07.02.26` | Current | 144 | delta only |
-| `Draft >>` | divider | 0 | — |
-| `Activity-Checklist_23.04.26` | Draft | **146** | **yes — primary** |
-| `Sheet1` | scratch | 11 | no (see below) |
-| `Archive >>` | divider | 0 | — |
+| Sheet | Section | Data rows | Activities | Used here |
+| --- | --- | --- | --- | --- |
+| `Current >>` | divider | 0 | — | — |
+| `Activity-Checklist_07.02.26` | Current | **144** | **34** | **yes — matches the app** |
+| `Draft >>` | divider | 0 | — | — |
+| `Activity-Checklist_23.04.26` | Draft | 146 | 35 | not deployed |
+| `Sheet1` | scratch | 11 | — | no (see below) |
+| `Archive >>` | divider | 0 | — | — |
 
-The **Draft** sheet (`23.04.26`) is taken as primary, matching how the solar
-extraction was done: there, `Activity-Checklist_06.05.2026` sat under `Draft`
-and `Activity-Checklist_25.02.26` under `Current`, and the *Draft* (later-dated)
-sheet was the one that matched the live dropdowns. Same shape here — Draft is
-dated 23 Apr 2026, Current 7 Feb 2026. The wind workbook has no archived
-sheets at all, so there is no longer history to compare against.
+I initially picked the **Draft** sheet, reasoning by analogy with solar (where
+`Activity-Checklist_06.05.2026` sat under `Draft` and was the sheet that
+matched the live dropdowns). **Live recon disproved that for wind.** The
+deployed master matches the **Current** sheet (`07.02.26`) exactly — 34
+activities, zero difference in either direction, and the same per-sub-package
+grouping and ordering. The Draft's one structural change (splitting `A1.9`
+"WTG Foundation" into `A1.9a` + `A1.9b` "WTG Foundation - Bitumen Painting") is
+**not** in the app: SO Mapping shows a single `7. WTG Foundation` activity under
+the WTG Foundation sub-package. So the "later-dated Draft is what's deployed"
+rule does not generalise from solar to wind — it has to be checked per
+workbook, which is exactly why the checkpoint/checklist layer below is still
+labelled unconfirmed.
+
+Picking Current over Draft also removes the one data defect in the extraction:
+the Draft's dangling `A1.10.1 -> A1.9.4` reference (the `A1.9` split renamed
+every `A1.9.x` code but left `A1.10.1` pointing at the old one). The Current
+sheet has **no dangling references at all**.
 
 `Sheet1` is a scratch two-column list of activity names (Civil column:
 Excavation, Blanket Layer/GSB Layer, Plum Concrete, PCC, Bottom Anchor Flange,
@@ -49,31 +60,77 @@ Reinforcement Binding, WTG Foundation, Top Flange Grouting, Backfilling
 (Before Mesh), Earthing Mesh, Backfilling (After Mesh); Mechanical column:
 Tower Erection, Nacelle, Hub DT and Blades, Generator, Nacelle Top Cover,
 Torquing, MCC Audit, Re-Verification Audit). It carries no checkpoint,
-checklist or dependency data — it looks like working notes behind the WTG
-Foundation and WTG Erection activity lists. Ignored.
+checklist or dependency data — working notes behind the WTG Foundation and WTG
+Erection activity lists. Ignored.
 
-### Draft vs Current — the entire delta
+### What the Draft will change when it is adopted
 
-Only three changes, all in the Draft's favour:
+Three changes, so this is what to expect when the app moves to `23.04.26`:
 
-1. **`A1.9` was split into `A1.9a` + `A1.9b`.** Current had one 5-checkpoint
-   activity "WTG Foundation" (`A1.9.1`–`A1.9.5`) that included Bitumen Painting
-   as its 4th checkpoint. Draft splits it into `A1.9a` "WTG Foundation"
-   (4 checkpoints) and `A1.9b` "WTG Foundation - Bitumen Painting"
-   (3 checkpoints) — hence 146 rows vs 144.
-2. **`B1.1.1`'s preceding changed** `A1.14.8` → `A1.14.6` (Oil Filled
-   Transformer now waits on DT *Erection* rather than DT *Gravel Laying above
-   FGL*).
-3. **`B1.2.1`'s preceding changed** `A1.15.8` → `A1.15.4` (HT Switchboard now
-   waits on HT Foundation *Erection* rather than *Handrail Installation*).
+1. **`A1.9` splits into `A1.9a` + `A1.9b`.** Current has one 5-checkpoint
+   activity "WTG Foundation" (`A1.9.1`–`A1.9.5`) with Bitumen Painting as its
+   4th checkpoint. The Draft makes that its own activity — `A1.9a`
+   "WTG Foundation" (4 checkpoints) + `A1.9b` "WTG Foundation - Bitumen
+   Painting" (3 checkpoints) — taking the workbook from 34 activities to 35
+   and 144 rows to 146. It also introduces the dangling `A1.9.4` pointer and
+   the one Post-Activity-Checkpoint-as-dependency exception (`A1.9b.1` →
+   `A1.9a.4`) noted below, so the split as drafted is not clean.
+2. **`B1.1.1`'s preceding moves** `A1.14.8` → `A1.14.6` (Oil Filled
+   Transformer waits on DT *Erection* rather than DT *Gravel Laying above FGL*).
+3. **`B1.2.1`'s preceding moves** `A1.15.8` → `A1.15.4` (HT Switchboard waits
+   on HT Foundation *Erection* rather than *Handrail Installation*).
 
-The Current sheet also carries a `Remarks` value of "Remove" on `B1.1.1` and
-`B1.2.1` — the two rows whose preceding the Draft then changed. Draft has no
-remarks on any row.
+The Current sheet carries `Remarks = "Remove"` on exactly the three rows the
+Draft then rewrites or renumbers: `B1.1.1`, `B1.2.1`, and `C 1.1.1`.
+
+## Live confirmation (pulse-dev, 2026-08-31)
+
+Captured read-only by `tests/specs/00_inspect_wind_master_and_mobile.spec.js`;
+raw output in `test-results/wind-recon/wind-master-data.json`.
+
+- **Project Type options (7)**: `SOLAR`, `WIND`, `INFRA`, `PSS`, `ADMIN`,
+  `BESS`, `TRANSMISSION_LINE`. Wind is one of seven, not one of two — the
+  profile config is built to take more project types later for this reason.
+- **Work Location under WIND — exactly one**: `WTG-Khavda`. Note the spelling:
+  it is **Khavda**, not "Khavada". Site options are `Khavda`, `Mandvi`,
+  `Mundra`.
+- **Work Areas under `WTG-Khavda` — 244**, in two naming families with a
+  **space** in the name: `KH 34`, `KH 35`, `KH 47`… `KH 622` and `WTG 002`,
+  `WTG 121`… `WTG 557`. One outlier has no space: `WTG219`. Any exact-match
+  work-area lookup must expect the space (`'KH 34'`, not `'KH34'`).
+- **Packages under WIND (3)**: `Civil`, `Electrical`, `Mechanical` — title
+  case in the app, upper case (`CIVIL`) in the sheet.
+- **Activity rows per package**: Civil 18, Electrical 8, Mechanical 8 = 34,
+  matching the Current sheet's per-sub-package counts exactly (Stone Column 2,
+  WTG Foundation 11, USS Civil and Structural 4, Crane Pad 1 / USS Electrical
+  7, UG Cable 1 / WTG Erection 8). Activity numbering restarts at 1 within each
+  sub-package, so the Civil list reads `1.`,`2.` then `1.`…`11.` then `1.`…`4.`
+  then `1.`.
+- **`Re-Verification Audit` renders first and unnumbered** in the Mechanical
+  package, ahead of `1. Tower Erection`, despite being `C1.8` — last — in the
+  sheet. Every other activity in every package is numbered and in sheet order.
+  Looks like an ordering/data defect worth reporting.
+- **Existing Service Order state on `KH 34`** (the work area in the brief's
+  screenshot): Stone Column's two activities on `5710012136 - BAUER
+  ENGINEERING INDIA PVT LTD`; the whole WTG Foundation + USS Civil and
+  Structural block on `5710014198 - BHAWANI CONSTRUCTION COMPANY`; `Fencing`
+  unmapped; `Crane Pad` on `5710012743 - S S JADEJA`; all 8 Electrical
+  activities on `5710013590 - AERIS ENGINEERS PVT LTD`; **all 8 Mechanical
+  activities unmapped** ("Select Service Order").
+- **The Service Order dropdown has 137 options, and `BAUER ENGINEERING INDIA
+  PVT LTD` appears under FIVE different SO numbers**: `5710008038`,
+  `5710009696`, `5710012136`, `5710017100`, `5710018312`. A vendor-name-only
+  match picks the wrong one (it resolves to `5710008038`). SO selection must
+  match on the **full** `"5710012136 - BAUER ENGINEERING INDIA PVT LTD"`
+  string. The list also ends with a special `Multiple SOs` option.
+- The **Cluster** dropdown reported zero options when read immediately on page
+  load, while already displaying a selection — it needs a settle wait before
+  its options can be enumerated. Cosmetic for now (selection still worked),
+  but noted so it isn't mistaken for a missing-data bug later.
 
 ## Column layout, and how it differs from the solar sheet
 
-Header row is **row 4** (solar's is row 5), data runs rows 5–150, columns B–P:
+Header row is **row 4** (solar's is row 5), data runs rows 5–148, columns B–P:
 
 | Col | Header |
 | --- | --- |
@@ -100,10 +157,10 @@ Differences from solar's `Activity-Checklist_06.05.2026` that matter:
   mid-rename; wind has a single name per field. Nothing to reconcile.
 - **No `EPC Service code` and no `Change Task` column.**
 - **New column N, "Is the Inspection Checkpoint Optional?"** — absent from
-  solar. See the uniform-columns section: it is `Y` on all 146 rows.
+  solar. It is `Y` on all 144 rows.
 - **New column M, "Inspection Checklist Document"** — the underlying document
   name, distinct from the checklist name. Solar had no such column. It diverges
-  from column L on 66 of 146 rows (see Data quality).
+  from column L on 59 of 144 rows (see Data quality).
 - **Solar's `Activity Dependency` column (T) has no wind equivalent.** In solar
   that column was blank on all 81 real rows anyway, so nothing is lost — in
   both workbooks the dependency is carried solely by the "Preceding Inspection
@@ -116,12 +173,11 @@ Differences from solar's `Activity-Checklist_06.05.2026` that matter:
 
 ## Uniform columns — three columns carry no information
 
-Across all 146 Draft rows:
+Across all 144 Current rows (and all 146 Draft rows):
 
 - **`Unit of RFI` = `Per WTG`** — every row, no exceptions.
 - **`Unit of Measure` = `EA`** — every row.
-- **`Is the Inspection Checkpoint Optional?` = `Y`** — every row, and on the
-  Current sheet too (144/144).
+- **`Is the Inspection Checkpoint Optional?` = `Y`** — every row.
 
 The last one is the odd one. Read literally, *every* wind checkpoint is
 optional, which would mean the preceding-checkpoint dependency is advisory
@@ -130,12 +186,12 @@ rather than enforced — the opposite of the solar behaviour that
 "Missing an RFI for Dependent Inspection Point" validation error. A column that
 is constant across 290 rows in two independently-dated sheets is more likely an
 unfilled default than a real business rule, but it cannot be assumed either
-way. Flagged as an open question, not resolved.
+way. Still open — see Open questions.
 
 ## The shape every wind activity shares
 
 Unlike solar — where checkpoint counts and names varied per activity — every
-one of the 35 wind activities has the same skeleton:
+one of the 34 wind activities has the same skeleton:
 
 ```
 Pre-Activity Checkpoint          (Sub-Activity "Pre-Activity Work",  no checklist)
@@ -143,7 +199,7 @@ Pre-Activity Checkpoint          (Sub-Activity "Pre-Activity Work",  no checklis
   -> Post-Activity Checkpoint    (Sub-Activity "Post-Activity Work", no checklist)
 ```
 
-35 activities x 2 bookend rows = **70 of the 146 rows (48%) have no checklist
+34 activities x 2 bookend rows = **68 of the 144 rows (47%) have no checklist
 at all** (columns L and M both `-`). Their Description column is boilerplate:
 "Pre-Activity Inspection Checks, Documents and Reports" /
 "Post-Activity Inspection Checks, Documents and Reports".
@@ -175,7 +231,7 @@ Solar's checkpoint names were unique within an activity, so the checkpoint
 dropdown helpers select checkpoints by visible name. That will be ambiguous for
 these seven activities. Whether the live dropdown is keyed on Sub-Activity
 first (making each name unique in context) or renders duplicate options is
-unknown — another open question.
+unknown — one of the questions for the RFI-side recon pass.
 
 Also note **`A1.11` "Backfilling (Before Mesh)"** uses positional checkpoint
 names `Backfiling Layer 1` … `Backfiling Layer 8` (sic — one `l`), and `A1.13`
@@ -206,7 +262,7 @@ Every root is a Pre-Activity Checkpoint. The Civil roots plus Crane Pad are the
 natural "start of site work" entry points; the four Electrical roots are
 activities with no civil prerequisite recorded.
 
-**2. Dependencies cross activity boundaries — 28 of them.** An activity's
+**2. Dependencies cross activity boundaries — 27 of them.** An activity's
 Pre-Activity Checkpoint almost always depends on the *previous* activity's last
 **real** checkpoint, deliberately skipping that activity's Post-Activity
 Checkpoint. E.g. `A1.4.1` (Blanket Layer Pre-Activity) → `A1.3.2` (Excavation's
@@ -217,9 +273,9 @@ The long Civil spine runs:
 
 ```
 A1.1.2 -> A1.2.1..A1.2.4 -> A1.3.1/.2 -> A1.4.1..A1.4.6 -> A1.5.1..A1.5.3
-      -> A1.6.1/.2 -> A1.7.1/.2 -> A1.8.1..A1.8.3 -> A1.9a.1..A1.9a.3
-      -> [A1.9a.4] -> A1.9b.1..A1.9b.2 -> A1.10.1/.2 -> A1.11.1..A1.11.9
-      -> A1.12.1/.2 -> A1.13.1..A1.13.4 -> C 1.1.1  (into WTG Erection)
+      -> A1.6.1/.2 -> A1.7.1/.2 -> A1.8.1..A1.8.3 -> A1.9.1..A1.9.4
+      -> A1.10.1/.2 -> A1.11.1..A1.11.9 -> A1.12.1/.2 -> A1.13.1..A1.13.4
+      -> C 1.1.1  (into WTG Erection)
 ```
 
 and the Mechanical chain then runs strictly linearly
@@ -227,43 +283,34 @@ and the Mechanical chain then runs strictly linearly
 Pre-Activity Checkpoint hanging off the previous activity's real inspection
 checkpoint.
 
-Cross-package links: `B1.1.1` (Oil Filled Transformer) → `A1.14.6` (DT
-Erection); `B1.2.1` (HT Switchboard) → `A1.15.4` (HT Foundation Erection);
-`B1.8.1` (HT Cabling) → `B1.2.2`; `B1.7.1` (LT Cabling) → `B1.4.2`;
-`C 1.1.1` (Tower Erection) → `A1.13.4` (GSB Layer).
+Cross-package links: `B1.1.1` (Oil Filled Transformer) → `A1.14.8` (DT Gravel
+Laying above FGL); `B1.2.1` (HT Switchboard) → `A1.15.8` (HT Foundation
+Handrail Installation); `B1.8.1` (HT Cabling) → `B1.2.2`; `B1.7.1` (LT Cabling)
+→ `B1.4.2`; `C 1.1.1` (Tower Erection) → `A1.13.4` (GSB Layer).
 
-**3. Post-Activity Checkpoints are dead ends — with exactly one exception.**
-34 of the 35 Post-Activity Checkpoints are never named as anyone's preceding
-checkpoint, and no non-Post-Activity row is ever a dead end. The single
-exception is **`A1.9a.4`**, which `A1.9b.1` depends on — a by-product of the
-Draft's `A1.9` split, where the new `A1.9b` was chained onto the tail of
-`A1.9a` rather than onto its last real checkpoint (`A1.9a.3`) the way every
-other transition in the sheet is wired.
+**3. Every Post-Activity Checkpoint is a dead end.** All 34 are never named as
+anyone's preceding checkpoint, and no non-Post-Activity row is ever a dead end.
+(The Draft breaks this: its `A1.9b.1` depends on `A1.9a.4`, a Post-Activity
+Checkpoint — a by-product of chaining the new `A1.9b` onto the tail of `A1.9a`
+rather than onto its last real checkpoint the way every other transition is
+wired.)
 
 **One row has a multi-valued dependency**: `A1.17.1` (Fencing Pre-Activity) →
 `A1.16.6, A1.15.8, A1.14.8` — Fencing waits on Burnt Oil Tank, HT Foundation
-*and* DT all completing. Present in both Current and Draft, so not a Draft
-artefact. Nothing in the solar sheet had more than one preceding checkpoint, so
-how the app enforces an AND-dependency (and what its validation toast says) is
-entirely unknown.
+*and* DT all completing. Present in both sheets. Nothing in the solar sheet had
+more than one preceding checkpoint, so how the app enforces an AND-dependency
+(and what its validation toast says) is entirely unknown.
 
 ## Data quality flags
 
 Real defects in the source sheet, worth raising with whoever owns it:
 
-1. **Dangling reference: `A1.10.1`'s preceding is `A1.9.4`, which does not
-   exist in the Draft sheet.** The `A1.9` → `A1.9a`/`A1.9b` split renamed every
-   `A1.9.x` code but left `A1.10.1`'s pointer on the old code. Read literally,
-   Top Flange Grouting depends on a checkpoint that isn't in the master. The
-   intent is presumably `A1.9b.2` (Bitumen Painting, the new tail of that
-   stretch) or `A1.9a.3`; the sheet does not say which. This is the only
-   dangling reference in either sheet — the Current sheet has none.
-2. **`C1.1`'s three checkpoint codes are written `C 1.1.1`, `C 1.1.2`,
+1. **`C1.1`'s three checkpoint codes are written `C 1.1.1`, `C 1.1.2`,
    `C 1.1.3` — with a space** — while its Sr. No. is `C1.1` and every other
    code in the workbook is space-free. `C1.2.1`'s preceding is correspondingly
    written `C 1.1.2`, so the chain still resolves, but any code-based lookup has
-   to tolerate the space.
-3. **Checklist name ≠ checklist document on 66 of 146 rows.** Mostly harmless
+   to tolerate the space. Present in both sheets.
+2. **Checklist name ≠ checklist document on 59 of 144 rows.** Mostly harmless
    casing drift (`Excavation Checklist` vs `Excavation checklist`), but some are
    substantive: `WTG Top Flange Grouting Checklist` vs
    `Top Flange Grouting - WTG`; `Backfilling Checklist` vs
@@ -275,25 +322,28 @@ Real defects in the source sheet, worth raising with whoever owns it:
    the two columns the app's Inspection Checklist dropdown actually shows is
    unknown — for solar it was the checklist *name*, minus its `C_14_1` code
    prefix.
-4. **Three checkpoints have a checklist name but no real checklist**, with the
+3. **Three checkpoints have a checklist name but no real checklist**, with the
    document column instead holding a question: `C1.6.2` Torquing, `C1.7.2` MCC
    Audit, `C1.8.2` Re-Verification Audit all read "No Checklist  Q: Duly-Filled
-   &lt;X&gt; Submitted to Concerned AGEL Team for Review?". This is the same
-   pattern as solar's out-of-scope "Routine Testing" checkpoint, which rendered
-   a broken dropdown live. Treat these three as suspect.
-5. **Spelling errors carried into names the app may display verbatim**:
+   [Torquing Sheet / MCC Audit Report / Re-Verification Audit Report]
+   Submitted to Concerned AGEL Team for Review?". This is the same pattern as
+   solar's out-of-scope "Routine Testing" checkpoint, which rendered a broken
+   dropdown live. Treat these three as suspect.
+4. **Spelling errors carried into names the app may display verbatim**:
    `Backfiiling Checklist` (4 rows), `Backfiling Layer N` (10 rows, one `l`),
    `Generator Installatio Checklist`, `Checklist for Preacst Elements`,
    `Barbed Wire checklist` / `White Wash Checklist` inconsistent casing,
-   `Depth calibration censer` in a description (fixed to `sensor` in the
-   Draft). If these strings are what the dropdown renders, specs must match
-   them exactly as-is, typos included — same as solar, where
-   `C_14_1 Micro Pile Checklist` had to be matched with its code prefix
-   stripped.
+   `Depth calibration censer` in a description. If these strings are what the
+   dropdown renders, specs must match them exactly as-is, typos included — same
+   as solar, where `C_14_1 Micro Pile Checklist` had to be matched with its code
+   prefix stripped.
+5. **`Re-Verification Audit` renders first and unnumbered in the app's
+   Mechanical package** despite being last (`C1.8`) in the sheet — see Live
+   confirmation. An app-side ordering defect rather than a sheet defect.
 
-## Full extraction — Draft sheet (`Activity-Checklist_23.04.26`)
+## Full extraction — Current sheet (`Activity-Checklist_07.02.26`)
 
-35 activities across 3 packages and 7 sub-packages: CIVIL (Stone Column, WTG
+34 activities across 3 packages and 7 sub-packages: CIVIL (Stone Column, WTG
 Foundation, USS Civil and Structural, Crane Pad — 98 rows), ELECTRICAL (USS
 Electrical, UG Cable — 24 rows), MECHANICAL (WTG Erection — 24 rows).
 `Unit of RFI` is `Per WTG` and `Optional?` is `Y` on every row below, so neither
@@ -377,24 +427,17 @@ column is repeated in the tables.
 | `A1.8.3` | Reinforcement Top Layer | Routine Inspection | Reinforcement Checklist | `A1.8.2` |
 | `A1.8.4` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.8.3` |
 
-**A1.9a — WTG Foundation** (sheet rows 37–40)
+**A1.9 — WTG Foundation** (sheet rows 37–41)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
-| `A1.9a.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.8.3` |
-| `A1.9a.2` | WTG Foundation | Pre Pour Inspection - WTG Foundation | Pre-Pour Checklist | `A1.9a.1` |
-| `A1.9a.3` | WTG Foundation | Post Pour Inspection - WTG Foundation | Post-Pour Checklist | `A1.9a.2` |
-| `A1.9a.4` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.9a.3` |
+| `A1.9.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.8.3` |
+| `A1.9.2` | WTG Foundation | Pre Pour Inspection - WTG Foundation | Pre-Pour Checklist | `A1.9.1` |
+| `A1.9.3` | WTG Foundation | Post Pour Inspection - WTG Foundation | Post-Pour Checklist | `A1.9.2` |
+| `A1.9.4` | Bitumen Painting of WTG Foundation | Routine Inspection | Bitumen Coating Painting Checklist | `A1.9.3` |
+| `A1.9.5` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.9.4` |
 
-**A1.9b — WTG Foundation - Bitumen Painting** (sheet rows 41–43)
-
-| Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
-| --- | --- | --- | --- | --- |
-| `A1.9b.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.9a.4` |
-| `A1.9b.2` | Bitumen Painting of WTG Foundation | Routine Inspection | Bitumen Coating Painting Checklist | `A1.9b.1` |
-| `A1.9b.3` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.9b.2` |
-
-**A1.10 — Top Flange Grouting** (sheet rows 44–46)
+**A1.10 — Top Flange Grouting** (sheet rows 42–44)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -402,7 +445,7 @@ column is repeated in the tables.
 | `A1.10.2` | Top Flange Grouting | Grouting | WTG Top Flange Grouting Checklist | `A1.10.1` |
 | `A1.10.3` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.10.2` |
 
-**A1.11 — Backfilling (Before Mesh)** (sheet rows 47–56)
+**A1.11 — Backfilling (Before Mesh)** (sheet rows 45–54)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -417,7 +460,7 @@ column is repeated in the tables.
 | `A1.11.9` | Backfilling Before Mesh Placement | Backfiling Layer 8 | Backfilling Checklist | `A1.11.8` |
 | `A1.11.10` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.11.9` |
 
-**A1.12 — Earthing Mesh** (sheet rows 57–59)
+**A1.12 — Earthing Mesh** (sheet rows 55–57)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -425,7 +468,7 @@ column is repeated in the tables.
 | `A1.12.2` | Earthing Mesh | Routine Inspection | Earthing Mesh Checklist | `A1.12.1` |
 | `A1.12.3` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.12.2` |
 
-**A1.13 — Backfilling (After Mesh)** (sheet rows 60–64)
+**A1.13 — Backfilling (After Mesh)** (sheet rows 58–62)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -438,7 +481,7 @@ column is repeated in the tables.
 ### CIVIL / USS Civil and Structural
 
 
-**A1.14 — DT** (sheet rows 65–73)
+**A1.14 — DT** (sheet rows 63–71)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -452,7 +495,7 @@ column is repeated in the tables.
 | `A1.14.8` | Gravel Laying above FGL/Inside DT FDG | Final Inspection | Stone Blanket Layer Checklist | `A1.14.7` |
 | `A1.14.9` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.14.8` |
 
-**A1.15 — HT Foundation** (sheet rows 74–82)
+**A1.15 — HT Foundation** (sheet rows 72–80)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -466,7 +509,7 @@ column is repeated in the tables.
 | `A1.15.8` | Handrail Installation | Final Inspection | Checklist for Preacst Elements | `A1.15.7` |
 | `A1.15.9` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.15.8` |
 
-**A1.16 — Burnt Oil Tank** (sheet rows 83–89)
+**A1.16 — Burnt Oil Tank** (sheet rows 81–87)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -478,7 +521,7 @@ column is repeated in the tables.
 | `A1.16.6` | Drain Pipe Connectivity | Final Inspection | BOT Level and Pipe Connectivity Checklist | `A1.16.5` |
 | `A1.16.7` | Post-Activity Work | Post-Activity Checkpoint | - | `A1.16.6` |
 
-**A1.17 — Fencing** (sheet rows 90–97)
+**A1.17 — Fencing** (sheet rows 88–95)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -494,7 +537,7 @@ column is repeated in the tables.
 ### CIVIL / Crane Pad
 
 
-**A1.18 — Crane Pad** (sheet rows 98–102)
+**A1.18 — Crane Pad** (sheet rows 96–100)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -507,23 +550,23 @@ column is repeated in the tables.
 ### ELECTRICAL / USS Electrical
 
 
-**B1.1 — Oil Filled Transformer** (sheet rows 103–105)
+**B1.1 — Oil Filled Transformer** (sheet rows 101–103)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
-| `B1.1.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.14.6` |
+| `B1.1.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.14.8` |
 | `B1.1.2` | Transformer and Accessories Installation | Transformer and Accessories Installation Inspection | IDT Oil Filled Transformer Field Quality Protocol | `B1.1.1` |
 | `B1.1.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.1.2` |
 
-**B1.2 — HT Switchboard** (sheet rows 106–108)
+**B1.2 — HT Switchboard** (sheet rows 104–106)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
-| `B1.2.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.15.4` |
+| `B1.2.1` | Pre-Activity Work | Pre-Activity Checkpoint | - | `A1.15.8` |
 | `B1.2.2` | HT Panel and Accessories Installation | HT Panel and Accessories Installation Inspection | HT Switchboard Field Quality Protocol | `B1.2.1` |
 | `B1.2.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.2.2` |
 
-**B1.3 — Earthing** (sheet rows 109–111)
+**B1.3 — Earthing** (sheet rows 107–109)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -531,7 +574,7 @@ column is repeated in the tables.
 | `B1.3.2` | Earthing Flat Work | Earthing Flat Work Inspection | Earthing Field Quality Protocol | `B1.3.1` |
 | `B1.3.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.3.2` |
 
-**B1.4 — Cable Tray** (sheet rows 112–114)
+**B1.4 — Cable Tray** (sheet rows 110–112)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -539,7 +582,7 @@ column is repeated in the tables.
 | `B1.4.2` | LT Cable Tray Work | LT Cable Tray Work Inspection | Cable Tray Field Quality Protocol | `B1.4.1` |
 | `B1.4.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.4.2` |
 
-**B1.5 — Illumination** (sheet rows 115–117)
+**B1.5 — Illumination** (sheet rows 113–115)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -547,7 +590,7 @@ column is repeated in the tables.
 | `B1.5.2` | Light Pole Work | Light Pole Work Inspection | Illumination Field Quality Protocol | `B1.5.1` |
 | `B1.5.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.5.2` |
 
-**B1.6 — LT Switchboard** (sheet rows 118–120)
+**B1.6 — LT Switchboard** (sheet rows 116–118)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -555,7 +598,7 @@ column is repeated in the tables.
 | `B1.6.2` | ACDB Work | ACDB Work Inspection | LT Switchboards Field Quality Protocol | `B1.6.1` |
 | `B1.6.3` | Post-Activity Work | Post-Activity Checkpoint | - | `B1.6.2` |
 
-**B1.7 — LT Cabling** (sheet rows 121–123)
+**B1.7 — LT Cabling** (sheet rows 119–121)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -566,7 +609,7 @@ column is repeated in the tables.
 ### ELECTRICAL / UG Cable
 
 
-**B1.8 — HT Cabling** (sheet rows 124–126)
+**B1.8 — HT Cabling** (sheet rows 122–124)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -577,7 +620,7 @@ column is repeated in the tables.
 ### MECHANICAL / WTG Erection
 
 
-**C1.1 — Tower Erection** (sheet rows 127–129)
+**C1.1 — Tower Erection** (sheet rows 125–127)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -585,7 +628,7 @@ column is repeated in the tables.
 | `C 1.1.2` | Tower Erection | Tower Erection Inspection | Tower Erection Checklist | `C 1.1.1` |
 | `C 1.1.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C 1.1.2` |
 
-**C1.2 — Nacelle** (sheet rows 130–132)
+**C1.2 — Nacelle** (sheet rows 128–130)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -593,7 +636,7 @@ column is repeated in the tables.
 | `C1.2.2` | Nacelle Installation | Nacelle Installation Inspection | Nacelle Installation Checklist | `C1.2.1` |
 | `C1.2.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.2.2` |
 
-**C1.3 — Hub, DT and Blades** (sheet rows 133–135)
+**C1.3 — Hub, DT and Blades** (sheet rows 131–133)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -601,7 +644,7 @@ column is repeated in the tables.
 | `C1.3.2` | Hub, DT and Blades Installation | Hub, DT and Blades Installation Inspection | Rotor Hub, Drive Train and Blades Installation Checklist | `C1.3.1` |
 | `C1.3.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.3.2` |
 
-**C1.4 — Generator** (sheet rows 136–138)
+**C1.4 — Generator** (sheet rows 134–136)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -609,7 +652,7 @@ column is repeated in the tables.
 | `C1.4.2` | Generator Installation | Generator Installation Inspection | Generator Installatio Checklist | `C1.4.1` |
 | `C1.4.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.4.2` |
 
-**C1.5 — Nacelle Top Cover** (sheet rows 139–141)
+**C1.5 — Nacelle Top Cover** (sheet rows 137–139)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -617,7 +660,7 @@ column is repeated in the tables.
 | `C1.5.2` | Nacelle Top Cover Installation | Nacelle Top Cover Installation Inspection | Nacelle Top Cover Installation Checklist | `C1.5.1` |
 | `C1.5.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.5.2` |
 
-**C1.6 — Torquing** (sheet rows 142–144)
+**C1.6 — Torquing** (sheet rows 140–142)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -625,7 +668,7 @@ column is repeated in the tables.
 | `C1.6.2` | Torquing | Torquing Inspection | Torquing Checklist | `C1.6.1` |
 | `C1.6.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.6.2` |
 
-**C1.7 — MCC Audit** (sheet rows 145–147)
+**C1.7 — MCC Audit** (sheet rows 143–145)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -633,7 +676,7 @@ column is repeated in the tables.
 | `C1.7.2` | MCC Audit | MCC Audit | MCC Audit Report | `C1.7.1` |
 | `C1.7.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.7.2` |
 
-**C1.8 — Re-Verification Audit** (sheet rows 148–150)
+**C1.8 — Re-Verification Audit** (sheet rows 146–148)
 
 | Code | Sub-Activity | Inspection Checkpoint | Inspection Checklist | Preceding |
 | --- | --- | --- | --- | --- |
@@ -641,42 +684,96 @@ column is repeated in the tables.
 | `C1.8.2` | Re-Verification Audit | Re-Verification Audit | Re-Verification Audit Report | `C1.8.1` |
 | `C1.8.3` | Post-Activity Work | Post-Activity Checkpoint | - | `C1.8.2` |
 
-## Open questions — must be confirmed live before writing any wind RFI spec
+## Live confirmation round 2 — the RFI create form (pulse-dev, 2026-08-31)
 
-None of these can be answered from the spreadsheet. Listed roughly in the order
-they would block work:
+Captured by `tests/specs/00_inspect_wind_rfi_form.spec.js`, logged in as the
+WTG Contractor Incharge created by the smoke chain, on WIND / WTG-Khavda /
+KH 34 / Civil / Crane Pad. Raw output in
+`tests/fixtures/so-mapping-baseline/wind-rfi-form-recon.json`. Nothing was
+submitted and **no Work Section was ever selected** — only counted — because
+selecting one permanently consumes it.
 
-1. **Is there a wind project in the QA/docker environment at all, and what is
-   its Work Region tree?** `docs/work-region-hierarchy.md` documents the
-   Cluster → Site → Work Location → Work Area shape for solar; wind's `Per WTG`
-   unit of RFI suggests Work Sections are individual WTGs, but the mapping of
-   WTG → Work Section / Work Area is unverified.
-2. **Are the checklist-less Pre-Activity / Post-Activity checkpoints
-   RFI-raisable?** Half the sheet, and the entry point of every chain. If they
-   are, does the Inspection Checklist dropdown render empty, absent, or broken
-   (as solar's checklist-less "Routine Testing" did)?
-3. **How does the checkpoint dropdown disambiguate the repeated "Routine
-   Inspection" name** in the seven activities listed above — is selection scoped
-   by Sub-Activity, or are there literal duplicate options?
-4. **Is the `Optional? = Y` column real?** If every wind checkpoint is genuinely
-   optional, the preceding-checkpoint dependency isn't blocking and there is no
-   wind equivalent of `29_rfi_activity_dependency.spec.js` to write. This one
-   determines whether the whole dependency-chain test concept transfers.
-5. **Does the "selecting a Work Section permanently consumes it" bug apply to
-   wind?** It is the single biggest constraint on the solar dependency specs
-   (see `docs/rfi-activity-dependency-chain.md`) and dictated both test
-   strategies there. With `Per WTG` granularity uniform across all 146 rows,
-   whichever strategy applies would apply to every wind activity identically —
-   the throwaway-Work-Section approach if a Work Area holds many WTGs, the
-   two-Work-Areas approach if it holds one.
-6. **How is the multi-valued `A1.17.1` AND-dependency enforced and reported?**
-   No solar precedent.
-7. **Which column feeds the Inspection Checklist dropdown** — `Inspection
-   Checklist Name` (L) or `Inspection Checklist Document` (M) — and is any code
-   prefix stripped, as `C_14_1` was for solar?
-8. **What does `A1.10.1` actually depend on**, given `A1.9.4` no longer exists?
-   Needs an answer from the sheet owner, or observation of what the app
-   enforces.
+**The form narrows Activity -> Sub-Activity -> Checkpoint -> Checklist, and each
+step lands on exactly one thing.** Every Sub-Activity offers exactly ONE
+Inspection Checkpoint, and every Checkpoint offers exactly ONE Inspection
+Checklist. The sheet's rows are therefore 1:1 with (Sub-Activity, Checkpoint)
+pairs, which is what the Crane Pad probe showed against the sheet's five
+`A1.18.x` rows.
+
+- **The checklist-less bookend checkpoints ARE raisable, and they DO have a
+  checklist.** `Pre-Activity Checkpoint` and `Post-Activity Checkpoint` both
+  appear in the dropdown and both offer a real option:
+  **"Documents and report information"**. So column L's `-` does not mean "no
+  checklist in the app" — there is a generic one. This is much better than
+  solar's checklist-less "Routine Testing", which rendered a broken dropdown
+  and had to be left out of scope. 68 of the 144 rows are these bookends, so
+  this unblocks roughly half the sheet.
+- **There is exactly ONE Work Section per Work Area, and it is the Work Area's
+  own name** (selecting Work Area `KH 34` makes `KH 34` the only Work Section).
+  This is solar's `Block`-granularity case, so the wind dependency spec needs
+  the **two-Work-Areas** strategy
+  (`runDependencyChainForScarceWorkSectionActivity`), not the
+  throwaway-Work-Section one. Consistent with `Unit of RFI = Per WTG` on every
+  row: a wind Work Area *is* one WTG.
+- **The Inspection Checklist dropdown shows the checklist NAME with no code
+  prefix** — `OGL Checklist`, `Boulder Laying Checklist`. So column L feeds it,
+  and unlike solar there is no `C_14_1`-style prefix to strip.
+- **Activity and Sub-Activity are rendered with numeric prefixes; Checkpoint
+  and Checklist are not.** Live: Activity `1. Crane Pad`; Sub-Activities
+  `1.1 Pre-Activity Work`, `1.2 OGL`, `1.3 Boulder laying`, `1.4 GSB laying`,
+  `1.5 Post-Activity Work`. Any matching against the activity master must strip
+  a leading `<n>.` / `<n>.<n>` and compare case-insensitively — note live
+  `Boulder laying` / `GSB laying` vs the sheet's `Boulder Laying` / `GSB
+  Laying`.
+- **Sub-Package list matches the sheet exactly**: `Crane Pad`, `Stone Column`,
+  `USS Civil and Structural`, `WTG Foundation`.
+- **The CI sees only what it was WAM'd**: one Work Location (`WTG-Khavda`), one
+  Work Area (`KH 34`), one Package (`Civil`) — confirming stages 1-3 of the
+  smoke chain wired up correctly end to end. It also means a spec needing TWO
+  Work Areas requires both to be SO-mapped AND WAM'd first.
+- **One checklist discrepancy against the sheet**: for Crane Pad's
+  `Final Inspection` (`A1.18.4`, Sub-Activity `GSB Laying`) the sheet says
+  `GSB Laying Checklist` but the app offers **`GSB Inspection Checklist`** —
+  which is the sheet's checklist for a *different* row (`A1.13.4`, GSB Layer
+  under Backfilling (After Mesh)). Worth raising with the sheet owner.
+- **Still exactly one checklist option everywhere**, so the "pick any one of
+  several checklist options" mechanic remains unexercised in wind, exactly as
+  it stayed unexercised across all six solar activity chains.
+
+## Open questions
+
+Struck through where recon answered them.
+
+1. ~~Is there a wind project in the environment at all, and what is its Work
+   Region tree?~~ **Answered**: `WIND`, one Work Location `WTG-Khavda` under
+   Site `Khavda`, 244 Work Areas (`KH nn` / `WTG nnn`, with a space), 3
+   packages.
+2. ~~Do the sheet's activity names match the deployed master?~~ **Answered**:
+   the Current sheet matches exactly, 34/34, both directions.
+3. ~~Are the checklist-less Pre-Activity / Post-Activity checkpoints
+   RFI-raisable?~~ **Answered**: yes, and they offer a real checklist,
+   "Documents and report information".
+4. ~~How does the checkpoint dropdown disambiguate the repeated "Routine
+   Inspection" name?~~ **Answered in mechanism**: the Checkpoint dropdown is
+   scoped to the selected Sub-Activity and offers exactly one checkpoint, so
+   the repeated name can never be ambiguous in the UI. Confirmed on Crane Pad
+   (5 sub-activities, 1 checkpoint each); worth re-confirming on a genuinely
+   repeated case such as `A1.4 Blanket Layer/GSB Layer` (5 rows all named
+   "Routine Inspection") when that sub-package is exercised.
+5. **Is the `Optional? = Y` column real?** Still open — needs actually
+   submitting RFIs and observing whether a missing predecessor blocks. If every
+   wind checkpoint is genuinely optional there is no wind equivalent of
+   `29_rfi_activity_dependency.spec.js` to write.
+6. ~~What is a wind Work Section, given `Per WTG` granularity?~~ **Answered**:
+   exactly one per Work Area, named after the Work Area. Wind therefore needs
+   the two-Work-Areas dependency strategy.
+7. **Does the "selecting a Work Section permanently consumes it" bug apply to
+   wind?** Still open — deliberately not probed, since probing it costs the
+   only Work Section a Work Area has.
+8. **How is the multi-valued `A1.17.1` AND-dependency enforced and reported?**
+   Still open. No solar precedent.
+9. ~~Which column feeds the Inspection Checklist dropdown, and is a code prefix
+   stripped?~~ **Answered**: column L (Checklist Name), no prefix.
 
 ## Related
 
@@ -684,10 +781,14 @@ they would block work:
   validated test strategies the wind work would mirror.
 - `tests/utils/rfi-dependency-data.js` — the solar reference data in the shape a
   spec consumes. No wind counterpart is written yet, deliberately: that file
-  only holds live-confirmed values, and nothing wind is confirmed.
+  only holds live-confirmed values, and the wind checkpoint/checklist layer is
+  not confirmed yet.
+- `tests/specs/00_inspect_wind_master_and_mobile.spec.js` — the read-only recon
+  that produced the Live confirmation section; re-runnable with
+  `PULSE_ENV=dev npx playwright test tests/specs/00_inspect_wind_master_and_mobile.spec.js --project=chromium --workers=1`.
 - `docs/work-region-hierarchy.md` — Work Region tree the RFI form cascades
   through, and how it combines with the Activity chain.
 - `docs/rfi-business-logic.md` §6a — the checkpoint-dependency rule itself.
-- `tests/fixtures/wind-activity-checklist.json` — this extraction,
-  machine-readable.
+- `tests/fixtures/wind-activity-checklist.json` — the Current (deployed) sheet,
+  machine-readable. `-draft.json` — the not-yet-deployed Draft sheet.
 - `tests/fixtures/Activity Master and Checklist Mapping_Wind.xlsx` — source.

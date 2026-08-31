@@ -1,0 +1,106 @@
+{
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "loggedInAs": {
+    "name": "CIWTGxglUser59",
+    "email": "CIWTGxglUser59@adani.com",
+    "role": "Contractor Incharge"
+  },
+  "workLocation": "WTG-Khavda",
+  "workArea": "KH 34",
+  "package": "Civil",
+  "cascade": {
+    "workLocations": [
+      "WTG-Khavda"
+    ],
+    "workAreas": [
+      "KH 34"
+    ],
+    "packages": [
+      "Civil"
+    ],
+    "subPackages": [
+      "Crane Pad",
+      "Stone Column",
+      "USS Civil and Structural",
+      "WTG Foundation"
+    ],
+    "activities": [
+      "1. Crane Pad"
+    ]
+  },
+  "activities": {
+    "1. Crane Pad": {
+      "subActivities": [
+        "1.1 Pre-Activity Work",
+        "1.2 OGL",
+        "1.3 Boulder laying",
+        "1.4 GSB laying",
+        "1.5 Post-Activity Work"
+      ],
+      "sheet": [],
+      "checkpoints": {
+        "1.1 Pre-Activity Work": {
+          "Pre-Activity Checkpoint": {
+            "checklists": [
+              "Documents and report information"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "1.2 OGL": {
+          "Pre-Inspection": {
+            "checklists": [
+              "OGL Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "1.3 Boulder laying": {
+          "Routine Inspection": {
+            "checklists": [
+              "Boulder Laying Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "1.4 GSB laying": {
+          "Final Inspection": {
+            "checklists": [
+              "GSB Inspection Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "1.5 Post-Activity Work": {
+          "Post-Activity Checkpoint": {
+            "checklists": [
+              "Documents and report information"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "subPackageInspected": "Crane Pad"
+}

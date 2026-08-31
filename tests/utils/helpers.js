@@ -139,6 +139,47 @@ async function loginAsUser(page, email, password) {
   return dashboard;
 }
 
+// Logs in with EXPLICIT credentials and waits the way the flow roles need.
+//
+// Fills a real gap between the two existing helpers:
+//   loginAsRole(page, role)          fixed .env credentials + waitForLoad
+//   loginAsUser(page, email, pwd)    arbitrary credentials + waitForContentOnly
+// The smoke chain needs arbitrary credentials WITH waitForLoad, because its
+// users are generated (no .env entry) but ARE the spinner-showing kind:
+// loginAsUser's header comment records that only CIC/EE/QI show the slow
+// first-time PWA install spinner, and the smoke chain's Contractor Incharge /
+// Execution Engineer / Quality Inspector are exactly those roles.
+// waitForContentOnly would return before the PWA finished installing.
+//
+// Mirrors loginAsRole's body otherwise, including the
+// "data didn't finish downloading" banner recovery those same offline/PWA
+// accounts intermittently show.
+//
+// `navigateToMyTasks: false` stays on the dashboard — for callers that need a
+// different destination.
+async function loginAsFlowUser(page, email, password, { navigateToMyTasks = true } = {}) {
+  if (!email || !password) {
+    throw new Error(
+      `loginAsFlowUser needs both an email and a password (got email=${email ? 'set' : 'MISSING'}, ` +
+      `password=${password ? 'set' : 'MISSING'}). Generated smoke users authenticate with ` +
+      `BULK_USER_DEFAULT_PASSWORD from .env.`
+    );
+  }
+
+  await page.context().clearCookies();
+
+  const login = new LoginPage(page);
+  await login.goto();
+  await login.login(email, password);
+
+  const dashboard = new DashboardPage(page);
+  await dashboard.waitForLoad();
+  await dashboard.resolveIncompleteDownloadBanner();
+  await page.waitForTimeout(2000);
+  if (navigateToMyTasks) await dashboard.goToMyTasks();
+  return dashboard;
+}
+
 async function waitAndClick(page, selector, timeout = 10000) {
   await page.waitForSelector(selector, { timeout });
   await page.click(selector);
@@ -178,5 +219,6 @@ module.exports = {
   adminFreshLogin,
   loginAsRole,
   loginAsUser,
+  loginAsFlowUser,
   loginFreshRoleSession,
 };

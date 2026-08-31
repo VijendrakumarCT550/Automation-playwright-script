@@ -1,0 +1,84 @@
+{
+  "profile": "wind-e2e",
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "projectType": "WIND",
+  "workLocation": "WTG-Khavda",
+  "workArea": "KH 34",
+  "targetServiceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD",
+  "packages": {
+    "Civil": [
+      {
+        "activity": "Stone Column Installation",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Plate Load Test",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Excavation",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Blanket Layer/GSB Layer",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Plum Concrete",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "PCC",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Bottom Anchor Flange",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Reinforcement Binding",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "WTG Foundation",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Top Flange Grouting",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Backfilling (Before Mesh)",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Earthing Mesh",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Backfilling (After Mesh)",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "DT",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "HT Foundation",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Burnt Oil Tank",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Fencing",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      },
+      {
+        "activity": "Crane Pad",
+        "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+      }
+    ]
+  }
+}

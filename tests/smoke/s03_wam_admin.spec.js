@@ -1,0 +1,124 @@
+const { test, expect } = require('../config/test-base');
+const { adminFreshLogin } = require('../utils/helpers');
+const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
+const WAMPage = require('../pages/WAMPage');
+
+// Stage 3 of the E2E smoke chain: Admin assigns each of the four users created
+// in stage 1 to the profile's work area, so they actually appear in the RFI/NC
+// flow. Without this, the users exist and have activity access via SO Mapping
+// but no work area, and nothing can be raised.
+//
+// Deliberately assigns ONE work area (profile.primaryWorkArea), not all of
+// them. WTG-Khavda has 244 work areas — a full-location assignment would be a
+// very different, much slower test, and the flow stages only need the one.
+//
+// Contractor Incharge and Contractor Manager are VENDOR roles and their WAM
+// dialog carries an extra Service Order field (see 07_wam_ci.spec.js) which
+// gates assignment to work already mapped to that vendor in SO Mapping — i.e.
+// this stage depends on stage 2 having run. Execution Engineer and Quality
+// Inspector have no such field; fillAssignmentFilters skips it when absent.
+test.describe.configure({ mode: 'serial' });
+
+const ROLE_ORDER = ['CI', 'CM', 'EE', 'QI'];
+
+test.describe('Smoke stage 3 - WAM the created users onto the work area', () => {
+  let context, page, dashboard, profile, users;
+
+  test.beforeAll(async ({ browser, profile: p }) => {
+    profile = p;
+
+    // Resolve the users stage 1 created/reused. Fail with a readable message
+    // rather than letting an undefined name reach a dropdown search.
+    const recorded = loadLastCreatedUsers();
+    users = {};
+    for (const roleKey of ROLE_ORDER) {
+      const prefix = profile.users.prefixes[roleKey];
+      const entry = recorded[prefix];
+      expect(
+        entry && entry.profileKey === profile.key,
+        `No recorded user for ${roleKey} (prefix "${prefix}") on profile "${profile.key}" — ` +
+        `run the smoke-${profile.key.replace('-e2e', '')}-users stage first.`
+      ).toBeTruthy();
+      users[roleKey] = entry;
+    }
+
+    ({ context, page, dashboard } = await adminFreshLogin(browser));
+    console.log(
+      `\n=== Smoke WAM: profile "${profile.key}" -> ` +
+      `${profile.workLocations[0]} / ${profile.primaryWorkArea} ===`
+    );
+    for (const roleKey of ROLE_ORDER) {
+      console.log(`    ${roleKey} (${users[roleKey].role}): ${users[roleKey].name}`);
+    }
+    console.log('');
+  });
+
+  test.afterAll(async () => {
+    if (context) await context.close();
+  });
+
+  for (const roleKey of ROLE_ORDER) {
+    test(`assign the ${roleKey} user to the work area`, async () => {
+      const user = users[roleKey];
+      const workArea = profile.primaryWorkArea;
+      const wam = new WAMPage(page);
+
+      await wam.goto(dashboard);
+      await wam.openAddDetails();
+
+      await wam.fillAssignmentFilters({
+        role: user.role,
+        cluster: profile.cluster,
+        site: profile.site,
+        workLocation: profile.workLocations[0],
+        package: profile.packages[0],
+        // Precise SO string first, vendor name as fallback — the dialog's
+        // rendering of this field isn't confirmed, and BAUER has five SOs.
+        serviceOrder: user.userType === 'VENDOR'
+          ? [profile.vendor.serviceOrder, profile.vendor.name]
+          : null,
+      });
+
+      // Only change the row if it isn't already this user — same
+      // leave-it-alone rule the existing WAM specs use, so a re-run is a
+      // no-op rather than a churn.
+      const changed = await wam.assignUserIfNeeded(workArea, user.name);
+
+      await expect(
+        wam.getWorkAreaRow(workArea).locator('[role="combobox"]')
+      ).toContainText(user.name);
+
+      const toastText = await wam.clickSubmit();
+      console.log(`  ${roleKey}: changed=${changed}, toast="${toastText}"`);
+      expect(
+        toastText,
+        `Submit should report either a successful assignment or no-change for ${user.name}`
+      ).toMatch(changed ? /Assigned successfully/i : /Assigned successfully|No changes to save/i);
+
+      // Submit resets the dialog's fields but does NOT close it — close and
+      // reopen from scratch so this confirms server-side persistence rather
+      // than still-populated front-end form state (same reasoning as
+      // 07_wam_ci.spec.js).
+      await wam.closeDialog();
+      await wam.openAddDetails();
+      await wam.fillAssignmentFilters({
+        role: user.role,
+        cluster: profile.cluster,
+        site: profile.site,
+        workLocation: profile.workLocations[0],
+        package: profile.packages[0],
+        serviceOrder: user.userType === 'VENDOR'
+          ? [profile.vendor.serviceOrder, profile.vendor.name]
+          : null,
+      });
+
+      const persisted = await wam.getWorkAreaUserValue(workArea);
+      expect(
+        persisted,
+        `${user.role} "${user.name}" should still be assigned to ${workArea} after reopening the dialog`
+      ).toContain(user.name);
+
+      await wam.closeDialog();
+    });
+  }
+});

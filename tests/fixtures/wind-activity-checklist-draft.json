@@ -28,7 +28,7 @@
   "uom": "EA",
   "code": "A1.1.2",
   "checkpoint": "Inspection of Stone Column",
-  "description": "Dia of vibro float, Depth calibration censer, Crane verticality angle, Free Energy e.g. Ams/Bar/Torque, TBM Inspection, Grid Marking & Cordinate Checking, Depth verification, Stone column installation graph inspection onsite. Aggregate Stock measurement to ensure minimum initial 10 columns. Aggregate consumption.",
+  "description": "Dia of vibro float, Depth calibration sensor, Crane verticality angle, Free Energy e.g. Ams/Bar/Torque, TBM Inspection, Grid Marking & Cordinate Checking, Depth verification, Stone column installation graph inspection onsite. Aggregate Stock measurement to ensure minimum initial 10 columns. Aggregate consumption.",
   "checklist": "Stone Column Inspection Protocol for Vibro-Non Vibro Method",
   "checklistDoc": "Stone Column Inspection Protocol for Vibro-Non Vibro Method",
   "optional": "Y",
@@ -577,14 +577,14 @@
  },
  {
   "sheetRow": 37,
-  "srNo": "A1.9",
+  "srNo": "A1.9a",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
   "activity": "WTG Foundation",
   "subActivity": "Pre-Activity Work",
   "unitOfRfi": "Per WTG",
   "uom": "EA",
-  "code": "A1.9.1",
+  "code": "A1.9a.1",
   "checkpoint": "Pre-Activity Checkpoint",
   "description": "Pre-Activity Inspection Checks, Documents and Reports",
   "checklist": "-",
@@ -595,78 +595,114 @@
  },
  {
   "sheetRow": 38,
-  "srNo": "A1.9",
+  "srNo": "A1.9a",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
   "activity": "WTG Foundation",
   "subActivity": "WTG Foundation",
   "unitOfRfi": "Per WTG",
   "uom": "EA",
-  "code": "A1.9.2",
+  "code": "A1.9a.2",
   "checkpoint": "Pre Pour Inspection - WTG Foundation",
   "description": "Final Reinforcement inspection, Shuttering, Earthing strip, DWC Conduit, Grout bucket along with top glange fixing, Raw material testing, Cleaning, Vibrator, Boom Placer, Nitobond, Curing compound, Manpower, Mason, Cement",
   "checklist": "Pre-Pour Checklist",
   "checklistDoc": "Pre pour checklist",
   "optional": "Y",
-  "preceding": "A1.9.1",
+  "preceding": "A1.9a.1",
   "remarks": ""
  },
  {
   "sheetRow": 39,
-  "srNo": "A1.9",
+  "srNo": "A1.9a",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
   "activity": "WTG Foundation",
   "subActivity": "WTG Foundation",
   "unitOfRfi": "Per WTG",
   "uom": "EA",
-  "code": "A1.9.3",
+  "code": "A1.9a.3",
   "checkpoint": "Post Pour Inspection - WTG Foundation",
   "description": "As cast finishing; Padestal, Stud & Flange level, Curing compound application",
   "checklist": "Post-Pour Checklist",
   "checklistDoc": "Post pour checklist",
   "optional": "Y",
-  "preceding": "A1.9.2",
+  "preceding": "A1.9a.2",
   "remarks": ""
  },
  {
   "sheetRow": 40,
-  "srNo": "A1.9",
-  "package": "CIVIL",
-  "subPackage": "WTG Foundation",
-  "activity": "WTG Foundation",
-  "subActivity": "Bitumen Painting of WTG Foundation",
-  "unitOfRfi": "Per WTG",
-  "uom": "EA",
-  "code": "A1.9.4",
-  "checkpoint": "Routine Inspection",
-  "description": "Uniform painting and DFT checking",
-  "checklist": "Bitumen Coating Painting Checklist",
-  "checklistDoc": "Bitumen coating Painting_inspection",
-  "optional": "Y",
-  "preceding": "A1.9.3",
-  "remarks": ""
- },
- {
-  "sheetRow": 41,
-  "srNo": "A1.9",
+  "srNo": "A1.9a",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
   "activity": "WTG Foundation",
   "subActivity": "Post-Activity Work",
   "unitOfRfi": "Per WTG",
   "uom": "EA",
-  "code": "A1.9.5",
+  "code": "A1.9a.4",
   "checkpoint": "Post-Activity Checkpoint",
   "description": "Post-Activity Inspection Checks, Documents and Reports",
   "checklist": "-",
   "checklistDoc": "-",
   "optional": "Y",
-  "preceding": "A1.9.4",
+  "preceding": "A1.9a.3",
+  "remarks": ""
+ },
+ {
+  "sheetRow": 41,
+  "srNo": "A1.9b",
+  "package": "CIVIL",
+  "subPackage": "WTG Foundation",
+  "activity": "WTG Foundation - Bitumen Painting",
+  "subActivity": "Pre-Activity Work",
+  "unitOfRfi": "Per WTG",
+  "uom": "EA",
+  "code": "A1.9b.1",
+  "checkpoint": "Pre-Activity Checkpoint",
+  "description": "Pre-Activity Inspection Checks, Documents and Reports",
+  "checklist": "-",
+  "checklistDoc": "-",
+  "optional": "Y",
+  "preceding": "A1.9a.4",
   "remarks": ""
  },
  {
   "sheetRow": 42,
+  "srNo": "A1.9b",
+  "package": "CIVIL",
+  "subPackage": "WTG Foundation",
+  "activity": "WTG Foundation - Bitumen Painting",
+  "subActivity": "Bitumen Painting of WTG Foundation",
+  "unitOfRfi": "Per WTG",
+  "uom": "EA",
+  "code": "A1.9b.2",
+  "checkpoint": "Routine Inspection",
+  "description": "Uniform painting and DFT checking",
+  "checklist": "Bitumen Coating Painting Checklist",
+  "checklistDoc": "Bitumen coating Painting_inspection",
+  "optional": "Y",
+  "preceding": "A1.9b.1",
+  "remarks": ""
+ },
+ {
+  "sheetRow": 43,
+  "srNo": "A1.9b",
+  "package": "CIVIL",
+  "subPackage": "WTG Foundation",
+  "activity": "WTG Foundation - Bitumen Painting",
+  "subActivity": "Post-Activity Work",
+  "unitOfRfi": "Per WTG",
+  "uom": "EA",
+  "code": "A1.9b.3",
+  "checkpoint": "Post-Activity Checkpoint",
+  "description": "Post-Activity Inspection Checks, Documents and Reports",
+  "checklist": "-",
+  "checklistDoc": "-",
+  "optional": "Y",
+  "preceding": "A1.9b.2",
+  "remarks": ""
+ },
+ {
+  "sheetRow": 44,
   "srNo": "A1.10",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -684,7 +720,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 43,
+  "sheetRow": 45,
   "srNo": "A1.10",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -702,7 +738,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 44,
+  "sheetRow": 46,
   "srNo": "A1.10",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -720,7 +756,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 45,
+  "sheetRow": 47,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -738,7 +774,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 46,
+  "sheetRow": 48,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -756,7 +792,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 47,
+  "sheetRow": 49,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -774,7 +810,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 48,
+  "sheetRow": 50,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -792,7 +828,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 49,
+  "sheetRow": 51,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -810,7 +846,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 50,
+  "sheetRow": 52,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -828,7 +864,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 51,
+  "sheetRow": 53,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -846,7 +882,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 52,
+  "sheetRow": 54,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -864,7 +900,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 53,
+  "sheetRow": 55,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -882,7 +918,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 54,
+  "sheetRow": 56,
   "srNo": "A1.11",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -900,7 +936,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 55,
+  "sheetRow": 57,
   "srNo": "A1.12",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -918,7 +954,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 56,
+  "sheetRow": 58,
   "srNo": "A1.12",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -936,7 +972,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 57,
+  "sheetRow": 59,
   "srNo": "A1.12",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -954,7 +990,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 58,
+  "sheetRow": 60,
   "srNo": "A1.13",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -972,7 +1008,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 59,
+  "sheetRow": 61,
   "srNo": "A1.13",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -990,7 +1026,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 60,
+  "sheetRow": 62,
   "srNo": "A1.13",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -1008,7 +1044,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 61,
+  "sheetRow": 63,
   "srNo": "A1.13",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -1026,7 +1062,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 62,
+  "sheetRow": 64,
   "srNo": "A1.13",
   "package": "CIVIL",
   "subPackage": "WTG Foundation",
@@ -1044,7 +1080,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 63,
+  "sheetRow": 65,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1062,7 +1098,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 64,
+  "sheetRow": 66,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1080,7 +1116,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 65,
+  "sheetRow": 67,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1098,7 +1134,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 66,
+  "sheetRow": 68,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1116,7 +1152,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 67,
+  "sheetRow": 69,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1134,7 +1170,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 68,
+  "sheetRow": 70,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1152,7 +1188,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 69,
+  "sheetRow": 71,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1170,7 +1206,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 70,
+  "sheetRow": 72,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1188,7 +1224,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 71,
+  "sheetRow": 73,
   "srNo": "A1.14",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1206,7 +1242,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 72,
+  "sheetRow": 74,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1224,7 +1260,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 73,
+  "sheetRow": 75,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1242,7 +1278,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 74,
+  "sheetRow": 76,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1260,7 +1296,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 75,
+  "sheetRow": 77,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1278,7 +1314,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 76,
+  "sheetRow": 78,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1296,7 +1332,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 77,
+  "sheetRow": 79,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1314,7 +1350,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 78,
+  "sheetRow": 80,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1332,7 +1368,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 79,
+  "sheetRow": 81,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1350,7 +1386,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 80,
+  "sheetRow": 82,
   "srNo": "A1.15",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1368,7 +1404,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 81,
+  "sheetRow": 83,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1386,7 +1422,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 82,
+  "sheetRow": 84,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1404,7 +1440,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 83,
+  "sheetRow": 85,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1422,7 +1458,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 84,
+  "sheetRow": 86,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1440,7 +1476,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 85,
+  "sheetRow": 87,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1458,7 +1494,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 86,
+  "sheetRow": 88,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1476,7 +1512,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 87,
+  "sheetRow": 89,
   "srNo": "A1.16",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1494,7 +1530,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 88,
+  "sheetRow": 90,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1512,7 +1548,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 89,
+  "sheetRow": 91,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1530,7 +1566,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 90,
+  "sheetRow": 92,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1548,7 +1584,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 91,
+  "sheetRow": 93,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1566,7 +1602,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 92,
+  "sheetRow": 94,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1584,7 +1620,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 93,
+  "sheetRow": 95,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1602,7 +1638,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 94,
+  "sheetRow": 96,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1620,7 +1656,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 95,
+  "sheetRow": 97,
   "srNo": "A1.17",
   "package": "CIVIL",
   "subPackage": "USS Civil and Structural",
@@ -1638,7 +1674,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 96,
+  "sheetRow": 98,
   "srNo": "A1.18",
   "package": "CIVIL",
   "subPackage": "Crane Pad",
@@ -1656,7 +1692,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 97,
+  "sheetRow": 99,
   "srNo": "A1.18",
   "package": "CIVIL",
   "subPackage": "Crane Pad",
@@ -1674,7 +1710,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 98,
+  "sheetRow": 100,
   "srNo": "A1.18",
   "package": "CIVIL",
   "subPackage": "Crane Pad",
@@ -1692,7 +1728,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 99,
+  "sheetRow": 101,
   "srNo": "A1.18",
   "package": "CIVIL",
   "subPackage": "Crane Pad",
@@ -1710,7 +1746,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 100,
+  "sheetRow": 102,
   "srNo": "A1.18",
   "package": "CIVIL",
   "subPackage": "Crane Pad",
@@ -1728,7 +1764,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 101,
+  "sheetRow": 103,
   "srNo": "B1.1",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1742,11 +1778,11 @@
   "checklist": "-",
   "checklistDoc": "-",
   "optional": "Y",
-  "preceding": "A1.14.8",
-  "remarks": "Remove"
+  "preceding": "A1.14.6",
+  "remarks": ""
  },
  {
-  "sheetRow": 102,
+  "sheetRow": 104,
   "srNo": "B1.1",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1764,7 +1800,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 103,
+  "sheetRow": 105,
   "srNo": "B1.1",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1782,7 +1818,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 104,
+  "sheetRow": 106,
   "srNo": "B1.2",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1796,11 +1832,11 @@
   "checklist": "-",
   "checklistDoc": "-",
   "optional": "Y",
-  "preceding": "A1.15.8",
-  "remarks": "Remove"
+  "preceding": "A1.15.4",
+  "remarks": ""
  },
  {
-  "sheetRow": 105,
+  "sheetRow": 107,
   "srNo": "B1.2",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1818,7 +1854,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 106,
+  "sheetRow": 108,
   "srNo": "B1.2",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1836,7 +1872,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 107,
+  "sheetRow": 109,
   "srNo": "B1.3",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1854,7 +1890,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 108,
+  "sheetRow": 110,
   "srNo": "B1.3",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1872,7 +1908,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 109,
+  "sheetRow": 111,
   "srNo": "B1.3",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1890,7 +1926,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 110,
+  "sheetRow": 112,
   "srNo": "B1.4",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1908,7 +1944,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 111,
+  "sheetRow": 113,
   "srNo": "B1.4",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1926,7 +1962,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 112,
+  "sheetRow": 114,
   "srNo": "B1.4",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1944,7 +1980,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 113,
+  "sheetRow": 115,
   "srNo": "B1.5",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1962,7 +1998,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 114,
+  "sheetRow": 116,
   "srNo": "B1.5",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1980,7 +2016,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 115,
+  "sheetRow": 117,
   "srNo": "B1.5",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -1998,7 +2034,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 116,
+  "sheetRow": 118,
   "srNo": "B1.6",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2016,7 +2052,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 117,
+  "sheetRow": 119,
   "srNo": "B1.6",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2034,7 +2070,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 118,
+  "sheetRow": 120,
   "srNo": "B1.6",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2052,7 +2088,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 119,
+  "sheetRow": 121,
   "srNo": "B1.7",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2070,7 +2106,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 120,
+  "sheetRow": 122,
   "srNo": "B1.7",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2088,7 +2124,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 121,
+  "sheetRow": 123,
   "srNo": "B1.7",
   "package": "ELECTRICAL",
   "subPackage": "USS Electrical",
@@ -2106,7 +2142,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 122,
+  "sheetRow": 124,
   "srNo": "B1.8",
   "package": "ELECTRICAL",
   "subPackage": "UG Cable",
@@ -2124,7 +2160,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 123,
+  "sheetRow": 125,
   "srNo": "B1.8",
   "package": "ELECTRICAL",
   "subPackage": "UG Cable",
@@ -2142,7 +2178,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 124,
+  "sheetRow": 126,
   "srNo": "B1.8",
   "package": "ELECTRICAL",
   "subPackage": "UG Cable",
@@ -2160,7 +2196,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 125,
+  "sheetRow": 127,
   "srNo": "C1.1",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2175,10 +2211,10 @@
   "checklistDoc": "-",
   "optional": "Y",
   "preceding": "A1.13.4",
-  "remarks": "Remove"
+  "remarks": ""
  },
  {
-  "sheetRow": 126,
+  "sheetRow": 128,
   "srNo": "C1.1",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2196,7 +2232,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 127,
+  "sheetRow": 129,
   "srNo": "C1.1",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2214,7 +2250,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 128,
+  "sheetRow": 130,
   "srNo": "C1.2",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2232,7 +2268,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 129,
+  "sheetRow": 131,
   "srNo": "C1.2",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2250,7 +2286,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 130,
+  "sheetRow": 132,
   "srNo": "C1.2",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2268,7 +2304,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 131,
+  "sheetRow": 133,
   "srNo": "C1.3",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2286,7 +2322,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 132,
+  "sheetRow": 134,
   "srNo": "C1.3",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2304,7 +2340,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 133,
+  "sheetRow": 135,
   "srNo": "C1.3",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2322,7 +2358,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 134,
+  "sheetRow": 136,
   "srNo": "C1.4",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2340,7 +2376,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 135,
+  "sheetRow": 137,
   "srNo": "C1.4",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2358,7 +2394,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 136,
+  "sheetRow": 138,
   "srNo": "C1.4",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2376,7 +2412,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 137,
+  "sheetRow": 139,
   "srNo": "C1.5",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2394,7 +2430,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 138,
+  "sheetRow": 140,
   "srNo": "C1.5",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2412,7 +2448,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 139,
+  "sheetRow": 141,
   "srNo": "C1.5",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2430,7 +2466,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 140,
+  "sheetRow": 142,
   "srNo": "C1.6",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2448,7 +2484,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 141,
+  "sheetRow": 143,
   "srNo": "C1.6",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2466,7 +2502,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 142,
+  "sheetRow": 144,
   "srNo": "C1.6",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2484,7 +2520,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 143,
+  "sheetRow": 145,
   "srNo": "C1.7",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2502,7 +2538,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 144,
+  "sheetRow": 146,
   "srNo": "C1.7",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2520,7 +2556,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 145,
+  "sheetRow": 147,
   "srNo": "C1.7",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2538,7 +2574,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 146,
+  "sheetRow": 148,
   "srNo": "C1.8",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2556,7 +2592,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 147,
+  "sheetRow": 149,
   "srNo": "C1.8",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",
@@ -2574,7 +2610,7 @@
   "remarks": ""
  },
  {
-  "sheetRow": 148,
+  "sheetRow": 150,
   "srNo": "C1.8",
   "package": "MECHANICAL",
   "subPackage": "WTG Erection",

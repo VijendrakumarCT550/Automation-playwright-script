@@ -133,9 +133,21 @@ class UserManagementPage extends BasePage {
   // field and closes explicitly either way, so passing count:1 for
   // Cluster/Sites is safe regardless of which behavior a given role's
   // fields actually have.
+  // `projectTypes` was added for the WIND work: the Project type field must be
+  // pinned to a SPECIFIC type (a wind user has to be scoped to WIND, not to
+  // "whatever the first two options happen to be"). CONFIRMED live that the
+  // dropdown offers seven — SOLAR, WIND, INFRA, PSS, ADMIN, BESS,
+  // TRANSMISSION_LINE — so a count-only pick is effectively arbitrary.
+  //
+  // Defaults are chosen so every pre-existing caller is unchanged: with
+  // projectTypes=[] and projectTypeCount=2, selectMultiAware falls back to
+  // "first option, then fill to 2" — exactly what it did before this
+  // parameter existed. Verified against 12_user_management.spec.js, which
+  // calls fillLocationCascade() with no arguments at all.
   async fillLocationCascade({
     cluster = ['Gujarat', 'Khavda'],
     site = ['Khavda'],
+    projectTypes = [],
     workLocations = ['A-06c', 'S05b'],
     projectTypeCount = 2,
     workLocationCount = 2,
@@ -151,7 +163,9 @@ class UserManagementPage extends BasePage {
       await this._settleAfterCascadeChange();
     }
     if (await this.projectTypeDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
-      picked.projectType = await this.selectMultiAware(this.projectTypeDropdown, { count: projectTypeCount });
+      picked.projectType = await this.selectMultiAware(
+        this.projectTypeDropdown, { preferred: projectTypes, count: projectTypeCount }
+      );
       await this._settleAfterCascadeChange();
     }
     if (await this.workLocationsDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {

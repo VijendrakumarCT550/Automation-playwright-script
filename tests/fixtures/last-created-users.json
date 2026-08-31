@@ -86,5 +86,61 @@
     "number": 57,
     "role": "Contractor Manager",
     "userType": "VENDOR"
+  },
+  "CIWTG": {
+    "name": "CIWTGxglUser59",
+    "email": "CIWTGxglUser59@adani.com",
+    "phone": "9674599261",
+    "number": 59,
+    "role": "Contractor Incharge",
+    "userType": "VENDOR",
+    "profileKey": "wind-e2e",
+    "projectType": "WIND",
+    "workLocations": [
+      "WTG-Khavda"
+    ],
+    "vendor": "BAUER ENGINEERING INDIA PVT LTD"
+  },
+  "CMWTG": {
+    "name": "CMWTGceoUser59",
+    "email": "CMWTGceoUser59@adani.com",
+    "phone": "9272349025",
+    "number": 59,
+    "role": "Contractor Manager",
+    "userType": "VENDOR",
+    "profileKey": "wind-e2e",
+    "projectType": "WIND",
+    "workLocations": [
+      "WTG-Khavda"
+    ],
+    "vendor": "BAUER ENGINEERING INDIA PVT LTD"
+  },
+  "EEWTG": {
+    "name": "EEWTGmiiUser59",
+    "email": "EEWTGmiiUser59@adani.com",
+    "phone": "6955667683",
+    "number": 59,
+    "role": "Execution Engineer",
+    "userType": "AGEL",
+    "profileKey": "wind-e2e",
+    "projectType": "WIND",
+    "workLocations": [
+      "WTG-Khavda"
+    ],
+    "vendor": null
+  },
+  "QIWTG": {
+    "name": "QIWTGvydUser59",
+    "email": "QIWTGvydUser59@adani.com",
+    "phone": "8337395650",
+    "number": 59,
+    "role": "Quality Inspector",
+    "userType": "AGEL",
+    "profileKey": "wind-e2e",
+    "projectType": "WIND",
+    "workLocations": [
+      "WTG-Khavda"
+    ],
+    "vendor": null
   }
 }

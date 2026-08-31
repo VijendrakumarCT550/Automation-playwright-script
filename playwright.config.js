@@ -1,6 +1,14 @@
 // @ts-check
 require('dotenv').config();
 const { defineConfig, devices } = require('@playwright/test');
+const { applyEnvironment } = require('./tests/config/environments');
+
+// Resolve which PULSE deployment this run targets (PULSE_ENV=dev|test, or the
+// raw .env BASE_URL when PULSE_ENV is unset) and write it back into
+// process.env.BASE_URL — see tests/config/environments.js on why both that
+// and `use.baseURL` below have to agree.
+const TARGET_ENV = applyEnvironment();
+console.log(`[pulse] target environment: ${TARGET_ENV.key} -> ${TARGET_ENV.baseUrl}`);
 
 // RFI flow spec files — run only via the dependency-chained ci/ee/qi-pass-N
 // projects below, never directly under `chromium` (see testIgnore there).
@@ -19,6 +27,48 @@ const NC_FLOW_SPECS = [
   /17_nc_flow_ee\.spec\.js/,
 ];
 
+// Builds one ordered project per smoke stage for a given profile. Stages are
+// listed in execution order; each depends on the previous one, so Playwright
+// runs them strictly in sequence and skips the rest if an earlier stage fails.
+//
+// Only stages whose spec file exists are emitted, so the chain can be built up
+// incrementally (wind first) without the config referencing files that aren't
+// written yet — a missing testMatch would otherwise produce a project that
+// silently passes with zero tests and lets later stages run on nothing.
+const fs = require('fs');
+const pathMod = require('path');
+
+const SMOKE_STAGES = [
+  { id: 'users', file: 's01_user_creation.spec.js' },
+  { id: 'so', file: 's02_so_mapping.spec.js' },
+  { id: 'wam', file: 's03_wam_admin.spec.js' },
+  { id: 'wam-hierarchy', file: 's04_wam_hierarchy.spec.js' },
+  { id: 'rfi', file: 's05_rfi_flow.spec.js' },
+  { id: 'nc', file: 's06_nc_flow.spec.js' },
+  { id: 'dependency', file: 's07_rfi_activity_dependency.spec.js' },
+];
+
+function smokeChain(chainName, profileKey, extraUse = {}) {
+  const projects = [];
+  let previous = null;
+
+  for (const stage of SMOKE_STAGES) {
+    const abs = pathMod.join(__dirname, 'tests', 'smoke', stage.file);
+    if (!fs.existsSync(abs)) continue;
+
+    const name = `smoke-${chainName}-${stage.id}`;
+    projects.push({
+      name,
+      testMatch: new RegExp(`[\\\\/]smoke[\\\\/]${stage.file.replace(/\./g, '\\.')}$`),
+      use: { ...devices['Desktop Chrome'], profileKey, ...extraUse },
+      ...(previous ? { dependencies: [previous] } : {}),
+    });
+    previous = name;
+  }
+
+  return projects;
+}
+
 module.exports = defineConfig({
   testDir: './tests',
   // App has a post-login loading screen (NN% spinner) that can take 3–5 min
@@ -32,7 +82,7 @@ module.exports = defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'https://example.com',
+    baseURL: TARGET_ENV.baseUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
@@ -61,8 +111,12 @@ module.exports = defineConfig({
       // The RFI/NC flow specs must only run through the dependency chains
       // below — otherwise this project would also pick them up
       // unrestricted, racing the pass-N projects and corrupting their
-      // shared tracker files.
-      testIgnore: [...RFI_FLOW_SPECS, ...NC_FLOW_SPECS],
+      // shared tracker files. tests/smoke/ is excluded for the same reason:
+      // it is an ORDERED chain (users -> SO mapping -> WAM -> flows) driven
+      // by the smoke-* projects below, and running its stages unordered
+      // under `chromium` would e.g. try to map a Service Order for users
+      // that don't exist yet.
+      testIgnore: [...RFI_FLOW_SPECS, ...NC_FLOW_SPECS, /[\\/]smoke[\\/]/],
     },
 
     // RFI flow regression: CI creates/resubmits -> EE reviews -> QI reviews,
@@ -99,6 +153,25 @@ module.exports = defineConfig({
     { name: 'nc-ci-pass-3', testMatch: NC_FLOW_SPECS[1], dependencies: ['nc-qi-pass-2'] },
     { name: 'nc-ee-pass-3', testMatch: NC_FLOW_SPECS[2], dependencies: ['nc-ci-pass-3'] },
     { name: 'nc-qi-pass-3', testMatch: NC_FLOW_SPECS[0], dependencies: ['nc-ee-pass-3'] },
+
+    // ---- E2E smoke chains (tests/smoke/), one per project type ----
+    //
+    // Ordered via `dependencies` for the same reason the RFI/NC pass chains
+    // above are: each stage consumes what the previous one created. Stage 1
+    // creates the users, stage 2 gives them activity access via SO Mapping,
+    // stage 3/4 WAM them onto the work area, and only then can the flow
+    // stages raise anything.
+    //
+    // `profileKey` selects which project type a stage runs for
+    // (tests/config/projects.js), so one spec file serves both chains. Its
+    // default in tests/config/test-base.js is 'solar-regression', so any spec
+    // run outside these projects still sees the regression literals.
+    //
+    // WIND FIRST, per the app owner — the solar chain's stages are added once
+    // the wind chain is green. Run one chain at a time, never both at once:
+    // they share the Admin account and the app's one-session-at-a-time
+    // behaviour.
+    ...smokeChain('wind', 'wind-e2e'),
   ],
   outputDir: 'test-results/',
 });

@@ -1,0 +1,285 @@
+{
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "cluster": [
+    "Gujarat",
+    "Khavda"
+  ],
+  "site": "Khavda",
+  "projectType": "WIND",
+  "workLocation": "WTG-Khavda",
+  "workArea": "KH 34",
+  "targetServiceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD",
+  "packages": {
+    "Civil": {
+      "activityCount": 18,
+      "currentMappings": [
+        {
+          "activity": "Stone Column Installation",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Plate Load Test",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Excavation",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Blanket Layer/GSB Layer",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Plum Concrete",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "PCC",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Bottom Anchor Flange",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Reinforcement Binding",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "WTG Foundation",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Top Flange Grouting",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Backfilling (Before Mesh)",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Earthing Mesh",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Backfilling (After Mesh)",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "DT",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "HT Foundation",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Burnt Oil Tank",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Fencing",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        },
+        {
+          "activity": "Crane Pad",
+          "serviceOrder": "5710012136 - BAUER ENGINEERING INDIA PVT LTD"
+        }
+      ],
+      "probes": {
+        "Stone Column Installation": {
+          "optionCount": 137,
+          "hasTargetSo": true,
+          "bauerOptions": [
+            "5710008038 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710018312 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710017100 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710012136 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710009696 - BAUER ENGINEERING INDIA PVT LTD"
+          ],
+          "firstTen": [
+            "5710016965 - VAIBHAV CONSTRUCTION",
+            "5710010795 - SHREEJI CONSTRUCTION COMPANY",
+            "5710009598 - ODHAV ENTERPRISE",
+            "5710011354 - ICECUBE ENGINEERS PVT LTD",
+            "5710012743 - S S JADEJA",
+            "5710013272 - A B INFRASOLUTIONS PVT LTD",
+            "5710013258 - SHREE RAM CONSTRUCTION COMPANY",
+            "5710019007 - ANKIT ENTERPRISES",
+            "5710008038 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710012762 - KESHAV CONSTRUCTION"
+          ]
+        },
+        "Crane Pad": {
+          "optionCount": 137,
+          "hasTargetSo": true,
+          "bauerOptions": [
+            "5710008038 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710018312 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710017100 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710012136 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710009696 - BAUER ENGINEERING INDIA PVT LTD"
+          ],
+          "firstTen": [
+            "5710016965 - VAIBHAV CONSTRUCTION",
+            "5710010795 - SHREEJI CONSTRUCTION COMPANY",
+            "5710009598 - ODHAV ENTERPRISE",
+            "5710011354 - ICECUBE ENGINEERS PVT LTD",
+            "5710012743 - S S JADEJA",
+            "5710013272 - A B INFRASOLUTIONS PVT LTD",
+            "5710013258 - SHREE RAM CONSTRUCTION COMPANY",
+            "5710019007 - ANKIT ENTERPRISES",
+            "5710008038 - BAUER ENGINEERING INDIA PVT LTD",
+            "5710012762 - KESHAV CONSTRUCTION"
+          ]
+        }
+      }
+    },
+    "Electrical": {
+      "activityCount": 8,
+      "currentMappings": [
+        {
+          "activity": "Oil Filled Transformer",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "HT Switchboard",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "Earthing",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "Cable Tray",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "Illumination",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "LT Switchboard",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "LT Cabling",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        },
+        {
+          "activity": "HT Cabling",
+          "serviceOrder": "5710013590 - AERIS ENGINEERS PVT LTD"
+        }
+      ],
+      "probes": {
+        "Oil Filled Transformer": {
+          "optionCount": 41,
+          "hasTargetSo": false,
+          "bauerOptions": [],
+          "firstTen": [
+            "5710013593 - ICECUBE ENGINEERS PVT LTD",
+            "4810027586 - GOPALBHAI JIVABHAI DABHI",
+            "4810026694 - SUNELEC INFRA LLP",
+            "4810026824 - AKSHAR ELECINFRA PVT LTD",
+            "5710009165 - AKSHAR ELECINFRA PVT LTD",
+            "5710017395 - AKSHAR ELECINFRA PVT LTD",
+            "5710013590 - AERIS ENGINEERS PVT LTD",
+            "4810027319 - DECON TELECOM SOLUTIONS PVT LTD",
+            "5710013597 - PRATIBHA ELECINFRA PVT LTD",
+            "4810024073 - MALINATH CONSTRUCTION COMPANY"
+          ]
+        },
+        "HT Cabling": {
+          "optionCount": 41,
+          "hasTargetSo": false,
+          "bauerOptions": [],
+          "firstTen": [
+            "5710013593 - ICECUBE ENGINEERS PVT LTD",
+            "4810027586 - GOPALBHAI JIVABHAI DABHI",
+            "4810026694 - SUNELEC INFRA LLP",
+            "4810026824 - AKSHAR ELECINFRA PVT LTD",
+            "5710009165 - AKSHAR ELECINFRA PVT LTD",
+            "5710017395 - AKSHAR ELECINFRA PVT LTD",
+            "5710013590 - AERIS ENGINEERS PVT LTD",
+            "4810027319 - DECON TELECOM SOLUTIONS PVT LTD",
+            "5710013597 - PRATIBHA ELECINFRA PVT LTD",
+            "4810024073 - MALINATH CONSTRUCTION COMPANY"
+          ]
+        }
+      }
+    },
+    "Mechanical": {
+      "activityCount": 8,
+      "currentMappings": [
+        {
+          "activity": "Re-Verification Audit",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Tower Erection",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Nacelle",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Hub, DT and Blades",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Generator",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Nacelle Top Cover",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "Torquing",
+          "serviceOrder": "Select Service Order"
+        },
+        {
+          "activity": "MCC Audit",
+          "serviceOrder": "Select Service Order"
+        }
+      ],
+      "probes": {
+        "Re-Verification Audit": {
+          "optionCount": 61,
+          "hasTargetSo": false,
+          "bauerOptions": [],
+          "firstTen": [
+            "5710013912 - MAA KAMAKHYA ENTERPRISES",
+            "5710015919 - VIDHI WIND SERVICE",
+            "5710013908 - J S AND SONS",
+            "5710011558 - J S AND SONS",
+            "5710015397 - S K ENGINEERING",
+            "5710014940 - XTORC INDIA PVT LTD",
+            "5710015125 - I AND R WIND POWER SOLUTIONS",
+            "5710013914 - YASH ENGINEERING SERVICES",
+            "5710015082 - TRITORC EQUIPMENTS PVT LTD",
+            "5710013900 - S K ENGINEERING"
+          ]
+        },
+        "MCC Audit": {
+          "optionCount": 61,
+          "hasTargetSo": false,
+          "bauerOptions": [],
+          "firstTen": [
+            "5710013912 - MAA KAMAKHYA ENTERPRISES",
+            "5710015919 - VIDHI WIND SERVICE",
+            "5710013908 - J S AND SONS",
+            "5710011558 - J S AND SONS",
+            "5710015397 - S K ENGINEERING",
+            "5710014940 - XTORC INDIA PVT LTD",
+            "5710015125 - I AND R WIND POWER SOLUTIONS",
+            "5710013914 - YASH ENGINEERING SERVICES",
+            "5710015082 - TRITORC EQUIPMENTS PVT LTD",
+            "5710013900 - S K ENGINEERING"
+          ]
+        }
+      }
+    }
+  }
+}
