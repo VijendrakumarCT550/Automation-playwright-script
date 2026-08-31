@@ -338,8 +338,33 @@ class DashboardPage extends BasePage {
     await myTasksContent().waitFor({ state: 'visible', timeout: 15000 });
   }
 
+  // Viewport-aware, for the same reasons goToMyTasks is — this was the last nav
+  // call still using a bare legacy locator, and it is on a path the flows
+  // actually take: rfi-dependency-flow's getVisibleCodeFor() calls it to force
+  // the dashboard-first refresh that dodges the DRAFT-code race. On mobile
+  // `navDashboard` resolves to nothing, so a wind RFI could be created and
+  // submitted successfully and then die here trying to read its code back
+  // (confirmed live 2026-08-31).
   async goToDashboard() {
-    await this.navDashboard.click();
+    // Desktop sidebar link when present — unchanged for every existing caller.
+    if (await this.navMyTasks.isVisible().catch(() => false)
+        || await this.navDashboard.isVisible().catch(() => false)) {
+      await this.navDashboard.click();
+      await this.page.waitForLoadState('networkidle');
+      return;
+    }
+
+    // Mobile: the drawer, when this screen has a hamburger at all.
+    await this.revealNavIfCollapsed('Dashboard');
+    if (await this.navItem('Dashboard').isVisible().catch(() => false)) {
+      await this.navItem('Dashboard').click();
+      await this.page.waitForLoadState('networkidle');
+      return;
+    }
+
+    // Neither route available — mobile sub-page with a back chevron instead of a
+    // hamburger. Navigate by URL, same fallback as goToMyTasks.
+    await this.page.goto(`${process.env.BASE_URL}/dashboard`);
     await this.page.waitForLoadState('networkidle');
   }
 

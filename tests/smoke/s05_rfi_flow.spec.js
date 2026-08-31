@@ -56,18 +56,25 @@ const RFIReviewPage = require('../pages/RFIReviewPage');
 // work areas it was WAM'd onto).
 //
 // Consequences encoded below:
-//   * The chain is walked in order and the FIRST checkpoint that still has a
-//     free Work Section is used. A blocked attempt is reported, not retried
-//     blindly.
-//   * fillPageOne is called AT MOST ONCE per checkpoint. RFICreatePage.fillForm
-//     ends in an unconditional selectWorkSection (line ~205), so any retry
-//     wrapper that re-runs it would burn the next checkpoint too. There is
+//   * The walk covers (WORK AREA x CHECKPOINT), most-preferred area first, and
+//     takes the first pair that is genuinely free. Several work areas are
+//     provisioned (stages 2 and 3 map and WAM them all) precisely so the stage
+//     keeps working as pairs are used up.
+//   * WITHIN an area the walk STOPS at the first DEPENDENCY block. Wind enforces
+//     the preceding-checkpoint rule, so if checkpoint N is blocked then N+1..end
+//     are transitively blocked too — and each attempt still selects the Work
+//     Section, consuming that pair. An earlier version continued through them
+//     and burned all five of KH 35's pairs in one run for nothing. A DUPLICATE
+//     block ("An RFI already exists for the workSections") is different: that
+//     pair was already spent, so the walk moves to the next checkpoint.
+//   * fillPageOne is called AT MOST ONCE per (area, checkpoint).
+//     RFICreatePage.fillForm ends in an unconditional selectWorkSection, so any
+//     retry wrapper that re-runs it would burn another pair. There is
 //     deliberately no withRetry here.
-//   * The stale-Work-Section remedy does NOT apply. On solar, "An RFI already
-//     exists for the workSections: X" is a known cookies-not-cleared symptom
-//     cured by a fresh login. On wind it is far more likely to be the TRUTH —
-//     the single section really is consumed — so retrying via relogin would
-//     loop. It is surfaced as a wind-specific exhaustion message instead.
+//   * The solar stale-Work-Section remedy (relogin and retry) does NOT apply. On
+//     solar "An RFI already exists for the workSections: X" is a known
+//     cookies-not-cleared symptom; on wind it is the literal truth, so retrying
+//     would loop forever.
 test.describe.configure({ mode: 'serial' });
 
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
@@ -79,6 +86,7 @@ const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 // even though the CI test never executes.
 const created = {
   rfiId: null,
+  workArea: null,
   rfiCode: process.env.SMOKE_RFI_CODE || null,
   checkpoint: process.env.SMOKE_RFI_CODE ? { code: '(pre-existing)', subActivity: '(pre-existing)' } : null,
   observationCount: null,
@@ -147,11 +155,24 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
   //
   // Falls back to primaryWorkArea for a profile that doesn't split them (solar
   // has many Work Sections per area, so it does not need to).
-  const resolveWorkArea = (isMobile) => {
+  // The ORDERED POOL of work areas this viewport should try, most-preferred
+  // first. profile.flowWorkAreas gives each viewport its own preference list so
+  // the two normally stay out of each other's way; the remaining areas are
+  // appended as fallback so a viewport whose own areas are spent keeps working
+  // instead of failing.
+  const resolveWorkAreaPool = (isMobile) => {
+    const all = (profile.workAreas || []).filter(Boolean);
     const map = profile.flowWorkAreas;
-    const picked = map ? (isMobile ? map.mobile : map.desktop) : null;
-    return picked || profile.primaryWorkArea || profile.rfi.workArea;
+    const preferredRaw = map ? (isMobile ? map.mobile : map.desktop) : null;
+    const preferred = (Array.isArray(preferredRaw) ? preferredRaw : [preferredRaw]).filter(Boolean);
+    const rest = all.filter(a => !preferred.includes(a));
+    const pool = [...preferred, ...rest];
+    return pool.length ? pool : [profile.primaryWorkArea || profile.rfi.workArea].filter(Boolean);
   };
+
+  // Single most-preferred area — used by the EE/QI review-screen assertion,
+  // which only needs to know what CI actually used (recorded in `created`).
+  const resolveWorkArea = (isMobile) => resolveWorkAreaPool(isMobile)[0];
 
   // Wind's single Work Section is NAMED AFTER its Work Area, so it must track
   // whichever area this run resolved to. profile.rfi.workSection is null for
@@ -183,18 +204,32 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     await loginAsFlowUser(page, users.CI.email, PASSWORD);
 
     const chain = profile.rfi.checkpointChain;
-    const workArea = resolveWorkArea(isMobileViewport);
-    const workSection = resolveWorkSection(workArea);
+    const pool = resolveWorkAreaPool(isMobileViewport);
     console.log(
       `  viewport: ${isMobileViewport ? 'MOBILE' : 'desktop'} -> ` +
-      `Work Area "${workArea}", Work Section "${workSection}"\n`
+      `work area pool (in order): ${JSON.stringify(pool)}\n`
     );
     const attempts = [];
 
-    for (const cp of chain) {
-      console.log(`\n  --- attempting ${cp.code} [${cp.subActivity}] "${cp.checkpoint}" ---`);
+    // Walk (work area x checkpoint), not just checkpoints.
+    //
+    // One area yields about as many runs as the activity has checkpoints (5 for
+    // Crane Pad), because each run permanently consumes one (checkpoint, Work
+    // Section) pair and wind has exactly one Work Section per area. Walking the
+    // pool as well means the stage keeps working across roughly
+    // pool.length x chain.length runs instead of failing the moment one area is
+    // spent — the app owner's instruction, and why stages 2 and 3 now provision
+    // several areas at once.
+    outer:
+    for (const workArea of pool) {
+      const workSection = resolveWorkSection(workArea);
+      console.log(`\n  ===== work area "${workArea}" (work section "${workSection}") =====`);
 
-      // AT MOST ONE fillPageOne per checkpoint — see the header comment.
+      for (const cp of chain) {
+        console.log(`  --- attempting ${cp.code} [${cp.subActivity}] "${cp.checkpoint}" ---`);
+
+      // AT MOST ONE fillPageOne per (work area, checkpoint) — see the header
+      // comment. Never retried for the same pair.
       let rfiCreate;
       try {
         ({ rfiCreate } = await fillPageOne(
@@ -202,10 +237,10 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
         ));
       } catch (err) {
         const msg = String(err && err.message || err);
-        attempts.push({ code: cp.code, stage: 'fillPageOne', error: msg.split('\n')[0] });
+        attempts.push({ workArea, code: cp.code, stage: 'fillPageOne', error: msg.split('\n')[0] });
         // A Work Section that no longer exists for this checkpoint means this
-        // checkpoint is already spent; move to the next one. Anything else is a
-        // real failure and should not be swallowed.
+        // pair is already spent; move on. Anything else is a real failure and
+        // should not be swallowed.
         if (err && (err.workSectionNotFound || /work section/i.test(msg))) {
           console.log(`      already consumed / unavailable: ${msg.split('\n')[0]}`);
           continue;
@@ -215,14 +250,55 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
 
       const outcome = await rfiCreate.clickProceedAndCheckOutcome();
       if (!outcome.proceeded) {
-        // Genuinely informative either way: a dependency-style toast here is
-        // the first evidence of whether wind ENFORCES the preceding-checkpoint
-        // rule at all (the activity master marks every row Optional = Y, which
-        // read literally would mean it does not) — see open question 5 in
-        // docs/wind-activity-checklist-reference.md.
-        console.log(`      BLOCKED: "${outcome.toastText}"`);
-        attempts.push({ code: cp.code, stage: 'proceed', blocked: true, toast: outcome.toastText });
-        continue;
+        const toast = String(outcome.toastText || '');
+        console.log(`      BLOCKED: "${toast}"`);
+        attempts.push({ workArea, code: cp.code, stage: 'proceed', blocked: true, toast });
+
+        // THE TOAST REASON DECIDES WHETHER TO WALK ON OR ABANDON THIS AREA, and
+        // getting this wrong is expensive. Three distinct messages, all captured
+        // live 2026-08-31:
+        //
+        //  1. "An RFI already exists for the workSections: KH 35."
+        //     -> DUPLICATE. This (checkpoint, Work Section) pair is already
+        //        used, which is normal on a re-run. Nothing extra is consumed by
+        //        having asked, so move to the NEXT CHECKPOINT.
+        //
+        //  2. "A RFI with for the Inspection point: <X> of Activity <Y> is
+        //      either pending or rejected"
+        //     -> the predecessor EXISTS but is not APPROVED.
+        //
+        //  3. "Missing an RFI for Dependent Inspection Point: <X> of the
+        //      Activity: <Y>"
+        //     -> the predecessor does not exist at all.
+        //
+        // For 2 and 3 every LATER checkpoint in this work area is transitively
+        // blocked too, and — critically — each attempt still SELECTS the Work
+        // Section, which consumes that pair permanently. An earlier version of
+        // this walk continued through them and burned all five of KH 35's pairs
+        // in a single run for nothing. So: abandon this work area and move to
+        // the next one.
+        if (/already exists for the workSections/i.test(toast)) {
+          console.log('      -> duplicate: pair already used, trying the next checkpoint');
+          continue;
+        }
+        if (/is either pending or rejected/i.test(toast)) {
+          console.log(
+            `      -> this area has an UNFINISHED RFI on the previous checkpoint ` +
+            `(pending or rejected). Everything after it is blocked, so abandoning ` +
+            `"${workArea}". Finish that RFI (EE+QI approve) to unblock this area — ` +
+            `SMOKE_RFI_CODE=<its code> runs just the review steps.`
+          );
+          break;
+        }
+        if (/Missing an RFI for Dependent Inspection Point/i.test(toast)) {
+          console.log(`      -> dependency not built in "${workArea}"; abandoning this area`);
+          break;
+        }
+        // Unrecognised block reason: treat it like a dependency block (abandon
+        // the area rather than burn the rest of its pairs), but say so loudly so
+        // a new message shape gets noticed instead of silently absorbed.
+        console.log('      -> UNRECOGNISED block reason; abandoning this work area defensively');
+        break;
       }
 
       console.log(`      proceeded to the checklist page`);
@@ -242,17 +318,21 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
 
       created.rfiId = match[1];
       created.checkpoint = cp;
+      created.workArea = workArea;
       created.observationCount = filled;
-      break;
+      break outer;
+      }
     }
 
     if (!created.rfiId) {
       throw new Error(
-        `Could not raise an RFI on ANY of the ${chain.length} checkpoints of ` +
-        `"${profile.rfi.activity}" at ${workArea}. Wind has exactly one Work ` +
-        `Section per Work Area and selecting it consumes the (checkpoint, Work Section) ` +
-        `pair permanently, so this activity is most likely exhausted — a fresh Work Area ` +
-        `is needed, and it must be SO-mapped (stage 2) and WAM'd (stage 3) first.\n` +
+        `Could not raise an RFI on ANY of the ${pool.length} work area(s) x ` +
+        `${chain.length} checkpoint(s) of "${profile.rfi.activity}" ` +
+        `(areas tried: ${pool.join(', ')}). Wind has exactly one Work Section per ` +
+        `Work Area and selecting it consumes the (checkpoint, Work Section) pair ` +
+        `permanently, so every pair in this pool is spent. Add more work areas to ` +
+        `WIND_E2E.workAreas / flowWorkAreas and re-run stages 2 (SO mapping) and ` +
+        `3 (WAM) so the CI can see them.\n` +
         `Attempts: ${JSON.stringify(attempts, null, 2)}`
       );
     }
@@ -313,10 +393,13 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
             `${role}'s review screen should show the activity CI submitted`
           ).toBe(strip(profile.rfi.activity));
         }
-        if (fields.workArea) {
-          const expectedArea = resolveWorkArea(isMobileViewport);
-          expect(strip(fields.workArea), `${role} should see work area ${expectedArea}`)
-            .toBe(strip(expectedArea));
+        // Assert against the area CI ACTUALLY used, recorded in `created` —
+        // not a recomputed "preferred" area. The walk may have fallen through
+        // several areas before finding a free (area, checkpoint) pair, so
+        // recomputing would compare against the wrong one.
+        if (fields.workArea && created.workArea) {
+          expect(strip(fields.workArea), `${role} should see work area ${created.workArea}`)
+            .toBe(strip(created.workArea));
         }
       }
 

@@ -120,14 +120,29 @@ const WIND_E2E = {
   // is what gives the desktop and mobile flow runs independent ground:
   // flowWorkAreas below assigns one to each, so neither can consume the other's
   // checkpoints and either can be re-run without disturbing the other.
-  workAreas: ['KH 34', 'KH 35'],
+  // All SO-mapped (stage 2) and all WAM'd to the same WTG CI (stage 3). Every
+  // name is verbatim from the live 244-option list — note the SPACE.
+  //
+  // Six rather than two because a work area really does get exhausted: one Work
+  // Section per area, consumed permanently per checkpoint, so an area supports
+  // about as many runs as the activity has checkpoints (5 for Crane Pad). With
+  // six areas that is ~30 runs before anything needs re-provisioning, and
+  // extending the list further is a one-line change plus one re-run of stages
+  // 2 and 3.
+  //
+  // Provisioning six costs almost nothing now that both stages work in a single
+  // pass: SO mapping selects all six work areas at once and sets each activity's
+  // Service Order once, and WAM assigns all six rows in one dialog per role.
+  workAreas: ['KH 34', 'KH 35', 'KH 47', 'KH 51', 'KH 52', 'KH 53'],
   primaryWorkArea: 'KH 34',
 
-  // Which Work Area each viewport's flow stages use. Resolved in the spec from
-  // the isMobileViewport fixture, so no extra Playwright option is needed.
+  // Per-viewport PREFERENCE ORDER, not an exclusive assignment. The flow stage
+  // walks its own list first — so desktop and mobile normally stay out of each
+  // other's way and either can be re-run independently — and then falls through
+  // to the remaining areas rather than failing once its own are spent.
   flowWorkAreas: {
-    desktop: 'KH 34',
-    mobile: 'KH 35',
+    desktop: ['KH 34', 'KH 47', 'KH 51'],
+    mobile: ['KH 35', 'KH 52', 'KH 53'],
   },
 
   // CONFIRMED live (00_inspect_wind_rfi_form.spec.js): wind has exactly ONE
