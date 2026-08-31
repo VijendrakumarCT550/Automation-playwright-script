@@ -237,9 +237,26 @@ class RFICreatePage extends BasePage {
     }
 
     // Neither outcome showed up within 30s — re-check for real so a
-    // genuinely stuck page still throws Playwright's own clear timeout
-    // error (with its usual screenshot/error-context attachments).
-    await success.waitFor({ state: 'visible', timeout: 1000 });
+    // genuinely stuck page still throws a real timeout error. Tagged
+    // (negativeScenario), not left as Playwright's bare locator.waitFor
+    // message — reported to devs 2026-08-27 as a real app bug: resubmitting
+    // an RFI rejected from Page 1 can click "Proceed" and get NEITHER the
+    // checklist page NOR the stale-Work-Section toast — the click appears
+    // to silently no-op. Same "action reported success but the flow didn't
+    // actually advance" shape as rfi-nav.js's RFI_NOT_VISIBLE_TO_ACTOR, one
+    // step earlier — tagging it here, the one place this failure can
+    // occur, means every caller (createNewRfi, resubmitRfi) gets it for
+    // free, same reasoning as that fix.
+    try {
+      await success.waitFor({ state: 'visible', timeout: 1000 });
+    } catch (err) {
+      const wrapped = new Error(
+        `PROCEED-DID-NOT-NAVIGATE: clicking "Proceed" did not reach the checklist page (Page 2) within 30s, and no ` +
+        `"stale Work Section" error appeared either — the click appears to have silently no-op'd. ${err.message}`
+      );
+      wrapped.negativeScenario = 'PROCEED_DID_NOT_NAVIGATE';
+      throw wrapped;
+    }
   }
 
   // NEW, for the Activity Dependency chain spec only — clickProceed() above

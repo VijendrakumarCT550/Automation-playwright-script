@@ -3,3 +3,6 @@ test-results/
 playwright-report/
 .env
 *.local
+
+# ad-hoc QA OOM capture logs (see project_qa_oom_capture memory)
+qa-oom-capture/

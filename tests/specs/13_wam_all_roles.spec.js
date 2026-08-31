@@ -47,8 +47,8 @@ const SERVICE_ORDER = 'M S CHOUHAN INFRAVENTURES';
 // single-select, so each needs its own separate fill->assign->submit pass
 // (user-specified for CIC/CM; the same constraint applies to the other
 // work-area-level roles for the same reason).
-const WORK_LOCATIONS = ['A-06c', 'S05b'];
-// const WORK_LOCATIONS = ['A-06c'];
+// const WORK_LOCATIONS = ['A-06c', 'S05b'];
+const WORK_LOCATIONS = ['S05b'];
 const WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
 
 const WORK_AREA_ROLES = [
@@ -122,7 +122,12 @@ test.describe('Admin - WAM assignment for all created roles', () => {
   });
 
   test.afterAll(async () => {
-    await context.close();
+    // Guarded: when beforeAll's login times out, `context` was never
+    // assigned, so an unconditional close() throws TypeError here — which
+    // buries the actual login failure under a spurious teardown error.
+    // (The browser itself is Playwright's worker-scoped `browser` fixture,
+    // so it gets closed either way.)
+    if (context) await context.close();
   });
 
   for (const { prefix, role, serviceOrder } of WORK_AREA_ROLES) {

@@ -1,3 +1,4 @@
+const { expect } = require("@playwright/test");
 const {
   loadTracker, getPendingStepsForActor, setNcId, setNcCode, advanceStep, markFailed,
 } = require("./nc-tracker-utils");
@@ -54,6 +55,11 @@ const NC_DATA = {
   unit:             'EA',
   defectType:       'Workmanship defect',
   category:         'Critical',
+  // Newly mandatory field (per app change) — see AskUserQuestion answer:
+  // 14 days from today.
+  targetDateClosureDays: 14,
+  // capturePhoto defaults to true in NCCreatePage.fillForm/NCResponsePage.
+  // fillResponse/NCReviewPage.approve|reject — not repeated here.
 };
 
 async function createNewNc(page, tcId) {
@@ -99,6 +105,18 @@ async function respondOrResubmit(page, ncCode, tcId, actionLabel) {
   await openFromPendingWithMe(page, ncCode);
 
   const response = new NCResponsePage(page);
+
+  // User-requested assertion: confirm the previous actor's mandatory photo
+  // actually reached CI, not just that QI's (or an earlier round's EE's)
+  // submit succeeded. QI always attaches a photo at NC creation, and every
+  // resubmit round starts from an EE/QI rejection that also attached one —
+  // either way CI should see at least one attachment here.
+  const attachmentCount = await response.getAttachmentCount();
+  expect(
+    attachmentCount,
+    `${tcId}: CI sees 0 attachments on ${ncCode} — previous actor's mandatory photo did not propagate`
+  ).toBeGreaterThan(0);
+
   await response.fillResponse({
     rootCause: `Automated root cause - ${tcId} (${actionLabel})`,
     correctiveActions: `Automated corrective actions - ${tcId} (${actionLabel})`,
@@ -150,6 +168,16 @@ async function runQITurn(page) {
 
         const review = new NCReviewPage(page);
         await openFromPendingWithMe(page, tc.ncCode);
+
+        // User-requested assertion: QI's review turn always follows either
+        // CI's response (fresh round) or EE's approval (which itself
+        // carried a mandatory photo forward) — either way at least one
+        // attachment should already be visible here.
+        const attachmentCount = await review.getAttachmentCount();
+        expect(
+          attachmentCount,
+          `${tcId}: QI sees 0 attachments on ${tc.ncCode} — previous actor's mandatory photo did not propagate`
+        ).toBeGreaterThan(0);
 
         if (step.action === "approve") {
           await review.approve();
@@ -207,6 +235,16 @@ async function runEETurn(page) {
       await withRetry(async () => {
         await openFromPendingWithMe(page, tc.ncCode);
         const review = new NCReviewPage(page);
+
+        // User-requested assertion: EE's review turn always follows CI's
+        // response (fresh round) or resubmit (after a reject) — both
+        // mandatorily attach a photo, so at least one should be visible
+        // here.
+        const attachmentCount = await review.getAttachmentCount();
+        expect(
+          attachmentCount,
+          `${tcId}: EE sees 0 attachments on ${tc.ncCode} — CI's mandatory photo did not propagate`
+        ).toBeGreaterThan(0);
 
         if (step.action === "approve") {
           await review.approve();

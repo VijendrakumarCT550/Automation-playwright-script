@@ -72,19 +72,28 @@ class UserManagementPage extends BasePage {
   async search(text) {
     await this.searchInput.fill(text);
     await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(500);
+    // 500 -> 250: search results land with the networkidle; this is the
+    // grid re-render buffer only.
+    await this.page.waitForTimeout(250);
   }
 
   async openAddUserDialog() {
     await this.addUserIcon.waitFor({ state: 'visible', timeout: 15000 });
     await this.addUserIcon.click();
     await this.dialog.waitFor({ state: 'visible', timeout: 10000 });
-    await this.page.waitForTimeout(500);
+    // 500 -> 200: the waitFor above already proves the dialog is rendered;
+    // this only covers its open animation.
+    await this.page.waitForTimeout(200);
   }
 
   async _settleAfterCascadeChange() {
     await this.page.waitForLoadState('networkidle').catch(() => {});
-    await this.page.waitForTimeout(600);
+    // 600 -> 300. This is the highest-leverage number in the user-creation
+    // flow: it fires after EVERY dropdown pick in the cascade (6 times for
+    // an AGEL user, 8 for a VENDOR one), and the networkidle above already
+    // covers the dependent-field API call it was really waiting on — what's
+    // left is just a React re-render buffer.
+    await this.page.waitForTimeout(300);
   }
 
   async selectUserType(type) {
@@ -133,19 +142,19 @@ class UserManagementPage extends BasePage {
   } = {}) {
     const picked = {};
 
-    if (await this.clusterDropdown.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await this.clusterDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
       picked.cluster = await this.selectMultiAware(this.clusterDropdown, { preferred: cluster, count: 1 });
       await this._settleAfterCascadeChange();
     }
-    if (await this.sitesDropdown.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await this.sitesDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
       picked.sites = await this.selectMultiAware(this.sitesDropdown, { preferred: site, count: 1 });
       await this._settleAfterCascadeChange();
     }
-    if (await this.projectTypeDropdown.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await this.projectTypeDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
       picked.projectType = await this.selectMultiAware(this.projectTypeDropdown, { count: projectTypeCount });
       await this._settleAfterCascadeChange();
     }
-    if (await this.workLocationsDropdown.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await this.workLocationsDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
       picked.workLocations = await this.selectMultiAware(
         this.workLocationsDropdown, { preferred: workLocations, count: workLocationCount }
       );

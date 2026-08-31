@@ -61,6 +61,12 @@ class WAMPage extends BasePage {
     // whose selected text lives in the `value` attribute. Assert with
     // toHaveValue(), not toContainText()/innerText().
     this.dialogServiceOrderDropdown = this.dialog.getByRole('combobox', { name: /Service Order/i });
+    // The dialog renders a literal "Loading..." paragraph in place of the
+    // row grid while it fetches the rows for the current filter selection.
+    // Its presence is the one unambiguous "rows aren't ready yet" signal —
+    // networkidle isn't, since the row fetch starts after the cascade
+    // settles (see waitForRowsLoaded / resolveRowLabel).
+    this.dialogLoadingText = this.dialog.getByText(/^Loading\.\.\.$/);
 
     this.submitButton = this.dialog.getByRole('button', { name: 'Submit' });
     this.dialogCloseButton = this.dialog.locator('[data-part="close-trigger"]');
@@ -145,11 +151,35 @@ class WAMPage extends BasePage {
     }
     if (serviceOrder) {
       await this.page.waitForLoadState('networkidle');
-      await this.page.waitForTimeout(1000);
+      // 1000 -> 300: the networkidle above already guarantees a 500ms
+      // quiet network window, so this is only a render buffer on top.
+      await this.page.waitForTimeout(300);
       await this.selectDropdownOption(this.dialogServiceOrderDropdown, serviceOrder);
     }
     await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(2000);
+    // 2000 -> 500, same reasoning: redundant with the networkidle above.
+    // This one fires on EVERY fillAssignmentFilters call, so it was the
+    // single largest fixed cost in the mapping flow.
+    await this.page.waitForTimeout(500);
+    await this.waitForRowsLoaded();
+  }
+
+  // Waits out the dialog's "Loading..." placeholder so callers that go
+  // straight for a row (resolveRowLabel, getWorkAreaRow, assignUserIfNeeded)
+  // aren't racing the row fetch. This replaces what the old flat
+  // waitForTimeout(2000) above was really buying: that sleep was long enough
+  // to cover the fetch on a fast env, which is why shortening it surfaced as
+  // an intermittent "row label not found" on the slower pulse-test.
+  //
+  // Deliberately never throws — some cascade states legitimately render no
+  // rows at all (a partial filter set, or a role whose rows only appear once
+  // Package/Service Order is chosen), and it is not this helper's job to
+  // decide which of those is expected. It only guarantees "not still
+  // fetching"; the caller still asserts on what it needs.
+  async waitForRowsLoaded(timeout = 15000) {
+    await this.dialogLoadingText.first()
+      .waitFor({ state: 'hidden', timeout })
+      .catch(() => {});
   }
 
   // Scopes to the grid row for a given Work Area code (e.g. "BL01") — same
@@ -200,16 +230,76 @@ class WAMPage extends BasePage {
   // Locator) — for callers that pass a row label into the existing
   // string-based methods (addAssigneeToRow, getWorkAreaUserValue, etc.)
   // rather than chaining off the Locator directly.
-  async resolveRowLabel(candidates) {
-    for (const candidate of candidates) {
-      if (await this.getWorkAreaRow(candidate).count() > 0) return candidate;
+  // Polls rather than checking once. `count()` is instantaneous — it never
+  // waits — so the original single-pass version silently depended on
+  // whatever sleep happened to precede it: if the row grid was still
+  // fetching, it saw 0 rows and declared the label absent. Confirmed live
+  // 2026-08-31 on pulse-test (Site Admin / Site Khavda): the failure
+  // snapshot showed the dialog still rendering "Loading..." with no
+  // div.d_grid rows at all, while the only "KHAVDA" on the page was the
+  // Cluster FILTER's own selected value. networkidle doesn't cover it
+  // either — the row fetch is an XHR kicked off after the cascade settles,
+  // so the network can read idle before that request has even started.
+  //
+  // The error message now reports what was actually on screen, so a real
+  // data/naming mismatch is distinguishable from a timing miss at a glance
+  // instead of looking identical to one.
+  async resolveRowLabel(candidates, timeout = 15000) {
+    const deadline = Date.now() + timeout;
+    do {
+      for (const candidate of candidates) {
+        if (await this.getWorkAreaRow(candidate).count() > 0) return candidate;
+      }
+      await this.page.waitForTimeout(200);
+    } while (Date.now() < deadline);
+
+    const stillLoading = await this.dialogLoadingText.count() > 0;
+    const presentLabels = await this.dialog.locator('div.d_grid').allInnerTexts()
+      .then(texts => texts.map(t => t.split('\n')[0].trim()).filter(Boolean).slice(0, 15))
+      .catch(() => []);
+    throw new Error(
+      `None of the candidate row labels [${candidates.join(', ')}] were found in this dialog ` +
+      `after ${timeout}ms. Still showing "Loading...": ${stillLoading}. ` +
+      `Row labels actually present: ${presentLabels.length ? presentLabels.join(', ') : '(none)'}`
+    );
+  }
+
+  // A row's assignee dropdown can list quite a few names (confirmed live,
+  // 2026-08-27 — the Plot Admin -> Project Manager assignment step lost
+  // its target user "PMcelUser53" because it rendered past the visible
+  // slice of the popover and was never actually selected, even though the
+  // user WAS present in the list). Same class of "target option not on
+  // screen yet" issue NCCreatePage._selectScrollableOption already handles
+  // for its own dropdowns — kept local to WAMPage (not folded into
+  // BasePage's shared selectDropdownOption) for the same reason that one
+  // stayed local: so this can't affect RFI/User-Management's own
+  // already-validated dropdown handling. Scrolls the popover DOWN in small
+  // steps (unlike NCCreatePage's single jump-to-top, since a long name
+  // list here tends to hide the target further down, not past the top)
+  // until the option is actually visible, or throws once scrolling stops
+  // turning up anything new.
+  async _findRowOptionWithScroll(listbox, userName, maxScrolls = 15) {
+    const option = listbox.locator('[role="option"]').filter({ hasText: userName }).first();
+    for (let i = 0; i < maxScrolls; i++) {
+      if (await option.isVisible({ timeout: 500 }).catch(() => false)) return option;
+      await listbox.hover().catch(() => {});
+      await this.page.mouse.wheel(0, 300);
+      // 150 -> 100: per-scroll-step render pause, paid up to maxScrolls(15)
+      // times when the target sits far down a long assignee list.
+      await this.page.waitForTimeout(100);
     }
-    throw new Error(`None of the candidate row labels [${candidates.join(', ')}] were found in this dialog`);
+    if (await option.isVisible({ timeout: 1000 }).catch(() => false)) return option;
+    throw new Error(`User "${userName}" not found in this row's assignee dropdown after scrolling`);
   }
 
   async selectWorkAreaUser(areaCode, userName) {
     const combo = this.getWorkAreaRow(areaCode).locator('[role="combobox"]');
-    await this.selectDropdownOption(combo, userName);
+    const listbox = await this.openDropdown(combo);
+    const option = await this._findRowOptionWithScroll(listbox, userName);
+    await option.click();
+    // 150 -> 80: Ark UI's post-pick state settle. Fires once per work-area
+    // row, so it multiplies by row count (5 BL0x rows in the common case).
+    await this.page.waitForTimeout(80);
   }
 
   // Ark UI appends a checkmark to the currently-SELECTED option's own
@@ -333,10 +423,58 @@ class WAMPage extends BasePage {
     if (current.includes(userName)) return false;
 
     const listbox = await this.openDropdown(combo);
-    const option = listbox.locator('[role="option"]').filter({ hasText: userName }).first();
-    await option.waitFor({ state: 'visible', timeout: 5000 });
+    // See _findRowOptionWithScroll's comment — this row's user list can
+    // render the target past the popover's initially-visible slice.
+    const option = await this._findRowOptionWithScroll(listbox, userName);
     await option.click();
-    await this.page.waitForTimeout(300);
+    // 300 -> 150: settle after a multi-select toggle, before probing whether
+    // Ark left the listbox open.
+    await this.page.waitForTimeout(150);
+
+    const stillOpen = await listbox.isVisible({ timeout: 500 }).catch(() => false);
+    if (stillOpen) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      const closed = await listbox.waitFor({ state: 'hidden', timeout: 3000 })
+        .then(() => true).catch(() => false);
+      if (!closed) {
+        await combo.click().catch(() => {});
+        await listbox.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      }
+    }
+    return true;
+  }
+
+  // Opposite of addAssigneeToRow — REMOVES userName from a multi-assignee
+  // row without disturbing whoever else is there, rather than adding them.
+  // Ark UI's multi-select combobox TOGGLES an option on a click (confirmed
+  // by addAnyUnassignedUser's own comment, where this toggle-off behavior
+  // was originally a bug to avoid) — here that's exactly the wanted
+  // mechanism, applied deliberately: clicking an ALREADY-selected option
+  // removes it. Added 2026-08-27 per user request, for
+  // 18_wam_hierarchy.spec.js's cascade tests — on a shared, persistent-
+  // state environment, a cascade step whose intended assignee was ALREADY
+  // mapped by an earlier/unrelated run makes the assign step a silent
+  // no-op (assignUserIfNeeded/addAssigneeToRow both skip the real UI
+  // action when the value already matches), so removing first forces every
+  // run to genuinely exercise the assignment mechanism instead of
+  // sometimes skipping it. No-ops (returns false) if userName isn't
+  // currently in the row at all — nothing to remove.
+  async removeAssigneeFromRow(rowLabel, userName) {
+    const combo = this.getWorkAreaRow(rowLabel).locator('[role="combobox"]');
+    const current = (await combo.innerText()).trim();
+    if (!current.includes(userName)) return false;
+
+    const listbox = await this.openDropdown(combo);
+    // See _findRowOptionWithScroll's comment — this row's user list can
+    // render the target past the popover's initially-visible slice. Still
+    // matches here even though the SELECTED option's raw text carries the
+    // checkmark artifact (e.g. "QLjsxUser49\n✓") — hasText is a substring
+    // match, not exact.
+    const option = await this._findRowOptionWithScroll(listbox, userName);
+    await option.click();
+    // 300 -> 150: settle after a multi-select toggle, before probing whether
+    // Ark left the listbox open.
+    await this.page.waitForTimeout(150);
 
     const stillOpen = await listbox.isVisible({ timeout: 500 }).catch(() => false);
     if (stillOpen) {
@@ -391,7 +529,9 @@ class WAMPage extends BasePage {
     }
     const pickedName = texts[unassignedIndex];
     await options.nth(unassignedIndex).click();
-    await this.page.waitForTimeout(300);
+    // 300 -> 150: settle after a multi-select toggle, before probing whether
+    // Ark left the listbox open.
+    await this.page.waitForTimeout(150);
 
     const stillOpen = await listbox.isVisible({ timeout: 500 }).catch(() => false);
     if (stillOpen) {
@@ -436,7 +576,9 @@ class WAMPage extends BasePage {
     }
 
     await this.page.waitForLoadState('networkidle');
-    await this.page.waitForTimeout(1000);
+    // 1000 -> 300: reached only after the toast has already been read AND
+    // the network has gone idle, so the extra second was pure padding.
+    await this.page.waitForTimeout(300);
     return toastText;
   }
 

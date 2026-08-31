@@ -36,7 +36,11 @@ class NCResponsePage extends BasePage {
     await this.page.waitForLoadState('networkidle');
   }
 
-  async fillResponse({ rootCause, correctiveActions }) {
+  // Capture Photo is newly mandatory on this page too (per app change) —
+  // defaults to true unless a caller explicitly opts out with
+  // `capturePhoto: false` (see BasePage.capturePhoto for the actual
+  // camera-widget interaction, shared with NCCreatePage/NCReviewPage).
+  async fillResponse({ rootCause, correctiveActions, capturePhoto = true }) {
     await this.rootCauseInput.waitFor({ state: 'visible' });
     await this.rootCauseInput.click({ clickCount: 3 });
     await this.rootCauseInput.pressSequentially(rootCause, { delay: 20 });
@@ -44,6 +48,10 @@ class NCResponsePage extends BasePage {
     await this.correctiveActionsInput.waitFor({ state: 'visible' });
     await this.correctiveActionsInput.click({ clickCount: 3 });
     await this.correctiveActionsInput.pressSequentially(correctiveActions, { delay: 20 });
+
+    if (capturePhoto) {
+      await this.capturePhoto();
+    }
   }
 
   // Same confirm-dialog shape as NCCreatePage's submit — getByRole('dialog')

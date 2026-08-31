@@ -203,12 +203,27 @@ class RFIReviewPage extends BasePage {
     await this._waitForPopupToClose(this.confirmPopup);
   }
 
+  // Page-1 reject's REAL completion signal is the app's OWN automatic
+  // redirect back to /my-tasks, not just the popup closing — confirmed live
+  // (2026-08-27, user watching the browser directly): _waitForPopupToClose's
+  // "popup hidden + networkidle + 3s" can resolve before the rejection has
+  // actually finished processing server-side, so the next actor's turn
+  // (CI's resubmit) can run against an RFI that isn't really in its
+  // post-rejection state yet, breaking the flow. Wait for the redirect
+  // itself to happen — do NOT force it with page.goto(), which would just
+  // race the app's own in-flight navigation and mask a rejection that
+  // silently never went through underneath.
+  async _waitForRedirectToMyTasks() {
+    await this.page.waitForURL('**/my-tasks', { timeout: 30000 });
+    await this.page.waitForLoadState('networkidle');
+  }
+
   async rejectFromFirstPage(remarks) {
     await this.rejectRfiButton.click();
     await this.rejectPopup.waitFor({ state: 'visible', timeout: 10000 });
     await this.rejectRemarksInput.fill(remarks);
     await this.rejectPopupButton.click();
-    await this._waitForPopupToClose(this.rejectPopup);
+    await this._waitForRedirectToMyTasks();
   }
 
   async rejectFromChecklistPage(remarks) {

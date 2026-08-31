@@ -1,9 +1,9 @@
 {
   "TC-01": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
+    "ncId": "135bc127-0fd6-425c-b10d-86f58327e626",
+    "ncCode": "NC-A-06c-BL01-CIV-33",
+    "currentStepIndex": 2,
+    "currentVersion": "v1",
     "status": "pending",
     "steps": [
       {
@@ -21,10 +21,10 @@
     ]
   },
   "TC-02": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
+    "ncId": "85103f09-4e74-4ff0-b1aa-07058af797df",
+    "ncCode": "NC-A-06c-BL01-CIV-34",
+    "currentStepIndex": 2,
+    "currentVersion": "v1",
     "status": "pending",
     "steps": [
       {
@@ -50,10 +50,10 @@
     ]
   },
   "TC-03": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
+    "ncId": "3e95aa75-5a5e-4462-8f50-bc8c82e3bb6a",
+    "ncCode": "NC-A-06c-BL01-CIV-35",
+    "currentStepIndex": 2,
+    "currentVersion": "v1",
     "status": "pending",
     "steps": [
       {
@@ -83,10 +83,10 @@
     ]
   },
   "TC-04": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
+    "ncId": "ca00b92b-74cb-48c2-9430-e53336a1a9cb",
+    "ncCode": "NC-A-06c-BL01-CIV-36",
+    "currentStepIndex": 2,
+    "currentVersion": "v1",
     "status": "pending",
     "steps": [
       {

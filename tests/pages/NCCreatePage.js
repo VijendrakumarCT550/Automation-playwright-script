@@ -31,6 +31,14 @@ class NCCreatePage extends BasePage {
     this.ncDescriptionInput = page.getByPlaceholder('Enter NC Description');
     this.defectTypeInput    = page.getByPlaceholder('Enter Defect Type');
     this.categoryDropdown   = page.getByRole('combobox', { name: /Category/i }).first();
+    // Newly mandatory field. Same Ark UI date-picker component already
+    // confirmed for the Dashboard Filter's From/To fields (see
+    // DashboardFilterPage's header comment) — readonly input, real value
+    // set via the calendar popup that opens off the trigger button, not by
+    // typing.
+    this.targetDateInput   = page.getByPlaceholder('dd/mm/yyyy').first();
+    this.targetDateTrigger = page.getByRole('button', { name: /open date picker/i }).first();
+    this.dateCalendar      = page.locator('[data-scope="date-picker"][data-part="content"]');
     this.debitAmountInput   = page.getByRole('spinbutton', { name: /Debit Amount/i });
 
     this.submitButton    = page.getByRole('button', { name: 'Submit' }).first();
@@ -67,9 +75,49 @@ class NCCreatePage extends BasePage {
     await this.page.waitForTimeout(300);
   }
 
+  // Navigates the calendar forward (this app's target dates are always in
+  // the future) until the target day's cell is found, then clicks it.
+  // Bounded to 6 months of forward navigation so a wrong assumption about
+  // the widget throws a real error instead of looping forever.
+  async selectTargetDate(daysFromNow = 14) {
+    const target = new Date();
+    target.setDate(target.getDate() + daysFromNow);
+    const dataValue = [
+      target.getFullYear(),
+      String(target.getMonth() + 1).padStart(2, '0'),
+      String(target.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    await this.targetDateTrigger.click();
+    await this.dateCalendar.waitFor({ state: 'visible', timeout: 5000 });
+
+    for (let i = 0; i < 6; i++) {
+      const cell = this.dateCalendar.locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`);
+      if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await cell.click();
+        await this.dateCalendar.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+        return;
+      }
+      // Confirmed live: the calendar mounts THREE next-trigger buttons at
+      // once (day/month/year views all share [data-part="next-trigger"]),
+      // so a bare part-selector is a strict-mode violation. The day view's
+      // one is uniquely identified by its aria-label.
+      await this.dateCalendar.getByRole('button', { name: 'Switch to next month' }).click();
+      await this.page.waitForTimeout(200);
+    }
+    throw new Error(`Target Date for Closure: no date cell found for ${dataValue} within 6 months of forward navigation`);
+  }
+
   // NC Quantity is only required when the selected Unit is NOT "Not
   // Applicable (NA)" — caller signals this by simply omitting ncQuantity
   // (and passing a unit like 'NA') vs providing both.
+  //
+  // Target Date for Closure / Capture Photo are both newly mandatory
+  // fields (per app change). targetDateClosureDays picks how many days
+  // from today to target (selectTargetDate defaults to 14 if omitted);
+  // capturePhoto defaults to true unless a caller explicitly opts out with
+  // `capturePhoto: false` (e.g. a test deliberately exercising the "photo
+  // required" validation error).
   async fillForm(data) {
     const pick = async (dropdown, value) => {
       if (value == null) return;
@@ -111,11 +159,19 @@ class NCCreatePage extends BasePage {
 
     await pick(this.categoryDropdown, data.category);
 
+    if (data.targetDateClosureDays != null) {
+      await this.selectTargetDate(data.targetDateClosureDays);
+    }
+
     if (data.debitAmount != null) {
       await this.debitAmountInput.waitFor({ state: 'visible' });
       await this.debitAmountInput.click({ clickCount: 3 });
       await this.debitAmountInput.pressSequentially(String(data.debitAmount), { delay: 40 });
       await this.page.keyboard.press('Tab');
+    }
+
+    if (data.capturePhoto !== false) {
+      await this.capturePhoto();
     }
   }
 

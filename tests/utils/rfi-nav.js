@@ -14,8 +14,36 @@ const RFIListPage   = require('../pages/RFIListPage');
 // clicking it is safe and correct from wherever the caller currently is:
 // right after login (already on My Tasks), or coming from a previous TC's
 // finished review/resubmit (still on that RFI's own page).
-async function openFromPendingWithMe(page, rfiCode) {
-  await new DashboardPage(page).goToMyTasks();
+//
+// `context` (optional, e.g. "CI resubmit after EE P1 reject") is purely for
+// the error message below — every call site in this flow (CI's resubmit
+// turn, EE/QI's review turn) is ALWAYS looking for an RFI that the previous
+// actor just finished acting on, so a timeout here always means the same
+// underlying negative scenario: the previous actor's action reported
+// success, but the RFI never actually became visible to the NEXT actor
+// within a reasonable wait. Confirmed live (2026-08-27): every RFI flow
+// failure whose currentStepIndex sat right after a reject/resubmit/create
+// step had this exact shape — a generic Playwright locator timeout with no
+// indication of WHICH handoff silently didn't happen, indistinguishable
+// from any other kind of failure until someone cross-referenced the
+// tracker's steps[] by hand. Tagging it here, at the one place this class
+// of failure can actually occur, means every caller gets it for free
+// without duplicating detection logic.
+async function openFromPendingWithMe(page, rfiCode, context) {
+  const dashboard = new DashboardPage(page);
+  // Defensive, same reasoning as WAMPage.goto()/NCCreatePage.goto(): a
+  // previous attempt on this SAME page/session (withRetry re-running a
+  // turn from scratch after an earlier failure, or the previous TC in this
+  // actor's loop) may have left a stray dialog/listbox/toast open — its
+  // backdrop can then block even THIS nav click. Confirmed live
+  // (2026-08-27): a leftover "Are you sure you want to approve RFI?"
+  // confirm popup did exactly this, surfacing as `<html>...intercepts
+  // pointer events` on the very "My Tasks" click below. Recover before
+  // this turn's own interactions can be blocked by it.
+  await dashboard.closeAnyOpenDialog();
+  await dashboard.closeAnyOpenListbox();
+  await dashboard.dismissToastIfPresent();
+  await dashboard.goToMyTasks();
 
   const myTasks = new MyTasksPage(page);
   await myTasks.pendingWithMeTile.waitFor({ state: 'visible', timeout: 30000 });
@@ -23,7 +51,17 @@ async function openFromPendingWithMe(page, rfiCode) {
 
   const list = new RFIListPage(page);
   await list.waitForGrid();
-  await list.openRowByCode(rfiCode);
+  try {
+    await list.openRowByCode(rfiCode);
+  } catch (err) {
+    const wrapped = new Error(
+      `RFI ${rfiCode} not found in "Pending with me"${context ? ` (${context})` : ''} — ` +
+      `the previous actor's action reported success but this RFI never became visible here. ${err.message}`
+    );
+    wrapped.negativeScenario = 'RFI_NOT_VISIBLE_TO_ACTOR';
+    wrapped.rfiCode = rfiCode;
+    throw wrapped;
+  }
 }
 
 module.exports = { openFromPendingWithMe };

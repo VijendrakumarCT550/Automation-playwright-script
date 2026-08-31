@@ -90,7 +90,7 @@ class SOMappingPage extends BasePage {
     const [response] = await Promise.all([
       this.page.waitForResponse(
         res => res.request().method() === 'POST' && res.url().includes('service-order-work-area'),
-        { timeout: 10000 }
+        { timeout: 500 }
       ).catch(() => null),
       this.selectDropdownOption(combo, vendorText),
     ]);

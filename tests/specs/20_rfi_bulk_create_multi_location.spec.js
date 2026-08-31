@@ -29,7 +29,7 @@ const RFIChecklistPage = require('../pages/RFIChecklistPage');
 const RFI_LOCATIONS = [
   {
     workLocation:         'A-06c',
-    workArea:             'BL01',
+    workArea:             'BL016',
     package:              'Civil',
     subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
     activity:             'Piling - MMS',
@@ -40,7 +40,7 @@ const RFI_LOCATIONS = [
   // Add one entry per additional block/work location here, e.g.:
   {
     workLocation:         'A-06c',
-    workArea:             'BL02',
+    workArea:             'BL17',
     package:              'Civil',
     subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
     activity:             'Piling - MMS',
@@ -52,7 +52,7 @@ const RFI_LOCATIONS = [
    // Add one entry per additional block/work location here, e.g.:
   {
     workLocation:         'A-06c',
-    workArea:             'BL03',
+    workArea:             'BL018',
     package:              'Civil',
     subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
     activity:             'Piling - MMS',
@@ -63,7 +63,7 @@ const RFI_LOCATIONS = [
    // Add one entry per additional block/work location here, e.g.:
   {
     workLocation:         'A-06c',
-    workArea:             'BL04',
+    workArea:             'BL19',
     package:              'Civil',
     subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
     activity:             'Piling - MMS',

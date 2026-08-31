@@ -6,11 +6,35 @@ class LoginPage extends BasePage {
     this.emailInput    = page.locator('input[placeholder="contractor@domain.com"]');
     this.passwordInput = page.locator('input[type="password"]');
     this.loginButton   = page.locator('button[type="submit"]');
+    // Some environments land on an intermediate "AGEL / Partner login" page
+    // (a big gradient "Login" button, with a collapsed "Testing purpose
+    // login" accordion below it) instead of the email/password form
+    // directly. Its accessible name comes from the visible text — the
+    // chevron-down svg next to it is aria-hidden — so matching on the text
+    // is stable even though the trigger itself is an unlabeled button/div.
+    this.testingPurposeToggle = page.getByText('Testing purpose login', { exact: false });
   }
 
   async goto() {
     await this.navigate(process.env.BASE_URL);
     await this.page.waitForLoadState('networkidle');
+    await this.revealLoginFormIfLandingPage();
+  }
+
+  // No-ops if the email/password form is already visible (direct
+  // environments, as before). Otherwise expands the "Testing purpose
+  // login" accordion, which reveals that same form — confirmed live via
+  // screenshot: clicking it opens the login page exactly as it rendered
+  // before this intermediate landing page existed.
+  async revealLoginFormIfLandingPage() {
+    const alreadyOnForm = await this.emailInput.isVisible({ timeout: 3000 }).catch(() => false);
+    if (alreadyOnForm) return;
+
+    if (await this.testingPurposeToggle.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await this.testingPurposeToggle.click();
+    }
+
+    await this.emailInput.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   // Ark UI inputs need real keyboard events. Triple-click selects existing content
@@ -50,12 +74,15 @@ class LoginPage extends BasePage {
       await this.loginButton.click();
     }
 
-    // Login takes 1–2 minutes in this environment — wait up to 3 minutes.
+    // Login usually takes 1-2 minutes, but a cold PWA install (first login
+    // in a fresh browser profile) has been observed taking up to ~9-10
+    // minutes in this environment — wait up to 10 minutes so that case
+    // doesn't get cut off mid-install.
     // Playwright passes a URL *object* to the predicate, not a string,
     // so use .href to get the string representation.
     await this.page.waitForURL(
       url => !url.href.includes('/login'),
-      { timeout: 200000 }
+      { timeout: 60000 }
     ).catch(async () => {
       const errorText = await this.page
         .locator('[data-scope="toast"], [role="alert"], [class*="error"]')

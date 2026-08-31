@@ -8,7 +8,10 @@ const DashboardPage = require('../pages/DashboardPage');
 // Caller is responsible for closing the returned context when done.
 async function adminFreshLogin(browser, contextOptions = {}) {
   const context = await browser.newContext({
-    permissions: ['geolocation'],
+    // 'camera' added alongside geolocation — see playwright.config.js's
+    // `use.permissions` comment on why NC's mandatory Capture Photo flow
+    // needs it granted up front.
+    permissions: ['geolocation', 'camera'],
     geolocation: { latitude: 23.0225, longitude: 72.5714 },
     ...contextOptions,
   });
@@ -47,7 +50,7 @@ async function loginFreshRoleSession(browser, role) {
   if (!creds) throw new Error(`Unknown role: ${role}`);
 
   const context = await browser.newContext({
-    permissions: ['geolocation'],
+    permissions: ['geolocation', 'camera'],
     geolocation: { latitude: 23.0225, longitude: 72.5714 },
   });
 

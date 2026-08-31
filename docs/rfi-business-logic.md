@@ -230,6 +230,19 @@ independent of whether Table 72's checkpoint 1 has even started.
   RFI can be created for the Block-level Activity. (Confirmed this is one
   concept referred to consistently as "work area / Block level," not a
   separate higher tier above Block.)
+- **Addendum, confirmed by user 2026-08-28**: for Block-type Sub-Activities,
+  "work-area-level" means the Work Section value **is** the Work Area
+  itself (same node, not a separate pick) — live-confirmed on the RFI
+  creation form: Work Area `BL01`, Sub-Activity "IDT Civil & Structural -
+  Cable Rack", single Work Section = chip `BL01`. Table/Inverter-type
+  Sub-Activities are the only ones where Work Section is a genuinely
+  distinct 4th-level value; Min. Unit of RFI is still confirmed as only
+  `Table`/`Inverter`/`Block` — no 4th/5th value. Separately, the Work
+  Section `Type` field also has `CABLE`/`CULVERT` values, but per user
+  correction these track the **Work Area's own family** (`Culvert {n}` is a
+  Work Area family parallel to `BL{nn}`), not a Min. Unit of RFI category —
+  don't conflate the two. See `docs/work-region-hierarchy.md` §2d for the
+  full writeup.
 - **Reference for which type an Activity is**: the Activity Master's "Min.
   Unit of RFI" column (see §4) — check this before assuming which
   dependency rule applies to a given Activity.

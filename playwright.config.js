@@ -41,9 +41,18 @@ module.exports = defineConfig({
     // Critical long waits (DashboardPage, _openDropdown, etc.) have explicit timeouts.
     actionTimeout: 30000,
     // Grant geolocation automatically so the browser permission popup
-    // doesn't block the dashboard from loading after login
-    permissions: ['geolocation'],
+    // doesn't block the dashboard from loading after login. Camera added
+    // for NC's mandatory "Capture Photo" flow (QI create, CI response, EE/QI
+    // review) — granting it here avoids the OS/browser permission prompt;
+    // --use-fake-device-for-media-stream (below) supplies a synthetic video
+    // feed so getUserMedia() succeeds even on machines/CI runners with no
+    // real webcam, and --use-fake-ui-for-media-stream skips Chrome's own
+    // "Allow camera?" bubble that grantPermissions doesn't cover.
+    permissions: ['geolocation', 'camera'],
     geolocation: { latitude: 23.0225, longitude: 72.5714 },
+    launchOptions: {
+      args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'],
+    },
   },
   projects: [
     {

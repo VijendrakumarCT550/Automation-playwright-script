@@ -1,7 +1,9 @@
+const fs = require("fs");
+const path = require("path");
 const { expect } = require("@playwright/test");
 const {
   loadTracker, getPendingStepsForActor, setRfiId, setRfiCode, advanceStep,
-  markFailed, getLastRejectPage,
+  markFailed, getLastRejectPage, getLastRejectStep,
 } = require("./tracker-utils");
 const { openFromPendingWithMe } = require("./rfi-nav");
 const { loginAsRole } = require("./helpers");
@@ -10,6 +12,43 @@ const MyTasksPage      = require("../pages/MyTasksPage");
 const RFICreatePage    = require("../pages/RFICreatePage");
 const RFIChecklistPage = require("../pages/RFIChecklistPage");
 const RFIReviewPage    = require("../pages/RFIReviewPage");
+
+// Added 2026-08-27 (user-requested): every run*Turn catches its own errors
+// (via markFailed) so the round-robin loop can keep processing OTHER TCs —
+// but that means Playwright's own automatic screenshot-on-failure never
+// fires for these, since the test() itself never sees the error at the
+// point it happened. Without this, the ONLY record of a failure was a
+// plain-text message — no way to actually SEE what the page looked like
+// when e.g. clickProceed() got stuck. Best-effort by design: a screenshot
+// failure must never itself break the flow being diagnosed. Saved under
+// test-results/ (already covered by playwright.config's outputDir, so no
+// separate .gitignore entry needed) so these accumulate per-run without
+// their own cleanup step.
+const REPO_ROOT = path.join(__dirname, "..", "..");
+const FAILURE_EVIDENCE_DIR = path.join(REPO_ROOT, "test-results", "negative-scenarios");
+
+async function captureFailureEvidence(page, tcId, stage) {
+  try {
+    fs.mkdirSync(FAILURE_EVIDENCE_DIR, { recursive: true });
+    const safeStage = String(stage).replace(/[^a-z0-9]+/gi, "-");
+    const base = `${tcId}-${safeStage}-${Date.now()}`;
+    const screenshotAbs = path.join(FAILURE_EVIDENCE_DIR, `${base}.png`);
+    await page.screenshot({ path: screenshotAbs, fullPage: true });
+    // HTML alongside the screenshot — a screenshot alone can't be grepped
+    // for e.g. "is the Work Location dropdown actually disabled right
+    // now", which matters for diagnosing this specific class of "form
+    // didn't validate, Proceed silently no-op'd" failure.
+    const htmlAbs = path.join(FAILURE_EVIDENCE_DIR, `${base}.html`);
+    fs.writeFileSync(htmlAbs, await page.content());
+    return {
+      screenshotPath: path.relative(REPO_ROOT, screenshotAbs),
+      htmlPath: path.relative(REPO_ROOT, htmlAbs),
+      url: page.url(),
+    };
+  } catch {
+    return null;
+  }
+}
 
 // Shared by BOTH the original pass-chain specs (08/09/10_rfi_flow_*.spec.js,
 // one login per pass) AND the single-session spec
@@ -62,7 +101,8 @@ async function withLoginRetryOnStaleWorkSection(page, role, action) {
 // logic under test doesn't depend on field values, only on reject/approve
 // sequencing, so every RFI can share one definition.
 const RFI_DATA = {
-  workLocation:         'A-06c',
+  // workLocation:         'A-06c',
+  workLocation:         'S05b',
   workArea:             'BL02',
   package:              'Civil',
   subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
@@ -117,8 +157,8 @@ async function createNewRfi(page) {
 // known: backfillRfiCodes (below) fills it in right after every
 // create/resubmit in this same CI session, before this is ever called for
 // a later resubmit.
-async function resubmitRfi(page, rfiCode, lastRejectPage) {
-  await openFromPendingWithMe(page, rfiCode);
+async function resubmitRfi(page, rfiCode, lastRejectPage, context) {
+  await openFromPendingWithMe(page, rfiCode, context);
 
   // That eye icon always lands on the read-only /view page, even for a row
   // whose actual next action is "resubmit" — once an RFI is rejected,
@@ -182,6 +222,30 @@ async function backfillRfiCodes(page, pending) {
   }
 }
 
+// Human-readable "where in the flow" label for a step, used both to build
+// openFromPendingWithMe's diagnostic `context` and to tag a failure's
+// `stage` in the tracker (see markFailed). Kept as one shared function so
+// the three run*Turn functions below can't describe the same step
+// differently from each other.
+function describeStep(actor, step) {
+  if (step.action === "reject") return `${actor} reject${step.page ? ` ${step.page}` : ''}`;
+  return `${actor} ${step.action}`;
+}
+
+// Builds the {stage, scenario} markFailed expects from whatever just threw —
+// `scenario` only comes through when the error was tagged at its source
+// (currently only openFromPendingWithMe's row-not-found case sets
+// `negativeScenario`); anything else's scenario stays null, which the
+// end-of-run report treats as "some other kind of failure", not a false
+// negative-scenario match.
+// Also captures a screenshot+HTML dump of `page` at the moment of failure
+// (see captureFailureEvidence above) — best-effort, so a screenshot hiccup
+// never masks the real error being reported.
+async function failureContext(actor, step, err, page, tcId) {
+  const evidence = await captureFailureEvidence(page, tcId, describeStep(actor, step));
+  return { stage: describeStep(actor, step), scenario: err.negativeScenario || null, ...evidence };
+}
+
 // Processes every TC currently pending for CI (create OR resubmit) exactly
 // once, then returns. Safe to call repeatedly in a loop — each call re-reads
 // the tracker fresh, so it naturally picks up new resubmit work created by
@@ -202,16 +266,21 @@ async function runCITurn(page) {
         }
 
         if (step.action === "resubmit") {
-          const lastRejectPage = getLastRejectPage(tc);
+          const lastReject = getLastRejectStep(tc);
+          // Context for openFromPendingWithMe's error message ONLY — the
+          // negative scenario this is guarding against is exactly "the
+          // reject above reported success, but this RFI never became
+          // resubmittable/visible to CI".
+          const context = `CI resubmit after ${lastReject?.actor ?? '?'} ${lastReject?.page ?? '?'} reject`;
           const { newRfiId } = await withLoginRetryOnStaleWorkSection(
-            page, "CI", () => resubmitRfi(page, tc.rfiCode, lastRejectPage)
+            page, "CI", () => resubmitRfi(page, tc.rfiCode, lastReject?.page ?? null, context)
           );
           advanceStep(loadTracker(), tcId, { newRfiId, newRfiCode: null });
           pendingCodeBackfill.push({ tcId, rfiId: newRfiId, isResubmit: true });
         }
       });
     } catch (err) {
-      markFailed(loadTracker(), tcId, err.message);
+      markFailed(loadTracker(), tcId, err.message, await failureContext("CI", step, err, page, tcId));
     }
   }
 
@@ -227,7 +296,10 @@ async function runEETurn(page) {
   for (const { tcId, tc, step } of myTurns) {
     try {
       await withRetry(async () => {
-        await openFromPendingWithMe(page, tc.rfiCode);
+        // Context covers the negative scenario one hop earlier in the flow:
+        // CI's create/resubmit reported success, but this RFI never became
+        // visible in EE's OWN "Pending with me" queue.
+        await openFromPendingWithMe(page, tc.rfiCode, `EE review (${describeStep("EE", step)})`);
         const review = new RFIReviewPage(page);
         await review.expandAllChecklist();
 
@@ -246,7 +318,7 @@ async function runEETurn(page) {
         }
       });
     } catch (err) {
-      markFailed(loadTracker(), tcId, err.message);
+      markFailed(loadTracker(), tcId, err.message, await failureContext("EE", step, err, page, tcId));
     }
   }
 }
@@ -260,7 +332,9 @@ async function runQITurn(page) {
   for (const { tcId, tc, step } of myTurns) {
     try {
       await withRetry(async () => {
-        await openFromPendingWithMe(page, tc.rfiCode);
+        // Same reasoning as EE's turn above — covers "EE's approve/CI's
+        // resubmit reported success, but this RFI never reached QI".
+        await openFromPendingWithMe(page, tc.rfiCode, `QI review (${describeStep("QI", step)})`);
         const review = new RFIReviewPage(page);
         await review.expandAllChecklist();
 
@@ -282,7 +356,7 @@ async function runQITurn(page) {
         }
       });
     } catch (err) {
-      markFailed(loadTracker(), tcId, err.message);
+      markFailed(loadTracker(), tcId, err.message, await failureContext("QI", step, err, page, tcId));
     }
   }
 }

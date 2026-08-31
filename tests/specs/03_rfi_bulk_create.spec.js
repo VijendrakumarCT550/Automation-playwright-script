@@ -10,7 +10,7 @@ const TOTAL_RFIS = 10;
 const RFI_DATA = {
   // workLocation:         null,
   workLocation:         'A-06c',
-  workArea:             'BL01',
+  workArea:             'BL03',
   package:              'Civil',
   // subPackage:           'Piling (MMS, Inverter, LT Cable Hangers) + IDT Civil & Structural',
   subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',

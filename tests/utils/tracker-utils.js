@@ -219,23 +219,57 @@ function advanceStep(tracker, tcId, { newVersion, newRfiId, newRfiCode } = {}) {
   saveTracker(tracker);
 }
 
-function markFailed(tracker, tcId, reason) {
+// `context` (optional) carries WHERE in the flow this failure happened —
+// `stage` (e.g. "CI resubmit", "EE review (reject P1)") and `scenario`, a
+// machine-readable tag (e.g. "RFI_NOT_VISIBLE_TO_ACTOR") set by callers that
+// caught a specifically-identified negative scenario rather than a generic
+// error. Added 2026-08-27 per user request: a bare failureReason string
+// (just the raw Playwright error) doesn't say WHICH step the TC died on
+// without cross-referencing steps[]/currentStepIndex by hand — every
+// failure site now passes this so the end-of-run report
+// (21_rfi_flow_single_session.spec.js) can print it directly.
+// `screenshotPath`/`htmlPath`/`url` (also optional, added same day) —
+// repo-relative paths to a screenshot + full HTML dump of the page at the
+// moment of failure (see rfi-flow-turns.js's captureFailureEvidence), plus
+// the URL it was taken from. Playwright's own automatic screenshot-on-
+// failure never fires for these — the error is caught here specifically so
+// the round-robin loop can keep processing OTHER TCs, so the test() itself
+// never sees it at the point it happened. Without this there was no visual
+// record of a failure at all, only the text reason. All fields here are
+// optional/additive — existing readers of the tracker that don't know
+// about them are unaffected.
+function markFailed(tracker, tcId, reason, { stage, scenario, screenshotPath, htmlPath, url } = {}) {
   tracker[tcId].status = "failed";
   tracker[tcId].failureReason = reason;
+  tracker[tcId].failureStage = stage || null;
+  tracker[tcId].failureScenario = scenario || null;
+  tracker[tcId].failureScreenshot = screenshotPath || null;
+  tracker[tcId].failureHtml = htmlPath || null;
+  tracker[tcId].failureUrl = url || null;
   saveTracker(tracker);
 }
 
-// Looks backward for the most recent reject step — tells CI whether Page 1
-// is editable (rejected on P1) or read-only (rejected on checklist/P2).
-function getLastRejectPage(tc) {
+// Looks backward for the most recent reject step in full (actor + page),
+// not just the page — added alongside getLastRejectPage below (which now
+// delegates here) so failure-reporting call sites can say WHO rejected it,
+// not just which page they rejected from.
+function getLastRejectStep(tc) {
   for (let i = tc.currentStepIndex - 1; i >= 0; i--) {
-    if (tc.steps[i].action === "reject") return tc.steps[i].page;
+    if (tc.steps[i].action === "reject") return tc.steps[i];
   }
   return null;
+}
+
+// Tells CI whether Page 1 is editable (rejected on P1) or read-only
+// (rejected on checklist/P2). Kept as its own function (rather than having
+// every call site destructure getLastRejectStep) since this is the one
+// piece resubmitRfi actually needs to decide its own behavior.
+function getLastRejectPage(tc) {
+  return getLastRejectStep(tc)?.page ?? null;
 }
 
 module.exports = {
   TRACKER_PATH, SEED_TRACKER,
   loadTracker, saveTracker, resetTracker, getPendingStepsForActor,
-  setRfiId, setRfiCode, advanceStep, markFailed, getLastRejectPage,
+  setRfiId, setRfiCode, advanceStep, markFailed, getLastRejectPage, getLastRejectStep,
 };

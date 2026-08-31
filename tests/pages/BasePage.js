@@ -194,6 +194,27 @@ class BasePage {
     }
   }
 
+  // Same "leftover UI blocks later clicks" pattern as closeAnyOpenListbox
+  // above, but for a modal DIALOG (Ark UI's `[data-scope="dialog"]` shape —
+  // e.g. RFIReviewPage's "Are you sure you want to approve RFI?" confirm
+  // popup). Confirmed live 2026-08-27 (RFI single-session flow, QI's final
+  // approve turn): a confirm popup left open from an earlier
+  // interrupted/retried attempt (withRetry re-runs a turn from scratch on
+  // failure, starting again from the "My Tasks" nav click, WITHOUT
+  // checking whether the previous attempt left a dialog open) sat on top
+  // of the entire page and blocked even that nav click — Playwright's
+  // actionability log reported `<html>...intercepts pointer events` as the
+  // interceptor, i.e. the modal's backdrop, not the dialog content itself.
+  // Same root shape as dismissToastIfPresent's toast case, just for a
+  // dialog instead. Safe to call speculatively even when nothing is open.
+  async closeAnyOpenDialog() {
+    const openDialog = this.page.locator('[data-scope="dialog"][data-part="content"], [role="dialog"]').first();
+    if (await openDialog.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await openDialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    }
+  }
+
   // Polls `check()` every `intervalMs`, capped at `timeoutMs` total, instead
   // of one single blocking wait/click with no explicit timeout — which
   // silently inherits playwright.config.js's global `actionTimeout`
@@ -238,6 +259,87 @@ class BasePage {
       }
       await toast.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
     }
+  }
+
+  // Camera capture widget: a dashed "Use Camera" box (camera icon + label —
+  // NOT a native file input) shared across NC's create/response/review
+  // screens (and referenced, still-unautomated, in RFIReviewPage's own
+  // header comment) — a generic app-wide component, hence living here
+  // rather than duplicated per NC page object. Confirmed live via
+  // tests/specs/00_inspect_nc_capture_photo.spec.js: clicking it opens a
+  // real getUserMedia <video> preview with "Capture"/"Cancel" buttons (no
+  // native file picker involved — playwright.config.js grants the 'camera'
+  // permission and launches Chromium with
+  // --use-fake-device-for-media-stream so this works headlessly/on CI
+  // runners with no real webcam). Clicking "Capture" snapshots the video
+  // straight into an attached thumbnail <img> with no separate
+  // confirm/retake step — the video element itself disappears once
+  // captured, which is what this waits on to know the attach landed.
+  // `container` scopes the "Use Camera" lookup for pages that could have
+  // more than one such widget (defaults to the whole page).
+  async capturePhoto(container = this.page) {
+    const useCameraTrigger = container.getByText('Use Camera', { exact: false }).first();
+    await useCameraTrigger.waitFor({ state: 'visible', timeout: 10000 });
+    await useCameraTrigger.click({ force: true });
+
+    const video = this.page.locator('video').first();
+    await video.waitFor({ state: 'visible', timeout: 10000 });
+    // Confirmed live: clicking Capture the instant the <video> becomes
+    // visible can silently no-op (the fake stream hasn't started rendering
+    // frames yet) — the camera modal (and its full-viewport backdrop) then
+    // stays open and blocks every later click on the page, surfacing much
+    // later as a confusing "element intercepts pointer events" failure on
+    // whatever's clicked next (e.g. Submit), not here. A short settle wait
+    // avoids that in the common case.
+    await this.page.waitForTimeout(1000);
+
+    const captureButton = this.page.getByRole('button', { name: 'Capture', exact: true }).first();
+    await captureButton.waitFor({ state: 'visible', timeout: 5000 });
+    await captureButton.click();
+
+    // One retry if the first click still didn't register (same failure
+    // class as above), then a HARD wait — no swallowed .catch() — so a
+    // genuinely stuck camera modal throws right here with a clear cause,
+    // instead of a mystifying failure downstream.
+    const closed = await video.waitFor({ state: 'hidden', timeout: 5000 }).then(() => true).catch(() => false);
+    if (!closed) {
+      await captureButton.click();
+      await video.waitFor({ state: 'hidden', timeout: 10000 });
+    }
+    await this.page.waitForTimeout(300);
+  }
+
+  // "View Attachments" is the read-only gallery of photos captured by
+  // EARLIER actors in the NC flow (e.g. QI's create-time photo, visible on
+  // CI's response page; CI's response photo, visible on EE's review page).
+  // Used to assert attachments actually propagate to the next responsible
+  // person, not just that the capturing actor's own submit succeeded.
+  // Scoped to the label's parent container (not a bare page-wide `img`
+  // count) so it doesn't pick up unrelated chrome (header avatar, logo,
+  // notification icon).
+  async getAttachmentCount() {
+    const label = this.page.getByText('View Attachments', { exact: false }).first();
+    // NOT `label.isVisible({ timeout })` — confirmed live that isVisible()
+    // does NOT poll despite accepting a timeout option; it's a single
+    // immediate check. This label genuinely doesn't exist in the DOM yet
+    // right when openFromPendingWithMe returns (a client-side SPA route
+    // transition) — it renders in ~2s — so isVisible() at t=0 always read
+    // false and this returned a false "0 attachments" even though the
+    // photo was there and visible moments later. waitFor() is what
+    // actually polls.
+    const appeared = await label.waitFor({ state: 'visible', timeout: 10000 }).then(() => true).catch(() => false);
+    if (!appeared) return 0;
+
+    const container = label.locator('xpath=..');
+    // Confirmed live: the attachment's blob-URL <img> can render a beat
+    // after openRowByCode's networkidle wait already resolved (a
+    // client-side SPA route transition, not a full page load) — a bare
+    // one-shot count() read 0 even though the photo genuinely was there
+    // and rendered correctly moments later. Poll briefly for the image
+    // rather than counting once; a real "no attachment" case still
+    // legitimately returns 0 after the timeout elapses.
+    await container.locator('img').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    return await container.locator('img').count();
   }
 
   // RFI/NC version badge ("v1"/"v2"/"v3") shown in the header only once a

@@ -26,6 +26,10 @@ const NC_DATA = {
   ncDescription:    'Automated NC creation - regression test',
   defectType:       'Workmanship defect',
   category:         'Critical',
+  // Newly mandatory fields (per app change): Target Date for Closure (14
+  // days from today) and Capture Photo (capturePhoto defaults to true in
+  // NCCreatePage.fillForm, so it's not repeated here).
+  targetDateClosureDays: 14,
 };
 
 // NC creation is done by the Quality Inspector (QI role) — the reverse of
