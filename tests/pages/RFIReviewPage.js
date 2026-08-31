@@ -196,7 +196,29 @@ class RFIReviewPage extends BasePage {
     await this.page.waitForTimeout(3000);
   }
 
+  // MOBILE SPLITS THE REVIEW ACROSS TWO SCREENS. Confirmed by screenshot
+  // 2026-09-01: at a phone viewport the review page is "Page 1 of 2" — RFI
+  // Details with Close / Reject RFI / PROCEED and NO Submit button at all. The
+  // checklist and its Submit live on page 2, reached via Proceed. Desktop renders
+  // both panes at once and has Submit on the same screen, which is why the
+  // original single-click version worked there.
+  //
+  // Without this, EE's approval died on a 30s wait for a Submit button that does
+  // not exist on mobile page 1.
   async approve() {
+    if (!(await this.submitButton.isVisible().catch(() => false))) {
+      const proceed = this.page.getByRole('button', { name: /^\s*proceed\s*$/i }).first();
+      if (await proceed.isVisible().catch(() => false)) {
+        await proceed.click();
+        await this.page.waitForLoadState('networkidle').catch(() => {});
+        // Page 2 carries the checklist, so expand it here — a caller that
+        // expanded before approve() was looking at page 1, where there is
+        // nothing to expand.
+        await this.expandAllChecklist().catch(() => {});
+        await this.submitButton.waitFor({ state: 'visible', timeout: 20000 });
+      }
+    }
+
     await this.submitButton.click();
     await this.confirmPopup.waitFor({ state: 'visible', timeout: 10000 });
     await this.confirmSubmitButton.click();
