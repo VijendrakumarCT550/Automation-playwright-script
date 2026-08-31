@@ -13,13 +13,11 @@ const { adminFreshLogin } = require('../utils/helpers');
 //
 // Establishes the two things SOLAR_E2E cannot be filled in without:
 //
-//   1. WHICH WORK AREAS ARE SAFE. The existing suite only ever uses BL0x areas
-//      under A-06c: BL02 is under constant churn from the tracked 9-TC RFI
-//      regression, BL09/BL10 belong to the dependency specs (29/30), and
-//      BL01/BL03-BL08 appear across the bulk-create and NC specs. A-06c has far
-//      more areas than that (WAMPage records 85 total rows including Road/Drain/
-//      Culvert entries), so this lists them all and flags the NON-BL0x ones as
-//      candidates — almost certainly untouched by anything in the repo.
+//   1. WHICH WORK AREAS ARE SAFE, and the answer is NOT "the non-BL ones".
+//      A-06c has 85 areas: BL01..BL40 plus Culvert 1-5, Drain1-20, Road1-20.
+//      Candidates must be BL{nn}, and within that BL11+ — see the IS_BL comment
+//      below for why the Culvert/Drain/Road areas are unusable and why the
+//      activity dropdown does not reveal it.
 //
 //   2. THE VENDOR AND ITS EXACT SERVICE ORDER STRING. The app owner has
 //      corrected this: for A-06c it must be M S CHOUHAN, not the ADVAIT vendor
@@ -51,8 +49,21 @@ const FILTERS = {
   package: 'Civil',
 };
 
-// Work areas the existing suite is known to touch — see the header comment.
-const KNOWN_IN_USE = /^BL0?\d+$/i;
+// BL{nn} is the only USABLE shape for a Piling activity — app owner: the
+// Culvert/Drain/Road areas do not contain the Piling activities, so a Piling RFI
+// there finds NO WORK SECTION. The activity dropdown does not reveal this: a
+// first version of this recon recommended "Culvert 1" precisely because the
+// dropdown there offers all 23 Civil activities including Piling - MMS. Only the
+// Work Section list tells the truth about whether an area supports an activity.
+//
+// Within BL, the existing suite only ever touches BL01..BL10, so BL11+ are the
+// real candidates.
+const IS_BL = /^BL\s*0*(\d+)$/i;
+const blNumber = (a) => {
+  const m = IS_BL.exec(String(a).trim());
+  return m ? Number(m[1]) : null;
+};
+const SUITE_USES_UP_TO = 10;
 // Both candidates, so the run produces evidence either way rather than only
 // confirming what we expect.
 const VENDOR_PATTERNS = {
@@ -91,17 +102,32 @@ test('SOLAR E2E ground: A-06c work areas and the CHOUHAN service order', async (
     // ---- 1. Work areas ----
     const areas = await listOptions(so, so.workAreaDropdown, 'Work Area (SOLAR / A-06c)');
     report.workAreas = areas;
-    const inUse = areas.filter((a) => KNOWN_IN_USE.test(a.trim()));
-    const candidates = areas.filter((a) => !KNOWN_IN_USE.test(a.trim()));
+    const nonBl = areas.filter((a) => blNumber(a) === null);
+    const inUse = areas.filter((a) => {
+      const n = blNumber(a);
+      return n !== null && n <= SUITE_USES_UP_TO;
+    });
+    const candidates = areas.filter((a) => {
+      const n = blNumber(a);
+      return n !== null && n > SUITE_USES_UP_TO;
+    });
+    report.nonBlUnusable = nonBl;
     report.knownInUse = inUse;
     report.candidates = candidates;
 
-    console.log(`\n  BL0x areas the existing suite uses (${inUse.length}): ${JSON.stringify(inUse)}`);
-    console.log(`  NON-BL candidates for the solar smoke chain (${candidates.length}):`);
-    console.log(`    ${JSON.stringify(candidates)}`);
+    console.log(
+      `\n  UNUSABLE for Piling — no Work Sections there (${nonBl.length}): ` +
+      `${JSON.stringify(nonBl.slice(0, 12))}${nonBl.length > 12 ? ' ...' : ''}`
+    );
+    console.log(`  BL areas the existing suite already uses (${inUse.length}): ${JSON.stringify(inUse)}`);
+    console.log(
+      `  CANDIDATES — BL${SUITE_USES_UP_TO + 1}+ (${candidates.length}): ${JSON.stringify(candidates)}`
+    );
 
     // ---- 2. The vendor's service order, on a real activity row ----
-    const firstArea = candidates[0] || areas[0];
+    // Probe a real CANDIDATE (BL11+). Probing a Culvert/Drain/Road area would
+    // list activities that cannot actually be used there.
+    const firstArea = candidates[0] || inUse[0] || areas[0];
     report.workAreaProbed = firstArea;
     await so.selectWorkAreas([firstArea]);
     await so.selectDropdownOption(so.packageDropdown, FILTERS.package);

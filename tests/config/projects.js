@@ -333,23 +333,58 @@ const SOLAR_E2E = {
   // locations. Both are listed at user-creation scope.
   workLocations: ['A-06c', 'S05b'],
 
-  // App owner's instruction: pick any UNUSED work area under A-06c and extend
-  // SO Mapping + WAM to it, which is what makes RFI creation possible there.
-  // Left null until A-06c's work areas are enumerated and a clean one chosen —
-  // it must avoid BL02 (tracked 9-TC regression) and BL09/BL10 (dependency
-  // specs 29/30), all under constant churn.
-  workAreas: null,
-  primaryWorkArea: null,
+  // CONFIRMED live (00_inspect_solar_e2e_ground.spec.js): A-06c has 85 work
+  // areas — BL01..BL40 plus 45 non-BL ones (Culvert 1-5, Drain1-20, Road1-20).
+  //
+  // MUST be BL{nn} format — never Culvert / Drain / Road.
+  //
+  // App owner, and it is a hard functional constraint rather than a preference:
+  // those areas do not contain the Piling activities, so a Piling RFI there finds
+  // NO WORK SECTION at all. The activity dropdown is misleading on this point —
+  // the recon confirmed "Culvert 1" happily offers all 23 Civil activities
+  // including Piling - MMS, so nothing fails until the Work Section list comes
+  // back empty. Only the Work Section list tells the truth about whether an area
+  // really supports an activity.
+  //
+  // BL21+ specifically, because the existing suite only ever touches BL01..BL10
+  // (05_so_mapping maps those ten, 07_wam_ci assigns them, and the specs use
+  // BL02 for the tracked 9-TC regression and BL09/BL10 for the dependency
+  // specs). A-06c has BL01..BL40, so BL11..BL40 are both untouched AND the right
+  // kind of area.
+  workAreas: ['BL21', 'BL22'],
+  primaryWorkArea: 'BL21',
+
+  // Desktop and mobile get their own area, as for wind — not because solar can
+  // exhaust (it cannot; see workSectionGranularity below) but so the two
+  // viewports stay independently re-runnable.
+  flowWorkAreas: {
+    desktop: ['BL21'],
+    mobile: ['BL22'],
+  },
+
+  // SOLAR HAS MANY WORK SECTIONS PER WORK AREA — BL02 alone has ~490 for
+  // Piling - MMS. That is the fundamental difference from wind, and it is why
+  // the app owner wants solar to carry the MOBILE coverage: a run picks a fresh
+  // Work Section every time, so nothing is ever exhausted, no area gets stuck
+  // behind an unapproved RFI, and the same checkpoint can be re-run
+  // indefinitely. Wind keeps the one-Work-Section-per-area and
+  // dependency-enforcement coverage.
+  workSectionGranularity: 'many-per-work-area',
+  throwawayWorkArea: null,
 
   packages: ['Civil'],
 
   vendor: {
     category: 'Service Contractor',
-    name: 'ADVAIT ENERGY TRANSITIONS LTD',
-    // App-owner-specified. Still to be verified against the live Service
-    // Order dropdown the same way BAUER's was — the five-BAUER-SOs finding
-    // means a name-only assumption is not safe here either.
-    serviceOrder: '4810023936 - ADVAIT ENERGY TRANSITIONS LTD',
+    name: 'M S CHOUHAN INFRAVENTURES',
+    // CONFIRMED live: at SOLAR / A-06c / Civil the Service Order dropdown holds
+    // 32 options, exactly ONE of which is CHOUHAN — and ADVAIT (the vendor
+    // originally named for the since-dropped A16b location) has ZERO. Service
+    // Order options are scoped to the work location and package, and solar SOs
+    // carry a 481... prefix versus wind's 571...
+    //
+    // The number matches what 07_wam_ci.spec.js already recorded for CHOUHAN.
+    serviceOrder: '4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD',
   },
 
   mapServiceOrderToAllActivities: true,
@@ -366,7 +401,52 @@ const SOLAR_E2E = {
   },
 
   activityMasterFixture: null, // solar's reference lives in rfi-dependency-data.js
-  rfi: null,
+
+  // The proven solar RFI combination — the same activity/checkpoint/checklist the
+  // tracked 9-TC regression and the dependency specs have always used, so none
+  // of it is guesswork. Only the Work Area differs (BL21/BL22 instead of BL02).
+  //
+  // Note the CONTRAST with wind, and it is the whole reason solar carries the
+  // mobile coverage:
+  //   * workSection is null and STAYS null — solar has ~490 sections per area, so
+  //     "pick the first available" gives a fresh one every run. Nothing is
+  //     consumed in a way that matters. (For wind, workSection has to track the
+  //     Work Area because there is exactly one and it is named after the area.)
+  //   * checkpointChain has ONE entry. Solar never needs to walk to a later
+  //     checkpoint looking for a free section, because checkpoint 1 always has
+  //     one. The dependency rule still applies, but is never hit: a brand-new
+  //     Work Section has no predecessor requirement.
+  //   * Solar activity/checkpoint names carry NO numeric prefix (that is a wind
+  //     rendering trait), so these are the bare names.
+  rfi: {
+    workLocation: 'A-06c',
+    workArea: 'BL21',
+    package: 'Civil',
+    subPackage: 'Piling (MMS, Inverter, LT Cable Hangers)',
+    activity: 'Piling - MMS',
+
+    workSection: null,
+
+    // Solar's RFI_DATA has always left these null, i.e. they are optional here.
+    rfiQuantity: null,
+    unit: null,
+    subContractor: null,
+
+    observationValue: 'OK - as per standard (solar smoke)',
+
+    checkpointChain: [
+      {
+        code: 'A.1.1.1',
+        subActivity: 'Piling - MMS',
+        checkpoint: 'Pre Pour Inspection - Pile',
+        checklist: 'Micro Pile Checklist',
+      },
+    ],
+  },
+
+  // The solar NC form has not been driven by this chain yet. NC_DATA in
+  // nc-flow-turns.js has the proven values (A-06c, Piling - Robotic Docking
+  // System, CHOUHAN) if/when stage 6 is written.
   nc: null,
 };
 

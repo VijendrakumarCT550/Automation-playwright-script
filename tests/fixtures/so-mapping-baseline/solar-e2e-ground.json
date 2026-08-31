@@ -1,0 +1,290 @@
+{
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "cluster": [
+    "Gujarat",
+    "Khavda"
+  ],
+  "site": "Khavda",
+  "projectType": "SOLAR",
+  "workLocation": "A-06c",
+  "package": "Civil",
+  "workAreas": [
+    "BL01",
+    "BL02",
+    "BL03",
+    "BL04",
+    "BL05",
+    "BL06",
+    "BL07",
+    "BL08",
+    "BL09",
+    "BL10",
+    "BL11",
+    "BL12",
+    "BL13",
+    "BL14",
+    "BL15",
+    "BL16",
+    "BL17",
+    "BL18",
+    "BL19",
+    "BL20",
+    "BL21",
+    "BL22",
+    "BL23",
+    "BL24",
+    "BL25",
+    "BL26",
+    "BL27",
+    "BL28",
+    "BL29",
+    "BL30",
+    "BL31",
+    "BL32",
+    "BL33",
+    "BL34",
+    "BL35",
+    "BL36",
+    "BL37",
+    "BL38",
+    "BL39",
+    "BL40",
+    "Culvert 1",
+    "Culvert 2",
+    "Culvert 3",
+    "Culvert 4",
+    "Culvert 5",
+    "Drain1",
+    "Drain2",
+    "Drain3",
+    "Drain4",
+    "Drain5",
+    "Drain6",
+    "Drain7",
+    "Drain8",
+    "Drain9",
+    "Drain10",
+    "Drain11",
+    "Drain12",
+    "Drain13",
+    "Drain14",
+    "Drain15",
+    "Drain16",
+    "Drain17",
+    "Drain18",
+    "Drain19",
+    "Drain20",
+    "Road1",
+    "Road2",
+    "Road3",
+    "Road4",
+    "Road5",
+    "Road6",
+    "Road7",
+    "Road8",
+    "Road9",
+    "Road10",
+    "Road11",
+    "Road12",
+    "Road13",
+    "Road14",
+    "Road15",
+    "Road16",
+    "Road17",
+    "Road18",
+    "Road19",
+    "Road20"
+  ],
+  "nonBlUnusable": [
+    "Culvert 1",
+    "Culvert 2",
+    "Culvert 3",
+    "Culvert 4",
+    "Culvert 5",
+    "Drain1",
+    "Drain2",
+    "Drain3",
+    "Drain4",
+    "Drain5",
+    "Drain6",
+    "Drain7",
+    "Drain8",
+    "Drain9",
+    "Drain10",
+    "Drain11",
+    "Drain12",
+    "Drain13",
+    "Drain14",
+    "Drain15",
+    "Drain16",
+    "Drain17",
+    "Drain18",
+    "Drain19",
+    "Drain20",
+    "Road1",
+    "Road2",
+    "Road3",
+    "Road4",
+    "Road5",
+    "Road6",
+    "Road7",
+    "Road8",
+    "Road9",
+    "Road10",
+    "Road11",
+    "Road12",
+    "Road13",
+    "Road14",
+    "Road15",
+    "Road16",
+    "Road17",
+    "Road18",
+    "Road19",
+    "Road20"
+  ],
+  "knownInUse": [
+    "BL01",
+    "BL02",
+    "BL03",
+    "BL04",
+    "BL05",
+    "BL06",
+    "BL07",
+    "BL08",
+    "BL09",
+    "BL10"
+  ],
+  "candidates": [
+    "BL11",
+    "BL12",
+    "BL13",
+    "BL14",
+    "BL15",
+    "BL16",
+    "BL17",
+    "BL18",
+    "BL19",
+    "BL20",
+    "BL21",
+    "BL22",
+    "BL23",
+    "BL24",
+    "BL25",
+    "BL26",
+    "BL27",
+    "BL28",
+    "BL29",
+    "BL30",
+    "BL31",
+    "BL32",
+    "BL33",
+    "BL34",
+    "BL35",
+    "BL36",
+    "BL37",
+    "BL38",
+    "BL39",
+    "BL40"
+  ],
+  "workAreaProbed": "BL11",
+  "activities": [
+    {
+      "activity": "Piling - MMS",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Piling - Inverter",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Piling - Robotic Docking System",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Piling - LT Cable Hanger System",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "IDT Civil & Structural",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "MMS Installation",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Module Installation",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Robot Structure Installation",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "IDT Fencing & Gravel Laying",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Anti-Corrosion Protection - for Stubs",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Anti-Corrosion Protection - for MMS Structural Components",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Inverter Height Extension",
+      "serviceOrder": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+    },
+    {
+      "activity": "Road Works - IDT Road OGL Layer",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 1",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 2",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 3",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 4",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 5",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Soil Layer 6",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road GSB",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Road Works - IDT Road Macadam",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Drain Work",
+      "serviceOrder": "Select Service Order"
+    },
+    {
+      "activity": "Culvert Works",
+      "serviceOrder": "Select Service Order"
+    }
+  ],
+  "serviceOrderOptionCount": 32,
+  "chouhanOptions": [
+    "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+  ],
+  "advaitOptions": [],
+  "expectedChouhanSo": "4810024058 - M S CHOUHAN INFRAVENTURES PVT LTD"
+}

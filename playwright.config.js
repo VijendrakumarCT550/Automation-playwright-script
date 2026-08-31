@@ -249,11 +249,18 @@ module.exports = defineConfig({
     // default in tests/config/test-base.js is 'solar-regression', so any spec
     // run outside these projects still sees the regression literals.
     //
-    // WIND FIRST, per the app owner — the solar chain's stages are added once
-    // the wind chain is green. Run one chain at a time, never both at once:
-    // they share the Admin account and the app's one-session-at-a-time
-    // behaviour.
+    // Run ONE chain at a time, never both at once: they share the Admin account
+    // and the app is one-session-at-a-time.
+    //
+    // Wind was built first and both its RFI viewports are green. Solar now
+    // carries the MOBILE coverage per the app owner, because solar has many Work
+    // Sections per Work Area and therefore never exhausts, never strands an area
+    // behind an unapproved RFI, and can be re-run indefinitely — whereas
+    // debugging mobile layout on wind spent irreplaceable checkpoints on issues
+    // that had nothing to do with wind. Wind keeps the one-Work-Section-per-area
+    // and dependency-enforcement coverage.
     ...smokeChain('wind', 'wind-e2e'),
+    ...smokeChain('solar', 'solar-e2e'),
   ],
   outputDir: 'test-results/',
 });

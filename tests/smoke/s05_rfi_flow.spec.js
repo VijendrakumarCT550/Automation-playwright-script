@@ -174,10 +174,25 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
   // which only needs to know what CI actually used (recorded in `created`).
   const resolveWorkArea = (isMobile) => resolveWorkAreaPool(isMobile)[0];
 
-  // Wind's single Work Section is NAMED AFTER its Work Area, so it must track
-  // whichever area this run resolved to. profile.rfi.workSection is null for
-  // wind precisely so this cannot be hardcoded to the desktop area.
-  const resolveWorkSection = (workArea) => profile.rfi.workSection || workArea;
+  // Work Section resolution differs FUNDAMENTALLY by project type, so this must
+  // not be one rule:
+  //
+  //   WIND  — exactly one Work Section per Work Area, NAMED AFTER the area
+  //           ("KH 52" => "KH 52"). It must therefore track whichever area this
+  //           run resolved to; hardcoding it would silently pick the wrong
+  //           section once the mobile variant runs on a different area.
+  //   SOLAR — many Work Sections per Work Area (~490 for Piling - MMS), named
+  //           quite differently ("R0X-S0Y"). Returning null means "pick the first
+  //           available", which yields a FRESH section every run — the reason
+  //           solar never exhausts and can carry the repeated mobile coverage.
+  //
+  // Driven off the profile's declared granularity rather than a project-type
+  // check, so a future project type states its own behaviour rather than
+  // inheriting wind's by accident.
+  const resolveWorkSection = (workArea) => {
+    if (profile.rfi.workSection) return profile.rfi.workSection;
+    return profile.workSectionGranularity === 'one-per-work-area' ? workArea : null;
+  };
 
   test('CI creates and submits a wind RFI on the next free checkpoint', async ({ page, isMobileViewport }) => {
     // Three PWA logins across this file at up to ~6 minutes each, plus form and
