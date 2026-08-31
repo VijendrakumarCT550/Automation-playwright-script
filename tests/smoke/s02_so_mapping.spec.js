@@ -213,12 +213,17 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
         `Package "${pkg}" rendered no activity rows for ${workLocation} / ${workAreas.join(' + ')}`
       ).toBeGreaterThan(0);
 
-      // With several areas selected, an activity's combobox reflects the UNION
-      // of their values — the app even has a "Multiple SOs" option for that
-      // state — so a row only reads as already-correct when EVERY selected area
-      // already holds the target. That makes the existing skip logic behave
-      // correctly here without special-casing: mixed rows don't match the target
-      // string and get mapped, uniform-and-correct rows are skipped.
+      // CONFIRMED BY THE APP OWNER: with several work areas selected, an
+      // activity whose areas hold DIFFERENT Service Orders displays
+      // "Multiple SOs" — and you can still set it in one go and Save, which
+      // writes the new value to every selected area. So bulk mapping works even
+      // across areas that disagree, which is what makes this single pass valid
+      // rather than something that only works when the areas already match.
+      //
+      // The existing skip logic then behaves correctly with no special-casing: a
+      // row reads as already-correct ONLY when every selected area holds the
+      // target, and "Multiple SOs" (or any other value) does not match the
+      // target string, so mixed rows get mapped.
       const result = await so.selectServiceOrderForAllActivities(serviceOrder);
       console.log(
         `  ${pkg}: remapped ${result.changed.length}, already correct ${result.alreadySet.length} ` +
