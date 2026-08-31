@@ -191,13 +191,42 @@ class RFIListPage extends BasePage {
   // the UI-click equivalent of RFIReviewPage.goto(rfiId) / a direct
   // page.goto to .../view.
   async openRowByCode(code, opts) {
-    // MOBILE: no grid, no Actions column, no eye icon — the card's code itself is
-    // the link that opens the RFI.
+    // MOBILE: no grid, no Actions column, no eye icon — and clicking the card's
+    // code does NOT navigate. It EXPANDS THE CARD IN PLACE (confirmed by
+    // screenshot: the expanded card reveals Activity, Sub-Activity, Created at /
+    // Last updated on, the CI -> EE -> QI chips, and a "Review" button). It is
+    // that Review button which opens the RFI.
+    //
+    // Getting this wrong was silent and misleading rather than a clean failure:
+    // an earlier version clicked only the code, stayed on the LIST page, and the
+    // caller's readAllFields() then happily parsed the list — returning the FIRST
+    // card's Work Area ("KH 35") for an RFI on KH 52, with nulls for every field
+    // that only exists on the review page. It failed later at a missing "Submit"
+    // button, far from the cause.
     if (!(await this.hasGrid())) {
       const card = this.cardByCode(code);
       await card.waitFor({ state: 'visible', timeout: 15000 });
       await card.click();
+
+      // Scope the Review button to THIS card. Nested elements appear
+      // outer-before-inner in document order, so .last() of the ancestors that
+      // contain both this code and a Review button is the tightest container —
+      // which matters because another card could also be expanded.
+      const cardContainer = this.page
+        .locator('div')
+        .filter({ has: this.cardByCode(code) })
+        .filter({ has: this.page.getByRole('button', { name: /^\s*review\s*$/i }) })
+        .last();
+
+      const reviewBtn = cardContainer
+        .getByRole('button', { name: /^\s*review\s*$/i }).first();
+      await reviewBtn.waitFor({ state: 'visible', timeout: 15000 });
+      await reviewBtn.click();
       await this.page.waitForLoadState('networkidle');
+
+      // Confirm we actually left the list, so a future UI change surfaces here
+      // rather than as a mystery missing button on the "review" page.
+      await this.page.waitForURL(/\/my-tasks\/rfi\/[a-f0-9-]+\/view/i, { timeout: 20000 });
       return;
     }
 
