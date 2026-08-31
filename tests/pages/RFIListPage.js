@@ -54,21 +54,37 @@ class RFIListPage extends BasePage {
     return this.page.getByText(new RegExp(`^\\s*${escaped}\\s*$`)).first();
   }
 
-  // Waits for EITHER layout to be ready. Kept under the original name so
-  // rfi-nav.js and every existing caller need no change.
+  // Waits for ANY of the three ready states and reports which. Kept under the
+  // original name so rfi-nav.js and every existing caller need no change.
+  //
+  //   'grid'  — desktop react-data-grid
+  //   'cards' — mobile card list, header "Total RFIs: N"
+  //   'empty' — the list is legitimately EMPTY
+  //
+  // The empty case is not an error and must not be treated as one. Confirmed by
+  // screenshot: an empty mobile list renders "No RFIs found" and NO "Total RFIs"
+  // header at all. An earlier version of this method raced only grid vs "Total
+  // RFIs" and asserted in a comment that the header appears even when empty —
+  // it does not, so the very first check made straight after an approval (which
+  // by definition empties that role's queue) blew its timeout on a page that had
+  // loaded perfectly well.
   async waitForGrid() {
-    const grid = this.grid.waitFor({ state: 'visible', timeout: 20000 })
-      .then(() => 'grid').catch(() => null);
-    // Mobile readiness signal: the list's own "Total RFIs" header, which is
-    // present even when the list is EMPTY — unlike a card, so this does not
-    // hang on a legitimately empty queue.
-    const cards = this.page.locator('text=/Total\\s+RFIs/i').first()
-      .waitFor({ state: 'visible', timeout: 20000 })
-      .then(() => 'cards').catch(() => null);
+    const race = (locator, name, timeout = 20000) =>
+      locator.waitFor({ state: 'visible', timeout }).then(() => name).catch(() => null);
 
-    const winner = await Promise.race([grid, cards]);
+    const winner = await Promise.race([
+      race(this.grid, 'grid'),
+      race(this.page.locator('text=/Total\\s+RFIs/i').first(), 'cards'),
+      race(this.page.locator('text=/No\\s+RFIs?\\s+found/i').first(), 'empty'),
+    ]);
     if (winner) return winner;
-    // Neither raced to success — let the grid wait produce the real error.
+
+    // Nothing appeared. Give the empty-state one more short look before blaming
+    // the grid — an empty list is far likelier here than a broken page.
+    if (await this.page.locator('text=/No\\s+RFIs?\\s+found/i').first()
+      .isVisible().catch(() => false)) return 'empty';
+
+    // Genuinely nothing recognisable — let the grid wait produce the real error.
     await this.grid.waitFor({ state: 'visible', timeout: 5000 });
     return 'grid';
   }
@@ -114,6 +130,11 @@ class RFIListPage extends BasePage {
   // before capturing its code) can only be found by enumeration.
   async listRowCodes() {
     const layout = await this.waitForGrid();
+
+    // An empty list is a legitimate answer — "no rows" — not a failure. This is
+    // the normal state immediately after a role approves its last item, which is
+    // exactly when the post-approval check asks.
+    if (layout === 'empty') return [];
 
     // MOBILE: cards, no grid and no virtualization — every code is already in
     // the DOM as a card title, so scan for them directly. textContent rather
