@@ -29,7 +29,13 @@ const RFIListPage   = require('../pages/RFIListPage');
 // tracker's steps[] by hand. Tagging it here, at the one place this class
 // of failure can actually occur, means every caller gets it for free
 // without duplicating detection logic.
-async function openFromPendingWithMe(page, rfiCode, context) {
+// `opts.exact` (default false, i.e. unchanged for every existing caller) is
+// forwarded to RFIListPage.openRowByCode. WIND needs it: its RFI code suffix
+// restarts per Work-Location/Work-Area/Package combination, so wind codes begin
+// at 1 and a substring lookup for "...-CIV-1" also matches "-CIV-10"/"-11"/...,
+// resolving to several rows and dying on a Playwright strict-mode violation.
+// See RFIListPage.getRowByCode's comment.
+async function openFromPendingWithMe(page, rfiCode, context, opts = {}) {
   const dashboard = new DashboardPage(page);
   // Defensive, same reasoning as WAMPage.goto()/NCCreatePage.goto(): a
   // previous attempt on this SAME page/session (withRetry re-running a
@@ -52,7 +58,7 @@ async function openFromPendingWithMe(page, rfiCode, context) {
   const list = new RFIListPage(page);
   await list.waitForGrid();
   try {
-    await list.openRowByCode(rfiCode);
+    await list.openRowByCode(rfiCode, opts);
   } catch (err) {
     const wrapped = new Error(
       `RFI ${rfiCode} not found in "Pending with me"${context ? ` (${context})` : ''} — ` +

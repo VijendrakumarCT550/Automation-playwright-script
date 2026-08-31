@@ -27,9 +27,32 @@ class RFIListPage extends BasePage {
     await this.grid.waitFor({ state: 'visible', timeout: 20000 });
   }
 
-  getRowByCode(code) {
+  // `exact: true` anchors the match to the WHOLE code cell instead of doing a
+  // substring match. Added for WIND, where the default is genuinely unsafe.
+  //
+  // The RFI code's numeric suffix restarts per unique Work-Location/Work-Area/
+  // Package combination (docs/rfi-business-logic.md), so wind's brand-new
+  // "WTG-Khavda / KH 34 / CIV" combination starts at 1 and produces
+  // single-digit codes. A substring lookup for a code ending "-CIV-1" then
+  // ALSO matches "-CIV-10", "-CIV-11", "-CIV-12"..., the filter resolves to
+  // several rows, and openRowByCode's row.waitFor()/getAttribute() dies on a
+  // Playwright strict-mode violation. Solar never hit this purely because its
+  // counter is already in the hundreds.
+  //
+  // Default stays `false`, i.e. byte-identical behaviour for every existing
+  // caller (rfi-nav.js's openFromPendingWithMe is the only one).
+  getRowByCode(code, { exact = false } = {}) {
+    // Same escape expression already used by WAMPage.getWorkAreaRow. Wind codes
+    // contain a hyphenated Work Location and a Work Area with a SPACE
+    // ("RFI-WTG-Khavda-KH 34-CIV-1"), so nothing may assume the code is
+    // whitespace-free or safe to interpolate raw.
+    const escaped = String(code).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cellMatch = exact
+      // Anchored, with tolerance for surrounding whitespace in the cell.
+      ? { hasText: new RegExp('^\\s*' + escaped + '\\s*$') }
+      : { hasText: code };
     return this.grid.locator('.rdg-row[role="row"]').filter({
-      has: this.page.locator('[role="gridcell"][aria-colindex="1"]', { hasText: code }),
+      has: this.page.locator('[role="gridcell"][aria-colindex="1"]', cellMatch),
     });
   }
 
@@ -51,8 +74,8 @@ class RFIListPage extends BasePage {
   // list may not exist in the DOM at all until scrolled into range. Scrolls
   // the grid down in steps until the target row exists, same polling shape
   // as openRowByCode's horizontal scroll below.
-  async scrollToRowByCode(code) {
-    const row = this.getRowByCode(code);
+  async scrollToRowByCode(code, opts) {
+    const row = this.getRowByCode(code, opts);
     for (let i = 0; i < 30; i++) {
       if (await row.count() > 0) break;
       const atEnd = await this.grid.evaluate(el => {
@@ -73,8 +96,8 @@ class RFIListPage extends BasePage {
   // ReassignPage.openReassign), then clicks its eye icon to open the RFI —
   // the UI-click equivalent of RFIReviewPage.goto(rfiId) / a direct
   // page.goto to .../view.
-  async openRowByCode(code) {
-    const row = await this.scrollToRowByCode(code);
+  async openRowByCode(code, opts) {
+    const row = await this.scrollToRowByCode(code, opts);
     await row.waitFor({ state: 'visible', timeout: 15000 });
     const rowIndex = await row.getAttribute('aria-rowindex');
 

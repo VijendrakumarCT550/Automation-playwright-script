@@ -44,15 +44,32 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
     if (context) await context.close();
   });
 
+  // Iterates profile.workAreas rather than assuming a single primaryWorkArea.
+  //
+  // For wind that list currently holds exactly ONE entry — KH 34, the only area
+  // the app owner approved for overwriting — so this is behaviourally identical
+  // to before. The loop exists because the checkpoint-dependency stage will
+  // need TWO work areas: wind has exactly ONE Work Section per Work Area
+  // (confirmed live), which is solar's "Block" granularity case, and that
+  // forces the two-Work-Areas strategy — a throwaway area for the
+  // deliberately-blocked attempts and a clean one for the real chain (see
+  // runDependencyChainForScarceWorkSectionActivity in rfi-dependency-flow.js).
+  //
+  // Adding that second area is a one-line profile change, but it also means
+  // overwriting a second area's existing Service Order mappings, so it needs
+  // the app owner's explicit go-ahead first — hence the capability is here but
+  // the list is not yet extended.
   test('map the profile Service Order onto every activity in every package', async () => {
     const workLocation = profile.workLocations[0];
-    const workArea = profile.primaryWorkArea;
+    const workAreas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
+      ? profile.workAreas.filter(Boolean)
+      : [profile.primaryWorkArea].filter(Boolean);
     const serviceOrder = profile.vendor.serviceOrder;
 
-    expect(workArea, `Profile "${profile.key}" has no primaryWorkArea set`).toBeTruthy();
+    expect(workAreas.length, `Profile "${profile.key}" has no work areas set`).toBeGreaterThan(0);
     expect(serviceOrder, `Profile "${profile.key}" has no vendor.serviceOrder set`).toBeTruthy();
     // Guard against the exact mistake the recon caught: a bare vendor name
-    // resolves to the wrong SO when a vendor has several.
+    // resolves to the wrong SO when a vendor has several (BAUER has five).
     expect(
       serviceOrder,
       'vendor.serviceOrder must be the full "<number> - <VENDOR>" string, not just the vendor name'
@@ -61,6 +78,15 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
     const so = new SOMappingPage(page);
     await so.goto(dashboard);
 
+    for (const workArea of workAreas) {
+      console.log(`\n\n########## Work Area: ${workLocation} / ${workArea} ##########`);
+      await mapOneWorkArea({ so, workLocation, workArea, serviceOrder });
+    }
+  });
+
+  // Extracted so the per-work-area body reads the same whether the profile
+  // lists one area or several.
+  async function mapOneWorkArea({ so, workLocation, workArea, serviceOrder }) {
     const baseline = {
       profile: profile.key,
       baseUrl: process.env.BASE_URL,
@@ -156,5 +182,5 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
       ).toEqual([]);
       console.log(`  ${pkg}: all ${after.length} activities confirmed on the target SO after reload`);
     }
-  });
+  }
 });

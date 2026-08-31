@@ -34,7 +34,11 @@ class RFIChecklistPage extends BasePage {
     }
   }
 
-  async fillAllObservations(value = 'OK', incrementSuffix = false) {
+  // Returns the number of observation inputs it filled, so a caller can assert
+  // on it (or log it) rather than guessing. Third parameter is an options bag;
+  // all 15 existing call sites pass only the two positional arguments, so their
+  // behaviour is unchanged.
+  async fillAllObservations(value = 'OK', incrementSuffix = false, { requireObservations = true } = {}) {
     // Dismiss any dialog that auto-opened on the checklist page
     await this._dismissDialogIfOpen();
 
@@ -58,8 +62,35 @@ class RFIChecklistPage extends BasePage {
     // Observation inputs have label "Observation/Measured Value" with for/id linkage
     // (no placeholder attribute). getByLabel resolves the label→input association.
     const inputs = this.page.getByLabel('Observation/Measured Value');
-    await inputs.first().waitFor({ state: 'visible', timeout: 15000 });
+
+    // `requireObservations: false` lets a checklist legitimately render ZERO
+    // observation rows instead of failing on the 15s wait below.
+    //
+    // Added for WIND, where this is a live possibility rather than a
+    // hypothetical: the Pre-Activity / Post-Activity bookend checkpoints (68 of
+    // the 144 activity-master rows) offer only the checklist
+    // "Documents and report information", and nothing has yet confirmed that it
+    // has observation rows at all. Without this the wait would throw a bare
+    // locator timeout, misattributing "this checklist has no inputs" as "the
+    // page never loaded" — and the accordion expand-all above (located by
+    // `svg.lucide-square-plus`, unverified against wind markup) would be
+    // wrongly suspected first.
+    //
+    // Default stays true, so every existing caller keeps the strict behaviour
+    // that a missing observation input is a real failure.
+    if (requireObservations) {
+      await inputs.first().waitFor({ state: 'visible', timeout: 15000 });
+    } else {
+      await inputs.first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    }
+
     const count = await inputs.count();
+    if (count === 0) {
+      // Report it rather than passing silently — a checklist with no
+      // observation rows is a fact the caller may want to assert on.
+      console.log('  [RFIChecklistPage] this checklist rendered ZERO "Observation/Measured Value" inputs');
+      return 0;
+    }
     for (let i = 0; i < count; i++) {
       const input = inputs.nth(i);
       if (await input.isVisible().catch(() => false)) {
@@ -74,6 +105,7 @@ class RFIChecklistPage extends BasePage {
         await this.page.keyboard.press('Tab');
       }
     }
+    return count;
   }
 
   async clickSubmit() {

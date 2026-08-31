@@ -211,10 +211,73 @@ const WIND_E2E = {
   // (34/34, both directions).
   activityMasterFixture: 'wind-activity-checklist.json',
 
-  // NOT YET CONFIRMED — needs the RFI create form, which needs a WIND CI who
-  // is SO-mapped and WAM'd (i.e. after s01/s02/s03 below have run once).
-  // Deliberately null so anything that needs them fails loudly.
-  rfi: null,
+  // RFI create-form data. Every string here is EXACTLY as the live form renders
+  // it (captured by 00_inspect_wind_rfi_form.spec.js; raw data in
+  // tests/fixtures/so-mapping-baseline/wind-rfi-form-recon.json).
+  //
+  // Note the numeric prefixes on activity/subActivity — the form renders
+  // "1. Crane Pad" and "1.1 Pre-Activity Work", NOT the bare names the activity
+  // master uses, and the casing differs too (live "Boulder laying" vs sheet
+  // "Boulder Laying"). RFICreatePage.selectOption does a SUBSTRING match, so
+  // passing the full live label including its prefix is both correct and the
+  // least ambiguous option.
+  rfi: {
+    workLocation: 'WTG-Khavda',
+    workArea: 'KH 34',
+    package: 'Civil',
+
+    // "Crane Pad" chosen as the smoke path: it is the smallest Civil activity
+    // (one activity, 5 checkpoints), every one of its checkpoint names is
+    // unique, and it sits on its own sub-package so nothing else competes for
+    // it. The long A1.1->A1.13 dependency spine is deliberately NOT used here —
+    // that belongs to the dependency stage, not a smoke test.
+    subPackage: 'Crane Pad',
+    activity: '1. Crane Pad',
+
+    // Exactly ONE Work Section per Work Area, named after the Work Area.
+    workSection: 'KH 34',
+
+    // UNKNOWN for wind, and deliberately left null rather than guessed: solar's
+    // RFI_DATA sets these three to null, which only proves they are optional ON
+    // SOLAR. The recon cancelled out of the form before reaching them, so
+    // whether wind requires RFI Quantity / Unit / Sub-Contractor Name is
+    // unconfirmed. RFICreatePage.fillForm supports filling them with no code
+    // change if the first live run says they are mandatory.
+    //
+    // Also note RFICreatePage's unitDropdown is getByRole('combobox', {name:
+    // /Unit/i}), which would ALSO match a "Unit of Measurement" label — if wind
+    // needs a unit, verify which combobox that regex resolves to first.
+    rfiQuantity: null,
+    unit: null,
+    subContractor: null,
+
+    observationValue: 'OK - as per standard (wind smoke)',
+
+    // The A1.18 Crane Pad chain in sheet order. The smoke stage walks this to
+    // find the next checkpoint still raisable against Work Section "KH 34",
+    // because each successful run permanently CONSUMES one (checkpoint,
+    // "KH 34") pair — merely selecting a Work Section consumes it, and there is
+    // no spare within a Work Area. That gives roughly 5 runs before this
+    // activity is exhausted and the stage needs a fresh Work Area.
+    //
+    // `expectObservations: false` marks the two bookend checkpoints, whose only
+    // checklist is the generic "Documents and report information" and which may
+    // legitimately render zero Observation/Measured Value inputs — see
+    // RFIChecklistPage.fillAllObservations' requireObservations option.
+    checkpointChain: [
+      { code: 'A1.18.1', subActivity: '1.1 Pre-Activity Work',  checkpoint: 'Pre-Activity Checkpoint',  checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.18.2', subActivity: '1.2 OGL',                checkpoint: 'Pre-Inspection',           checklist: 'OGL Checklist' },
+      { code: 'A1.18.3', subActivity: '1.3 Boulder laying',     checkpoint: 'Routine Inspection',       checklist: 'Boulder Laying Checklist' },
+      // NOTE: the app offers "GSB Inspection Checklist" here, while the activity
+      // master says "GSB Laying Checklist" (that name belongs to A1.13.4 in the
+      // sheet). The app's string is what the dropdown needs.
+      { code: 'A1.18.4', subActivity: '1.4 GSB laying',         checkpoint: 'Final Inspection',         checklist: 'GSB Inspection Checklist' },
+      { code: 'A1.18.5', subActivity: '1.5 Post-Activity Work', checkpoint: 'Post-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+    ],
+  },
+
+  // NOT YET CONFIRMED — the NC create form has not been opened for wind at all.
+  // Deliberately null so anything that needs it fails loudly.
   nc: null,
 };
 
