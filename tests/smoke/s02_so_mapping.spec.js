@@ -87,6 +87,18 @@ test.describe('Smoke stage 2 - SO Mapping for a project type', () => {
   // Extracted so the per-work-area body reads the same whether the profile
   // lists one area or several.
   async function mapOneWorkArea({ so, workLocation, workArea, serviceOrder }) {
+    // Reload before each work area, and this is NOT belt-and-braces.
+    //
+    // Work Area is a MULTI-select, and selectWorkAreas now (correctly) skips
+    // options that are already checked. So without a reset, the second work area
+    // would be ADDED to the first rather than replacing it — both selected at
+    // once — and the activity rows, the baseline and the verification would all
+    // silently be about the union of two areas instead of the one named. A fresh
+    // page load is the simplest way to guarantee an empty multi-select.
+    await page.goto(`${process.env.BASE_URL}/so-mapping`);
+    await page.waitForLoadState('networkidle');
+    await so.waitForLoad();
+
     const baseline = {
       profile: profile.key,
       baseUrl: process.env.BASE_URL,

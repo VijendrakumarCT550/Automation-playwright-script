@@ -38,32 +38,95 @@ const NC_FLOW_SPECS = [
 const fs = require('fs');
 const pathMod = require('path');
 
-const SMOKE_STAGES = [
+// SETUP stages are Admin-driven data preparation. They run ONCE per profile, at
+// a desktop viewport, because Admin's SO Mapping / WAM / Users screens are not
+// what the mobile coverage is about — the flows are.
+const SMOKE_SETUP_STAGES = [
   { id: 'users', file: 's01_user_creation.spec.js' },
   { id: 'so', file: 's02_so_mapping.spec.js' },
   { id: 'wam', file: 's03_wam_admin.spec.js' },
   { id: 'wam-hierarchy', file: 's04_wam_hierarchy.spec.js' },
+];
+
+// FLOW stages run once per VIEWPORT. Per the app owner: the RFI and NC flows
+// must both be exercised for each project type in BOTH desktop and smartphone
+// views — business logic and flow are identical, only UI visibility and some
+// page values differ.
+const SMOKE_FLOW_STAGES = [
   { id: 'rfi', file: 's05_rfi_flow.spec.js' },
   { id: 'nc', file: 's06_nc_flow.spec.js' },
+];
+
+// TAIL stages run once per profile, desktop, after the flows.
+const SMOKE_TAIL_STAGES = [
   { id: 'dependency', file: 's07_rfi_activity_dependency.spec.js' },
 ];
 
+// Desktop first, then mobile — deliberately in this order so the desktop path
+// (the known-good one) proves the data is sound before the mobile UI is blamed
+// for anything.
+const SMOKE_VIEWPORTS = [
+  { id: 'desktop', device: devices['Desktop Chrome'] },
+  // defaultBrowserType is part of the device descriptor but not a valid
+  // context option; strip it the same way the recon specs do.
+  { id: 'mobile', device: (({ defaultBrowserType, ...d }) => d)(devices['Pixel 7']) },
+];
+
+// Builds ONE linear ordered chain per profile:
+//
+//   users -> so -> wam [-> wam-hierarchy]
+//         -> rfi-desktop -> nc-desktop
+//         -> rfi-mobile  -> nc-mobile
+//         [-> dependency]
+//
+// Every stage depends on the previous one, so Playwright runs them strictly in
+// sequence. That matters for more than ordering: the app is
+// one-session-at-a-time, so the viewport variants must NOT run concurrently.
+// Chaining mobile behind desktop rather than branching keeps that guaranteed.
+//
+// Each of the four flow projects is independently runnable
+// (--project=smoke-wind-rfi-mobile), which replays its dependency prefix — cheap,
+// because the setup stages are idempotent (s01 reuses existing users, s02
+// reports "remapped 0", s03 reports "No changes to save").
+//
+// Only stages whose spec file exists are emitted, so the chain can be built up
+// incrementally without the config referencing files that aren't written yet — a
+// missing testMatch would otherwise produce a project that silently passes with
+// zero tests and lets later stages run on nothing.
 function smokeChain(chainName, profileKey, extraUse = {}) {
   const projects = [];
   let previous = null;
 
-  for (const stage of SMOKE_STAGES) {
-    const abs = pathMod.join(__dirname, 'tests', 'smoke', stage.file);
-    if (!fs.existsSync(abs)) continue;
+  const matcher = (file) =>
+    new RegExp(`[\\\\/]smoke[\\\\/]${file.replace(/\./g, '\\.')}$`);
+  const exists = (file) => fs.existsSync(pathMod.join(__dirname, 'tests', 'smoke', file));
 
-    const name = `smoke-${chainName}-${stage.id}`;
+  const push = (name, file, device) => {
     projects.push({
       name,
-      testMatch: new RegExp(`[\\\\/]smoke[\\\\/]${stage.file.replace(/\./g, '\\.')}$`),
-      use: { ...devices['Desktop Chrome'], profileKey, ...extraUse },
+      testMatch: matcher(file),
+      use: { ...device, profileKey, ...extraUse },
       ...(previous ? { dependencies: [previous] } : {}),
     });
     previous = name;
+  };
+
+  const desktop = SMOKE_VIEWPORTS[0].device;
+
+  for (const stage of SMOKE_SETUP_STAGES) {
+    if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
+  }
+
+  for (const viewport of SMOKE_VIEWPORTS) {
+    for (const stage of SMOKE_FLOW_STAGES) {
+      if (exists(stage.file)) {
+        push(`smoke-${chainName}-${stage.id}-${viewport.id}`, stage.file, viewport.device);
+      }
+    }
+  }
+
+  for (const stage of SMOKE_TAIL_STAGES) {
+    if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
   return projects;

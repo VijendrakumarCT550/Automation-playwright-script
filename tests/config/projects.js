@@ -109,8 +109,26 @@ const WIND_E2E = {
   //
   // KH 34 is the app owner's chosen area and is explicitly approved for
   // overwriting its existing Service Order mappings.
-  workAreas: ['KH 34'],
+  // MULTIPLE work areas, all SO-mapped (stage 2) and all WAM'd to the same WTG
+  // CI (stage 3) — the app owner's solution to a real problem: wind has exactly
+  // ONE Work Section per Work Area, and a run consumes the (checkpoint, Work
+  // Section) pair permanently, so a single work area is exhausted after about
+  // five runs and cannot support two viewport variants at once.
+  //
+  // With the same CI mapped across several areas, the SAME activity and
+  // checkpoint chain can be run repeatedly by changing only the Work Area. That
+  // is what gives the desktop and mobile flow runs independent ground:
+  // flowWorkAreas below assigns one to each, so neither can consume the other's
+  // checkpoints and either can be re-run without disturbing the other.
+  workAreas: ['KH 34', 'KH 35'],
   primaryWorkArea: 'KH 34',
+
+  // Which Work Area each viewport's flow stages use. Resolved in the spec from
+  // the isMobileViewport fixture, so no extra Playwright option is needed.
+  flowWorkAreas: {
+    desktop: 'KH 34',
+    mobile: 'KH 35',
+  },
 
   // CONFIRMED live (00_inspect_wind_rfi_form.spec.js): wind has exactly ONE
   // Work Section per Work Area, and it is the Work Area's own name — selecting
@@ -234,8 +252,12 @@ const WIND_E2E = {
     subPackage: 'Crane Pad',
     activity: '1. Crane Pad',
 
-    // Exactly ONE Work Section per Work Area, named after the Work Area.
-    workSection: 'KH 34',
+    // Exactly ONE Work Section per Work Area, and it is NAMED AFTER the Work
+    // Area — so the Work Section to select always equals whichever Work Area
+    // the run is using. Left null deliberately: the spec derives it from the
+    // resolved work area rather than hardcoding "KH 34", which would silently
+    // select the wrong section once the mobile variant runs on KH 35.
+    workSection: null,
 
     // UNKNOWN for wind, and deliberately left null rather than guessed: solar's
     // RFI_DATA sets these three to null, which only proves they are optional ON

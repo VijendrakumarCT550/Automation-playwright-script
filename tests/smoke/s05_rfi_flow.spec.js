@@ -110,8 +110,9 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     }
 
     console.log(
-      `\n=== Smoke RFI flow: "${profile.key}" @ ${profile.rfi.workLocation} / ${profile.rfi.workArea} ` +
-      `/ ${profile.rfi.package} / ${profile.rfi.subPackage} / ${profile.rfi.activity} ===`
+      `\n=== Smoke RFI flow: "${profile.key}" @ ${profile.rfi.workLocation} ` +
+      `/ ${profile.rfi.package} / ${profile.rfi.subPackage} / ${profile.rfi.activity} ===\n` +
+      `    work area per viewport: ${JSON.stringify(profile.flowWorkAreas || profile.primaryWorkArea)}`
     );
     for (const k of ['CI', 'EE', 'QI']) console.log(`    ${k}: ${users[k].name} <${users[k].email}>`);
     console.log('');
@@ -121,9 +122,9 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
   // activity master's rows are 1:1 with (Sub-Activity, Checkpoint) pairs, and
   // the form's Checkpoint dropdown is scoped by the selected Sub-Activity), so
   // it cannot live in a single flat constant.
-  const baseDataFor = (cp) => ({
+  const baseDataFor = (cp, workArea) => ({
     workLocation: profile.rfi.workLocation,
-    workArea: profile.rfi.workArea,
+    workArea,
     package: profile.rfi.package,
     subPackage: profile.rfi.subPackage,
     activity: profile.rfi.activity,
@@ -135,7 +136,29 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     subContractor: profile.rfi.subContractor,
   });
 
-  test('CI creates and submits a wind RFI on the next free checkpoint', async ({ page }) => {
+  // The desktop and mobile flow runs deliberately use DIFFERENT Work Areas.
+  //
+  // Wind has exactly one Work Section per Work Area and a run consumes that
+  // (checkpoint, Work Section) pair permanently, so if both viewports shared an
+  // area they would eat each other's checkpoints and neither could be re-run
+  // independently. profile.flowWorkAreas assigns one per viewport; the same CI
+  // is SO-mapped and WAM'd on both (stages 2 and 3 iterate profile.workAreas),
+  // so the SAME activity and checkpoint chain works in either.
+  //
+  // Falls back to primaryWorkArea for a profile that doesn't split them (solar
+  // has many Work Sections per area, so it does not need to).
+  const resolveWorkArea = (isMobile) => {
+    const map = profile.flowWorkAreas;
+    const picked = map ? (isMobile ? map.mobile : map.desktop) : null;
+    return picked || profile.primaryWorkArea || profile.rfi.workArea;
+  };
+
+  // Wind's single Work Section is NAMED AFTER its Work Area, so it must track
+  // whichever area this run resolved to. profile.rfi.workSection is null for
+  // wind precisely so this cannot be hardcoded to the desktop area.
+  const resolveWorkSection = (workArea) => profile.rfi.workSection || workArea;
+
+  test('CI creates and submits a wind RFI on the next free checkpoint', async ({ page, isMobileViewport }) => {
     // Three PWA logins across this file at up to ~6 minutes each, plus form and
     // grid work — the config's 10-minute default is not enough.
     test.setTimeout(25 * 60 * 1000);
@@ -160,7 +183,12 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     await loginAsFlowUser(page, users.CI.email, PASSWORD);
 
     const chain = profile.rfi.checkpointChain;
-    const workSection = profile.rfi.workSection;
+    const workArea = resolveWorkArea(isMobileViewport);
+    const workSection = resolveWorkSection(workArea);
+    console.log(
+      `  viewport: ${isMobileViewport ? 'MOBILE' : 'desktop'} -> ` +
+      `Work Area "${workArea}", Work Section "${workSection}"\n`
+    );
     const attempts = [];
 
     for (const cp of chain) {
@@ -170,7 +198,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
       let rfiCreate;
       try {
         ({ rfiCreate } = await fillPageOne(
-          page, baseDataFor(cp), { name: cp.checkpoint, checklist: cp.checklist }, workSection
+          page, baseDataFor(cp, workArea), { name: cp.checkpoint, checklist: cp.checklist }, workSection
         ));
       } catch (err) {
         const msg = String(err && err.message || err);
@@ -221,7 +249,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
     if (!created.rfiId) {
       throw new Error(
         `Could not raise an RFI on ANY of the ${chain.length} checkpoints of ` +
-        `"${profile.rfi.activity}" at ${profile.rfi.workArea}. Wind has exactly one Work ` +
+        `"${profile.rfi.activity}" at ${workArea}. Wind has exactly one Work ` +
         `Section per Work Area and selecting it consumes the (checkpoint, Work Section) ` +
         `pair permanently, so this activity is most likely exhausted — a fresh Work Area ` +
         `is needed, and it must be SO-mapped (stage 2) and WAM'd (stage 3) first.\n` +
@@ -246,7 +274,7 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
   // both reviewers act the same way — so this is one parameterised loop rather
   // than two near-copies.
   for (const role of ['EE', 'QI']) {
-    test(`${role} approves the wind RFI`, async ({ page }) => {
+    test(`${role} approves the wind RFI`, async ({ page, isMobileViewport }) => {
       test.setTimeout(25 * 60 * 1000);
 
       expect(created.rfiCode, `CI's step did not produce an RFI code, so ${role} has nothing to review`)
@@ -286,8 +314,9 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
           ).toBe(strip(profile.rfi.activity));
         }
         if (fields.workArea) {
-          expect(strip(fields.workArea), `${role} should see work area ${profile.rfi.workArea}`)
-            .toBe(strip(profile.rfi.workArea));
+          const expectedArea = resolveWorkArea(isMobileViewport);
+          expect(strip(fields.workArea), `${role} should see work area ${expectedArea}`)
+            .toBe(strip(expectedArea));
         }
       }
 

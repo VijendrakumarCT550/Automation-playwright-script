@@ -157,7 +157,8 @@ Differences from solar's `Activity-Checklist_06.05.2026` that matter:
   mid-rename; wind has a single name per field. Nothing to reconcile.
 - **No `EPC Service code` and no `Change Task` column.**
 - **New column N, "Is the Inspection Checkpoint Optional?"** — absent from
-  solar. It is `Y` on all 144 rows.
+  solar. `Y` on all 144 rows. Per the app owner it maps to the RFI page-2
+  checkbox that greys out the checklist questions, NOT to checkpoint dependency.
 - **New column M, "Inspection Checklist Document"** — the underlying document
   name, distinct from the checklist name. Solar had no such column. It diverges
   from column L on 59 of 144 rows (see Data quality).
@@ -179,14 +180,20 @@ Across all 144 Current rows (and all 146 Draft rows):
 - **`Unit of Measure` = `EA`** — every row.
 - **`Is the Inspection Checkpoint Optional?` = `Y`** — every row.
 
-The last one is the odd one. Read literally, *every* wind checkpoint is
-optional, which would mean the preceding-checkpoint dependency is advisory
-rather than enforced — the opposite of the solar behaviour that
-`29_rfi_activity_dependency.spec.js` proves is hard-blocked with a
-"Missing an RFI for Dependent Inspection Point" validation error. A column that
-is constant across 290 rows in two independently-dated sheets is more likely an
-unfilled default than a real business rule, but it cannot be assumed either
-way. Still open — see Open questions.
+**What column N actually controls** (clarified by the app owner, after this doc
+initially guessed wrong): it corresponds to a **checkbox on the RFI's
+inspection-checklist page — page 2 — which, when checked, greys out and disables
+the checklist questions.** It is about whether answering the CHECKLIST is
+optional. It says nothing whatsoever about the preceding-checkpoint dependency,
+so `Y` on every row is not the anomaly it first looked like.
+
+Two consequences:
+
+- The dependency question had to be settled on its own evidence, and was: wind
+  **does** enforce it (see Open question 5b, with the real toast).
+- The page-2 optional checkbox and its greying-out behaviour is a **real,
+  currently unexercised feature** — nothing in the suite covers it for wind or
+  solar. Worth its own coverage rather than being inferred from this column.
 
 ## The shape every wind activity shares
 
@@ -771,9 +778,22 @@ Struck through where recon answered them.
    `Stone Blanket Layer Checklist`. Sub-activity sets match the sheet exactly,
    7 vs 7, no difference in either direction. **Selection must therefore always
    be by (Sub-Activity, Checkpoint), never by checkpoint name alone.**
-5. ~~Is the `Optional? = Y` column real?~~ **Answered: NO — it is an unfilled
-   default, not a business rule. Wind DOES enforce the preceding-checkpoint
-   dependency.** Measured by
+5. ~~Is the `Optional? = Y` column real, and does it mean the dependency is
+   advisory?~~ **The question was based on a wrong premise.** The app owner has
+   clarified what that column actually controls: it corresponds to a **checkbox
+   on the RFI's inspection-checklist page (page 2)** which, when checked, greys
+   out / disables the checklist questions. It is about whether answering the
+   CHECKLIST is optional — it has **nothing to do with checkpoint dependency**.
+   So `Y` on all 144 rows never implied anything about enforcement, and this
+   doc's earlier reasoning about it (that a constant column probably meant an
+   unfilled default relaxing the dependency) was wrong on both counts.
+
+   That leaves a separate, still-unexercised feature: the page-2 optional
+   checkbox and its greying-out of the checklist questions. Nothing in the suite
+   covers it yet, for wind or solar.
+
+5b. **Wind DOES enforce the preceding-checkpoint dependency** — established
+   independently of the column above. Measured by
    `tests/specs/00_inspect_wind_dependency_enforcement.spec.js`: attempting
    `A1.1.2` (Stone Column Work / "Inspection of Stone Column") while its
    predecessor `A1.1.1` had never been created was **blocked**, with the real
