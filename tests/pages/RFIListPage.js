@@ -20,7 +20,14 @@ const { BasePage } = require('./BasePage');
 class RFIListPage extends BasePage {
   constructor(page) {
     super(page);
-    this.grid = page.locator('[role="grid"]').first();
+    // EXCLUDING the date picker is load-bearing, not defensive. Ark UI's
+    // date-picker renders its calendar as <table role="grid"
+    // data-scope="date-picker" aria-roledescription="calendar month">, so a bare
+    // [role="grid"].first() can resolve to a HIDDEN calendar instead of the data
+    // grid. Confirmed live on mobile 2026-09-01: waitForGrid logged
+    //   43 x locator resolved to hidden <table role="grid" data-scope="date-picker">
+    // and burned its full 20s timeout while the real RFI grid was on the page.
+    this.grid = page.locator('[role="grid"]:not([data-scope="date-picker"])').first();
   }
 
   async waitForGrid() {
@@ -30,14 +37,17 @@ class RFIListPage extends BasePage {
   // `exact: true` anchors the match to the WHOLE code cell instead of doing a
   // substring match. Added for WIND, where the default is genuinely unsafe.
   //
-  // The RFI code's numeric suffix restarts per unique Work-Location/Work-Area/
-  // Package combination (docs/rfi-business-logic.md), so wind's brand-new
-  // "WTG-Khavda / KH 34 / CIV" combination starts at 1 and produces
-  // single-digit codes. A substring lookup for a code ending "-CIV-1" then
-  // ALSO matches "-CIV-10", "-CIV-11", "-CIV-12"..., the filter resolves to
-  // several rows, and openRowByCode's row.waitFor()/getAttribute() dies on a
-  // Playwright strict-mode violation. Solar never hit this purely because its
-  // counter is already in the hundreds.
+  // A substring lookup for a code ending "-CIV-303" would ALSO match
+  // "-CIV-3030".."-CIV-3039", the filter would resolve to several rows, and
+  // openRowByCode's row.waitFor()/getAttribute() would die on a Playwright
+  // strict-mode violation.
+  //
+  // This is DEFENSIVE rather than a fix for a live break: the wind code counter
+  // turned out to be GLOBAL and sequential across work areas (observed 3034,
+  // 3036, 3037, 3038, 3039 across KH 34/35/52), not restarting per
+  // Work-Location/Work-Area/Package as first assumed from
+  // docs/rfi-business-logic.md. Still worth having — a four-digit code becomes
+  // a prefix of a five-digit one soon enough.
   //
   // Default stays `false`, i.e. byte-identical behaviour for every existing
   // caller (rfi-nav.js's openFromPendingWithMe is the only one).

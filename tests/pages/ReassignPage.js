@@ -43,7 +43,14 @@ const { BasePage } = require('./BasePage');
 class ReassignPage extends BasePage {
   constructor(page) {
     super(page);
-    this.grid = page.locator('[role="grid"]').first();
+    // EXCLUDING the date picker is load-bearing, not defensive. Ark UI's
+    // date-picker renders its calendar as <table role="grid"
+    // data-scope="date-picker" aria-roledescription="calendar month">, so a bare
+    // [role="grid"].first() can resolve to a HIDDEN calendar instead of the data
+    // grid. Confirmed live on mobile 2026-09-01: waitForGrid logged
+    //   43 x locator resolved to hidden <table role="grid" data-scope="date-picker">
+    // and burned its full 20s timeout while the real RFI grid was on the page.
+    this.grid = page.locator('[role="grid"]:not([data-scope="date-picker"])').first();
 
     this.dialog = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: 'Reassign User' }).first();

@@ -198,11 +198,75 @@ class RFICreatePage extends BasePage {
 
     await pick(this.inspectionCheckpointDropdown, data.inspectionCheckpoint);
     await pick(this.inspectionChecklistDropdown,  data.inspectionChecklist);
+    // '__skip__' fills page 1 but does NOT touch the Work Section multi-select.
+    //
+    // Selecting a Work Section is the irreversible half of this form — it ties
+    // that (checkpoint, Work Section) pair up, and abandoning the form without
+    // properly confirming the Cancel popup consumes it permanently. So a caller
+    // that only wants to LOOK at the form (e.g. to read the Work Section Summary
+    // and decide whether this checkpoint is even worth attempting) needs a way to
+    // stop short.
+    //
+    // A distinct sentinel rather than reusing null: null already means "pick
+    // whatever is first" (see the branch in selectWorkSection), and
+    // rfi-dependency-flow passes null deliberately, so null cannot be
+    // repurposed. Verified by grep that no existing caller passes '__skip__',
+    // so every current call site behaves exactly as before.
+    if (data.workSection === '__skip__') return null;
+
     // `data.workSection`, when given, pins the SAME Work Section across a
     // whole dependency chain (see selectWorkSection()'s comment) — every
     // existing caller leaves this unset, so behavior is unchanged (picks
     // "whatever is first," same as before this returned a value at all).
     return await this.selectWorkSection(data.workSection);
+  }
+
+  // Reads the form's own "Work Section Summary" panel: Total Work Sections /
+  // Work Sections Selected for RFI / Work Sections Pending RFI.
+  //
+  // This is the app TELLING us whether the currently-selected Inspection
+  // Checkpoint still has a free Work Section, and it is readable BEFORE anything
+  // is selected. Using it avoids the wasteful and slightly destructive pattern of
+  // attempting a create just to be told "An RFI already exists for the
+  // workSections: X" — an attempt that fills nine dropdowns and touches the Work
+  // Section on the way.
+  //
+  // Returns { total, selected, pending }, any of which may be null if the panel
+  // could not be parsed — callers must treat null as "unknown" and fall back to
+  // attempting, never as zero.
+  async readWorkSectionSummary() {
+    return this.page.evaluate(() => {
+      const LABELS = {
+        // Order matters for disambiguation: the two "Work Sections ..." labels
+        // share a prefix, so each is matched by its own distinctive tail.
+        total: /^total\s*work\s*sections?$/i,
+        selected: /^work\s*sections?\s*selected\s*for\s*rfi$/i,
+        pending: /^work\s*sections?\s*pending\s*rfi$/i,
+      };
+      const leaves = [...document.querySelectorAll('*')]
+        .filter((el) => el.children.length === 0);
+
+      const out = { total: null, selected: null, pending: null };
+      for (const [key, rx] of Object.entries(LABELS)) {
+        const label = leaves.find((el) => rx.test((el.textContent || '').trim()));
+        if (!label) continue;
+
+        // The number lives in a sibling within the same little box. Walk up a
+        // couple of levels and take the first standalone integer that is NOT
+        // part of the label text itself.
+        let node = label.parentElement;
+        for (let depth = 0; depth < 3 && node && out[key] === null; depth++) {
+          for (const cand of node.querySelectorAll('*')) {
+            if (cand.children.length) continue;
+            if (cand === label) continue;
+            const t = (cand.textContent || '').trim();
+            if (/^\d+$/.test(t)) { out[key] = Number(t); break; }
+          }
+          node = node.parentElement;
+        }
+      }
+      return out;
+    });
   }
 
   async clickProceed() {

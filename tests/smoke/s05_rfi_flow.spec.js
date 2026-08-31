@@ -232,8 +232,10 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
       // comment. Never retried for the same pair.
       let rfiCreate;
       try {
+        // '__skip__' fills page 1 WITHOUT touching the Work Section, so the
+        // form's own summary can be consulted first. See the pre-check below.
         ({ rfiCreate } = await fillPageOne(
-          page, baseDataFor(cp, workArea), { name: cp.checkpoint, checklist: cp.checklist }, workSection
+          page, baseDataFor(cp, workArea), { name: cp.checkpoint, checklist: cp.checklist }, '__skip__'
         ));
       } catch (err) {
         const msg = String(err && err.message || err);
@@ -246,6 +248,47 @@ test.describe('Smoke stage 5 - RFI flow end to end', () => {
           continue;
         }
         throw err;
+      }
+
+      // ---- PRE-CHECK: ask the form before touching anything ----
+      //
+      // The form has a "Work Section Summary" panel — Total Work Sections /
+      // Work Sections Selected for RFI / Work Sections Pending RFI — which tells
+      // us whether this checkpoint still has a free Work Section, and it is
+      // readable BEFORE any selection.
+      //
+      // Consulting it means we no longer attempt a create just to be told "An RFI
+      // already exists for the workSections: X". That attempt was not creating
+      // duplicates — the app correctly rejected it — but it filled nine
+      // dropdowns, touched the Work Section, and needed a Cancel+confirm to undo,
+      // all to learn something the form was already displaying.
+      //
+      // `pending === 0` is the skip signal. A null means the panel could not be
+      // parsed, and is treated as UNKNOWN — fall through and attempt, never
+      // assume zero.
+      const summary = await rfiCreate.readWorkSectionSummary().catch(() => null);
+      if (summary) {
+        console.log(
+          `      work section summary: total=${summary.total} ` +
+          `selectedForRfi=${summary.selected} pendingRfi=${summary.pending}`
+        );
+      }
+      if (summary && summary.pending === 0) {
+        console.log('      -> no Work Section left pending for this checkpoint; skipping without touching it');
+        attempts.push({ workArea, code: cp.code, stage: 'pre-check', summary, skipped: true });
+        await discardCreateForm(page).catch(() => false);
+        continue;
+      }
+
+      // Only now commit to the Work Section.
+      try {
+        await rfiCreate.selectWorkSection(workSection);
+      } catch (err) {
+        const msg = String(err && err.message || err);
+        console.log(`      could not select work section "${workSection}": ${msg.split('\n')[0]}`);
+        attempts.push({ workArea, code: cp.code, stage: 'selectWorkSection', error: msg.split('\n')[0] });
+        await discardCreateForm(page).catch(() => false);
+        continue;
       }
 
       const outcome = await rfiCreate.clickProceedAndCheckOutcome();
