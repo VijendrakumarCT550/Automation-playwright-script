@@ -30,8 +30,47 @@ class RFIListPage extends BasePage {
     this.grid = page.locator('[role="grid"]:not([data-scope="date-picker"])').first();
   }
 
+  // ---- TWO LAYOUTS ----
+  //
+  // MOBILE DOES NOT RENDER A DATA GRID AT ALL. Confirmed live 2026-09-01 by
+  // screenshot: at a phone viewport "RFIs Pending with me" is a list of CARDS —
+  // "Total RFIs: 2" followed by one card per RFI, each showing the code as a link
+  // plus Work Location / Work Area / Package / Contractor Name and an
+  // "In-Review (EE)" status pill. There is no [role="grid"], no .rdg-row and no
+  // eye icon anywhere, so every grid-based method below simply cannot work there.
+  //
+  // This is the first genuine mobile difference that is NOT navigation — the list
+  // is a different component, not a reflow of the same one. So each method picks
+  // its layout at runtime. The desktop path is untouched: when the grid exists,
+  // the original grid code runs exactly as before.
+  async hasGrid() {
+    return this.grid.isVisible().catch(() => false);
+  }
+
+  // A code rendered as a card title (mobile). Anchored with a regex so a
+  // four-digit code cannot match a longer one.
+  cardByCode(code) {
+    const escaped = String(code).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return this.page.getByText(new RegExp(`^\\s*${escaped}\\s*$`)).first();
+  }
+
+  // Waits for EITHER layout to be ready. Kept under the original name so
+  // rfi-nav.js and every existing caller need no change.
   async waitForGrid() {
-    await this.grid.waitFor({ state: 'visible', timeout: 20000 });
+    const grid = this.grid.waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => 'grid').catch(() => null);
+    // Mobile readiness signal: the list's own "Total RFIs" header, which is
+    // present even when the list is EMPTY — unlike a card, so this does not
+    // hang on a legitimately empty queue.
+    const cards = this.page.locator('text=/Total\\s+RFIs/i').first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => 'cards').catch(() => null);
+
+    const winner = await Promise.race([grid, cards]);
+    if (winner) return winner;
+    // Neither raced to success — let the grid wait produce the real error.
+    await this.grid.waitFor({ state: 'visible', timeout: 5000 });
+    return 'grid';
   }
 
   // `exact: true` anchors the match to the WHOLE code cell instead of doing a
@@ -74,7 +113,25 @@ class RFIListPage extends BasePage {
   // the code it just created, but an orphaned RFI (created by a run that died
   // before capturing its code) can only be found by enumeration.
   async listRowCodes() {
-    await this.waitForGrid();
+    const layout = await this.waitForGrid();
+
+    // MOBILE: cards, no grid and no virtualization — every code is already in
+    // the DOM as a card title, so scan for them directly. textContent rather
+    // than innerText, for the same CSS-truncation reason as
+    // BasePage.getVisibleCode.
+    if (layout === 'cards' && !(await this.hasGrid())) {
+      return this.page.evaluate(() => {
+        const rx = /^(RFI|NC)-[A-Za-z0-9][A-Za-z0-9 ._/-]*\d$/;
+        const found = [];
+        for (const el of document.querySelectorAll('a,p,span,div,h1,h2,h3,h4')) {
+          if (el.children.length) continue;
+          const t = (el.textContent || '').trim();
+          if (t.length >= 10 && rx.test(t) && !found.includes(t)) found.push(t);
+        }
+        return found;
+      });
+    }
+
     // Same bottom-scroll as scrollToRowByCode: react-data-grid virtualizes rows,
     // so codes further down do not exist in the DOM until scrolled into range.
     for (let i = 0; i < 30; i++) {
@@ -134,6 +191,16 @@ class RFIListPage extends BasePage {
   // the UI-click equivalent of RFIReviewPage.goto(rfiId) / a direct
   // page.goto to .../view.
   async openRowByCode(code, opts) {
+    // MOBILE: no grid, no Actions column, no eye icon — the card's code itself is
+    // the link that opens the RFI.
+    if (!(await this.hasGrid())) {
+      const card = this.cardByCode(code);
+      await card.waitFor({ state: 'visible', timeout: 15000 });
+      await card.click();
+      await this.page.waitForLoadState('networkidle');
+      return;
+    }
+
     const row = await this.scrollToRowByCode(code, opts);
     await row.waitFor({ state: 'visible', timeout: 15000 });
     const rowIndex = await row.getAttribute('aria-rowindex');

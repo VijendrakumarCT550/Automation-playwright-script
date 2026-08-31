@@ -29,6 +29,19 @@ const RFIListPage   = require('../pages/RFIListPage');
 // tracker's steps[] by hand. Tagging it here, at the one place this class
 // of failure can actually occur, means every caller gets it for free
 // without duplicating detection logic.
+// PRECONDITION: the logged-in user must be CI, EE or QI.
+//
+// Per the app owner, the "Pending with me" tile exists ONLY for those three
+// roles — they are the ones involved in RFI/NC creation and review. Admin,
+// Contractor Manager and every hierarchy role (Cluster Admin, Project Manager,
+// Execution Lead, Quality Lead, ...) have NO "Pending with me" tile at all;
+// Admin sees "Pending with others" and "Approved" instead. So calling this as any
+// other role cannot work, and would surface as an inscrutable 30s timeout on the
+// tile below rather than as "wrong role".
+//
+// (This is also why an Admin-based "does this RFI already exist" check has to use
+// the Approved and "Pending with others" tiles — never this one.)
+//
 // `opts.exact` (default false, i.e. unchanged for every existing caller) is
 // forwarded to RFIListPage.openRowByCode. WIND needs it: its RFI code suffix
 // restarts per Work-Location/Work-Area/Package combination, so wind codes begin

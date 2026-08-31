@@ -29,6 +29,13 @@ const { WIND_E2E } = require('../config/projects');
 // and those users are scoped to WIND / WTG-Khavda alone, so it cannot reach
 // solar or anyone else's work.
 //
+// EE and QI specifically, and that is a hard requirement rather than a choice:
+// per the app owner the "Pending with me" tile exists ONLY for CI, EE and QI —
+// the roles involved in RFI/NC flow. Admin, Contractor Manager and the hierarchy
+// roles have no such tile (Admin gets "Pending with others" and "Approved"), so
+// this utility could not be written against an Admin session even though Admin
+// can SEE every RFI.
+//
 // SPECIFIC_RFI_ID=<uuid> approves just that one RFI by id instead of draining —
 // for the case where an RFI's code was never captured (enumeration by code is
 // impossible then, but the id is in the failed run's log).
