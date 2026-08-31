@@ -169,6 +169,11 @@ class RFIListPage extends BasePage {
   // the grid down in steps until the target row exists, same polling shape
   // as openRowByCode's horizontal scroll below.
   async scrollToRowByCode(code, opts) {
+    // MOBILE has no grid to scroll and no row virtualization — every card is
+    // already in the DOM — so return the card locator directly. Without this the
+    // grid.evaluate() below waits 30s for an element that does not exist.
+    if (!(await this.hasGrid())) return this.cardByCode(code);
+
     const row = this.getRowByCode(code, opts);
     for (let i = 0; i < 30; i++) {
       if (await row.count() > 0) break;

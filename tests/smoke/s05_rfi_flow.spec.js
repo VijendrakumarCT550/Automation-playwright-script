@@ -530,9 +530,9 @@ async function isStillPendingWithMe(page, rfiCode) {
   await myTasks.clickPendingWithMe();
 
   const list = new RFIListPage(page);
-  await list.waitForGrid();
-  // scrollToRowByCode scrolls to the bottom looking for it — newly touched rows
-  // sort there — and returns a zero-count locator if it genuinely isn't present.
-  const row = await list.scrollToRowByCode(rfiCode, { exact: true });
-  return (await row.count()) > 0;
+  // listRowCodes() is layout-aware (grid cells on desktop, card titles on
+  // mobile), so membership is a cleaner check than a row locator — and it cannot
+  // accidentally reach for grid-only machinery on a viewport that has no grid.
+  const codes = await list.listRowCodes();
+  return codes.some((c) => c.trim() === String(rfiCode).trim());
 }
