@@ -38,13 +38,24 @@ const { WIND_E2E } = require('../config/projects');
 const OUT_DIR = path.join(__dirname, '..', 'fixtures', 'so-mapping-baseline');
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
+// The RFI form renders Activity and Sub-Activity with a numeric prefix
+// ("1. Crane Pad", "1.3 Boulder laying") while the activity master has neither
+// the prefix nor the same casing ("Crane Pad", "Boulder Laying"). Comparing raw
+// strings therefore matched nothing — the first run of this spec reported
+// "sheet says (0 rows)" for an activity that has five. Strip a leading
+// "<n>." / "<n>.<n>" and compare case-insensitively.
+function normalizeFormLabel(text) {
+  return String(text).replace(/^\s*\d+(\.\d+)*\.?\s*/, '').trim();
+}
+
 // Read straight off the extracted activity master so the comparison is against
 // the real sheet rather than a hand-copied list.
 function sheetCheckpointsFor(activity) {
   const rows = JSON.parse(fs.readFileSync(
     path.join(__dirname, '..', 'fixtures', 'wind-activity-checklist.json'), 'utf-8'));
+  const wanted = normalizeFormLabel(activity).toLowerCase();
   return rows
-    .filter(r => r.activity === activity)
+    .filter(r => r.activity.trim().toLowerCase() === wanted)
     .map(r => ({
       code: r.code, checkpoint: r.checkpoint, subActivity: r.subActivity,
       checklist: r.checklist, checklistDoc: r.checklistDoc, preceding: r.preceding,
@@ -108,26 +119,50 @@ test('WIND RFI create form - checkpoints, checklists, work sections', async ({ p
     await rfi.selectOption(rfi.packageDropdown, report.package);
 
     report.cascade.subPackages = await readOptions(rfi, rfi.subPackageDropdown, 'Sub-Package');
-    // Take the first sub-package; the activity list is what matters and it is
-    // scoped by sub-package.
-    const subPackage = report.cascade.subPackages[0];
-    await rfi.selectOption(rfi.subPackageDropdown, subPackage);
-    report.subPackageInspected = subPackage;
 
-    report.cascade.activities = await readOptions(rfi, rfi.activityDropdown, 'Activity');
+    // Probe targets, chosen to answer specific questions rather than to sweep
+    // everything (WTG Foundation alone is 11 activities x ~5 sub-activities,
+    // which would be hundreds of dropdown opens):
+    //
+    //  - Crane Pad / Crane Pad: the smallest activity (5 rows), unique
+    //    checkpoint names. Establishes the baseline shape. Already run once.
+    //  - WTG Foundation / Blanket Layer/GSB Layer: the Q4 ambiguity case — the
+    //    sheet gives it FIVE rows all named "Routine Inspection", differing
+    //    only by Sub-Activity (Blanket/GSB Layer 1..5). If the checkpoint
+    //    dropdown really is scoped per Sub-Activity, each of the five
+    //    sub-activities should offer exactly one "Routine Inspection" and
+    //    there is no ambiguity to resolve. This is the direct test of that.
+    //
+    // Activity/Sub-Activity names carry numeric prefixes live, so targets are
+    // matched with normalizeFormLabel rather than by exact string.
+    const PROBE_TARGETS = [
+      { subPackage: 'WTG Foundation', activity: 'Blanket Layer/GSB Layer' },
+      { subPackage: 'Crane Pad', activity: 'Crane Pad' },
+    ];
 
-    // ---- Probe activities that answer the specific questions ----
-    // "Stone Column Installation" — simplest 3-row chain, unique checkpoint
-    // names, so it establishes the baseline shape.
-    // "Blanket Layer/GSB Layer" — five rows ALL named "Routine Inspection",
-    // the ambiguity case (Q4). Only probed if it is in this sub-package.
-    const wanted = ['Stone Column Installation', 'Blanket Layer/GSB Layer'];
-    const toProbe = wanted.filter(a => report.cascade.activities.includes(a));
-    if (toProbe.length === 0) toProbe.push(report.cascade.activities[0]);
-    console.log(`\n  Probing activities: ${JSON.stringify(toProbe)}\n`);
+    for (const target of PROBE_TARGETS) {
+      const subPackage = report.cascade.subPackages.find(
+        sp => normalizeFormLabel(sp).toLowerCase() === target.subPackage.toLowerCase());
+      if (!subPackage) {
+        console.log(`\n  (skipping ${target.subPackage} — not offered to this user)`);
+        continue;
+      }
+      await rfi.selectOption(rfi.subPackageDropdown, subPackage);
+      await page.waitForTimeout(800);
 
-    for (const activity of toProbe) {
-      console.log(`\n  ===== Activity: ${activity} =====`);
+      const activities = await readOptions(
+        rfi, rfi.activityDropdown, `Activity (sub-package "${subPackage}")`);
+      report.cascade[`activities:${subPackage}`] = activities;
+
+      const activity = activities.find(
+        a => normalizeFormLabel(a).toLowerCase() === target.activity.toLowerCase());
+      if (!activity) {
+        console.log(`  (skipping activity ${target.activity} — not in "${subPackage}": ` +
+          `${JSON.stringify(activities.map(normalizeFormLabel))})`);
+        continue;
+      }
+
+      console.log(`\n  ===== Activity: ${activity} (sub-package "${subPackage}") =====`);
       await rfi.selectOption(rfi.activityDropdown, activity);
 
       const subActivities = await readOptions(rfi, rfi.subActivityDropdown, 'Sub-Activity');
@@ -198,6 +233,38 @@ test('WIND RFI create form - checkpoints, checklists, work sections', async ({ p
       for (const per of Object.values(entry.checkpoints)) {
         Object.keys(per).forEach(cp => allLive.add(cp));
       }
+      // Sub-Activity comparison too — the sheet's rows are 1:1 with
+      // (Sub-Activity, Checkpoint) pairs, so a mismatch here means the app and
+      // the sheet disagree about the activity's breakdown.
+      const liveSubActs = entry.subActivities.map(s => normalizeFormLabel(s).toLowerCase());
+      const sheetSubActs = entry.sheet.map(r => r.subActivity.trim().toLowerCase());
+      console.log(`    sub-activities: live ${liveSubActs.length} vs sheet ${sheetSubActs.length}`);
+      console.log(`      in sheet not live: ${JSON.stringify(sheetSubActs.filter(s => !liveSubActs.includes(s)))}`);
+      console.log(`      live not in sheet: ${JSON.stringify(liveSubActs.filter(s => !sheetSubActs.includes(s)))}`);
+
+      // Checklist name the app offers vs the one the sheet records, per
+      // (sub-activity, checkpoint) pair — this is how the Crane Pad
+      // "GSB Inspection Checklist" vs sheet "GSB Laying Checklist"
+      // discrepancy was found, so make it a reported comparison, not a
+      // manual eyeball.
+      for (const [subActivity, per] of Object.entries(entry.checkpoints)) {
+        const subKey = normalizeFormLabel(subActivity).toLowerCase();
+        for (const [cp, data] of Object.entries(per)) {
+          const sheetRow = entry.sheet.find(
+            r => r.subActivity.trim().toLowerCase() === subKey && r.checkpoint === cp);
+          if (!sheetRow) {
+            console.log(`      MISMATCH: live [${subActivity}]/"${cp}" has no sheet row`);
+            continue;
+          }
+          const live = data.checklists[0] || null;
+          const sheetChk = sheetRow.checklist === '-' ? null : sheetRow.checklist;
+          if (live !== sheetChk) {
+            console.log(`      CHECKLIST DIFF ${sheetRow.code} [${subActivity}]/"${cp}": ` +
+              `app="${live}" sheet="${sheetChk}"`);
+          }
+        }
+      }
+
       const sheetCps = new Set(entry.sheet.map(r => r.checkpoint));
       const bookends = entry.sheet
         .filter(r => /^(Pre|Post)-Activity Checkpoint$/.test(r.checkpoint))

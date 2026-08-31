@@ -731,11 +731,17 @@ pairs, which is what the Crane Pad probe showed against the sheet's five
   Work Area (`KH 34`), one Package (`Civil`) — confirming stages 1-3 of the
   smoke chain wired up correctly end to end. It also means a spec needing TWO
   Work Areas requires both to be SO-mapped AND WAM'd first.
-- **One checklist discrepancy against the sheet**: for Crane Pad's
-  `Final Inspection` (`A1.18.4`, Sub-Activity `GSB Laying`) the sheet says
-  `GSB Laying Checklist` but the app offers **`GSB Inspection Checklist`** —
+- **One checklist discrepancy against the sheet**, across the 12
+  (Sub-Activity, Checkpoint) pairs checked so far: Crane Pad's
+  `Final Inspection` (`A1.18.4`, Sub-Activity `GSB Laying`) — the sheet says
+  `GSB Laying Checklist` but the app offers **`GSB Inspection Checklist`**,
   which is the sheet's checklist for a *different* row (`A1.13.4`, GSB Layer
   under Backfilling (After Mesh)). Worth raising with the sheet owner.
+  `A1.4 Blanket Layer/GSB Layer` had no discrepancy at all. The recon spec now
+  reports this comparison automatically (per (Sub-Activity, Checkpoint) pair)
+  rather than leaving it to be spotted by eye — the two "diffs" it prints for
+  the Pre-/Post-Activity bookends are expected, being the sheet's `-` against
+  the app's real `Documents and report information`.
 - **Still exactly one checklist option everywhere**, so the "pick any one of
   several checklist options" mechanic remains unexercised in wind, exactly as
   it stayed unexercised across all six solar activity chains.
@@ -754,12 +760,17 @@ Struck through where recon answered them.
    RFI-raisable?~~ **Answered**: yes, and they offer a real checklist,
    "Documents and report information".
 4. ~~How does the checkpoint dropdown disambiguate the repeated "Routine
-   Inspection" name?~~ **Answered in mechanism**: the Checkpoint dropdown is
-   scoped to the selected Sub-Activity and offers exactly one checkpoint, so
-   the repeated name can never be ambiguous in the UI. Confirmed on Crane Pad
-   (5 sub-activities, 1 checkpoint each); worth re-confirming on a genuinely
-   repeated case such as `A1.4 Blanket Layer/GSB Layer` (5 rows all named
-   "Routine Inspection") when that sub-package is exercised.
+   Inspection" name?~~ **Answered, and confirmed on the worst case**: the
+   Checkpoint dropdown is scoped to the selected Sub-Activity and offers
+   exactly one checkpoint, so the repeated name can never be ambiguous in the
+   UI. Verified directly against `A1.4 Blanket Layer/GSB Layer` — the activity
+   whose five rows are ALL named "Routine Inspection". Live it has 7
+   sub-activities (`2.1 Pre-Activity Work`, `2.2`–`2.6 Blanket/GSB Layer 1..5`,
+   `2.7 Post-Activity Work`), each offering exactly ONE checkpoint, and the
+   five layer sub-activities each offer one "Routine Inspection" with checklist
+   `Stone Blanket Layer Checklist`. Sub-activity sets match the sheet exactly,
+   7 vs 7, no difference in either direction. **Selection must therefore always
+   be by (Sub-Activity, Checkpoint), never by checkpoint name alone.**
 5. **Is the `Optional? = Y` column real?** Still open — needs actually
    submitting RFIs and observing whether a missing predecessor blocks. If every
    wind checkpoint is genuinely optional there is no wind equivalent of

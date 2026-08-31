@@ -28,6 +28,68 @@ class DashboardPage extends BasePage {
 
     // Header: logged-in user name + role label (e.g. "Admin")
     this.userRoleLabel = page.locator('text=Admin').first();
+
+    // ---- Viewport-agnostic navigation (added for mobile support) ----
+    //
+    // CONFIRMED live 2026-08-31 (tests/specs/00_inspect_mobile_nav.spec.js),
+    // measured on both viewports with the same probe:
+    //
+    //                      role=treeitem visible   .lucide-menu
+    //   desktop 1280x720             8                  0
+    //   mobile  412x839 closed       0 (0 in DOM)       1
+    //   mobile  412x839 open         8                  1
+    //
+    // and the two visible item SETS are IDENTICAL: Dashboard, My Tasks, WAM,
+    // SO Mapping, Users, Reports, Configuration, Admin RFI UI.
+    //
+    // That is why there is NO separate mobile page-object tree: both layouts
+    // render the same nav items with role="treeitem" (as
+    // `<a href="/dashboard" role="treeitem">`); mobile merely hides them
+    // behind a drawer. So one locator addresses both, and the only extra step
+    // on mobile is opening the drawer first.
+    //
+    // The trigger locator is deliberately `svg.lucide-menu`, NOT
+    // `svg.drawer__trigger`: the latter also matches ONE element on DESKTOP
+    // (the sidebar's collapse chevron), so it would click the wrong control
+    // there. `.lucide-menu` is 1 on mobile and 0 on desktop.
+    this.menuTrigger = page.locator('svg.lucide-menu').first();
+    this.navDrawer   = page.locator('[data-scope="dialog"][data-state="open"]').first();
+  }
+
+  // A sidebar/drawer nav entry by its visible name, on either viewport.
+  navItem(name) {
+    return this.page.getByRole('treeitem', { name, exact: true }).first();
+  }
+
+  // Opens the mobile nav drawer, but ONLY when the nav items aren't already
+  // reachable. Returns true if it actually opened something.
+  //
+  // On desktop the treeitems are already present, so this is a single cheap
+  // check and a no-op — the desktop code path is unchanged.
+  //
+  // NOTE on isVisible(): this is the one case where a non-polling immediate
+  // check is what we WANT (see the isVisible-does-not-poll gotcha) — the
+  // question is literally "is the nav reachable right now, or do I need to
+  // open the drawer", not "will it become visible eventually".
+  async revealNavIfCollapsed() {
+    if (await this.navItem('Dashboard').isVisible().catch(() => false)) return false;
+
+    if (!(await this.menuTrigger.isVisible().catch(() => false))) return false;
+
+    await this.menuTrigger.click();
+    // Wait on a nav item rather than the drawer container: several dialogs
+    // exist on this page at once (confirmed live: 3 open after the drawer
+    // opens), so the item becoming visible is the reliable signal.
+    await this.navItem('Dashboard').waitFor({ state: 'visible', timeout: 10000 });
+    return true;
+  }
+
+  // Navigate by nav-entry name on either viewport. Prefer this over the
+  // individual navX locators in new code.
+  async navigateTo(name) {
+    await this.revealNavIfCollapsed();
+    await this.navItem(name).click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   // Post-login the app shows a PWA loading spinner (0→100%) ONLY on a
@@ -169,9 +231,26 @@ class DashboardPage extends BasePage {
       .then(() => true)
       .catch(() => false);
 
+    // Mobile fallback, added 2026-08-31 alongside revealNavIfCollapsed().
+    // Clicks the desktop sidebar link when it is present (unchanged behaviour
+    // for every existing caller — on desktop navMyTasks IS visible, so this
+    // always takes the first branch), and only falls back to the
+    // drawer + role=treeitem path when it is not. On mobile navMyTasks
+    // resolves to NOTHING (confirmed live: 0 of 8 DashboardPage nav locators
+    // resolve at a phone viewport), so without this the click would just burn
+    // its timeout every iteration.
+    const clickMyTasks = async () => {
+      if (await this.navMyTasks.isVisible().catch(() => false)) {
+        await this.navMyTasks.click();
+        return;
+      }
+      await this.revealNavIfCollapsed();
+      await this.navItem('My Tasks').click();
+    };
+
     const deadline = Date.now() + 3 * 60 * 1000;
     do {
-      await this.navMyTasks.click();
+      await clickMyTasks();
       await this.page.waitForLoadState('networkidle');
       if (await arrived()) return;
       await this.page.waitForTimeout(1000);
@@ -180,7 +259,7 @@ class DashboardPage extends BasePage {
     // Out of retries — throw for real rather than silently returning to a
     // caller that's still stuck on the dashboard (same principle as
     // RFIListPage.openRowByCode's final real-timeout attempt).
-    await this.navMyTasks.click();
+    await clickMyTasks();
     await this.page.waitForLoadState('networkidle');
     await this.page.locator('text=Create RFI')
       .or(this.page.locator('text=Pending with me'))

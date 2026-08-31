@@ -24,11 +24,179 @@
       "USS Civil and Structural",
       "WTG Foundation"
     ],
-    "activities": [
+    "activities:WTG Foundation": [
+      "1. Excavation",
+      "10. Earthing Mesh",
+      "11. Backfilling (After Mesh)",
+      "2. Blanket Layer/GSB Layer",
+      "3. Plum Concrete",
+      "4. PCC",
+      "5. Bottom Anchor Flange",
+      "6. Reinforcement Binding",
+      "7. WTG Foundation",
+      "8. Top Flange Grouting",
+      "9. Backfilling (Before Mesh)"
+    ],
+    "activities:Crane Pad": [
       "1. Crane Pad"
     ]
   },
   "activities": {
+    "2. Blanket Layer/GSB Layer": {
+      "subActivities": [
+        "2.1 Pre-Activity Work",
+        "2.2 Blanket/GSB Layer 1",
+        "2.3 Blanket/GSB Layer 2",
+        "2.4 Blanket/GSB Layer 3",
+        "2.5 Blanket/GSB Layer 4",
+        "2.6 Blanket/GSB Layer 5",
+        "2.7 Post-Activity Work"
+      ],
+      "sheet": [
+        {
+          "code": "A1.4.1",
+          "checkpoint": "Pre-Activity Checkpoint",
+          "subActivity": "Pre-Activity Work",
+          "checklist": "-",
+          "checklistDoc": "-",
+          "preceding": "A1.3.2"
+        },
+        {
+          "code": "A1.4.2",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Blanket/GSB Layer 1",
+          "checklist": "Stone Blanket Layer Checklist",
+          "checklistDoc": "Stone Blanket Layer checklist",
+          "preceding": "A1.4.1"
+        },
+        {
+          "code": "A1.4.3",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Blanket/GSB Layer 2",
+          "checklist": "Stone Blanket Layer Checklist",
+          "checklistDoc": "Stone Blanket Layer checklist",
+          "preceding": "A1.4.2"
+        },
+        {
+          "code": "A1.4.4",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Blanket/GSB Layer 3",
+          "checklist": "Stone Blanket Layer Checklist",
+          "checklistDoc": "Stone Blanket Layer checklist",
+          "preceding": "A1.4.3"
+        },
+        {
+          "code": "A1.4.5",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Blanket/GSB Layer 4",
+          "checklist": "Stone Blanket Layer Checklist",
+          "checklistDoc": "Stone Blanket Layer checklist",
+          "preceding": "A1.4.4"
+        },
+        {
+          "code": "A1.4.6",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Blanket/GSB Layer 5",
+          "checklist": "Stone Blanket Layer Checklist",
+          "checklistDoc": "Stone Blanket Layer checklist",
+          "preceding": "A1.4.5"
+        },
+        {
+          "code": "A1.4.7",
+          "checkpoint": "Post-Activity Checkpoint",
+          "subActivity": "Post-Activity Work",
+          "checklist": "-",
+          "checklistDoc": "-",
+          "preceding": "A1.4.6"
+        }
+      ],
+      "checkpoints": {
+        "2.1 Pre-Activity Work": {
+          "Pre-Activity Checkpoint": {
+            "checklists": [
+              "Documents and report information"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.2 Blanket/GSB Layer 1": {
+          "Routine Inspection": {
+            "checklists": [
+              "Stone Blanket Layer Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.3 Blanket/GSB Layer 2": {
+          "Routine Inspection": {
+            "checklists": [
+              "Stone Blanket Layer Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.4 Blanket/GSB Layer 3": {
+          "Routine Inspection": {
+            "checklists": [
+              "Stone Blanket Layer Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.5 Blanket/GSB Layer 4": {
+          "Routine Inspection": {
+            "checklists": [
+              "Stone Blanket Layer Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.6 Blanket/GSB Layer 5": {
+          "Routine Inspection": {
+            "checklists": [
+              "Stone Blanket Layer Checklist"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        },
+        "2.7 Post-Activity Work": {
+          "Post-Activity Checkpoint": {
+            "checklists": [
+              "Documents and report information"
+            ],
+            "checklistError": null,
+            "workSectionCount": 1,
+            "workSectionSample": [
+              "KH 34"
+            ]
+          }
+        }
+      }
+    },
     "1. Crane Pad": {
       "subActivities": [
         "1.1 Pre-Activity Work",
@@ -37,7 +205,48 @@
         "1.4 GSB laying",
         "1.5 Post-Activity Work"
       ],
-      "sheet": [],
+      "sheet": [
+        {
+          "code": "A1.18.1",
+          "checkpoint": "Pre-Activity Checkpoint",
+          "subActivity": "Pre-Activity Work",
+          "checklist": "-",
+          "checklistDoc": "-",
+          "preceding": "-"
+        },
+        {
+          "code": "A1.18.2",
+          "checkpoint": "Pre-Inspection",
+          "subActivity": "OGL",
+          "checklist": "OGL Checklist",
+          "checklistDoc": "OGL checklist",
+          "preceding": "A1.18.1"
+        },
+        {
+          "code": "A1.18.3",
+          "checkpoint": "Routine Inspection",
+          "subActivity": "Boulder Laying",
+          "checklist": "Boulder Laying Checklist",
+          "checklistDoc": "Boulder laying checklist",
+          "preceding": "A1.18.2"
+        },
+        {
+          "code": "A1.18.4",
+          "checkpoint": "Final Inspection",
+          "subActivity": "GSB Laying",
+          "checklist": "GSB Laying Checklist",
+          "checklistDoc": "GSB laying checklist",
+          "preceding": "A1.18.3"
+        },
+        {
+          "code": "A1.18.5",
+          "checkpoint": "Post-Activity Checkpoint",
+          "subActivity": "Post-Activity Work",
+          "checklist": "-",
+          "checklistDoc": "-",
+          "preceding": "A1.18.4"
+        }
+      ],
       "checkpoints": {
         "1.1 Pre-Activity Work": {
           "Pre-Activity Checkpoint": {
@@ -101,6 +310,5 @@
         }
       }
     }
-  },
-  "subPackageInspected": "Crane Pad"
+  }
 }

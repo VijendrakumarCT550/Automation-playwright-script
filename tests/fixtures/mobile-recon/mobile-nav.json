@@ -1,0 +1,3002 @@
+{
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "device": {
+    "width": 412,
+    "height": 839
+  },
+  "before": {
+    "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/dashboard",
+    "viewport": {
+      "w": 412,
+      "h": 839
+    },
+    "navLinkTexts": [],
+    "iconOnlyClickables": [
+      {
+        "tag": "button",
+        "text": "",
+        "ariaLabel": "Light Theme",
+        "ariaExpanded": null,
+        "ariaControls": null,
+        "role": null,
+        "id": null,
+        "dataAttrs": {},
+        "className": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:dark:c_colorPalette.12",
+        "href": null,
+        "rect": {
+          "x": 312,
+          "y": 78,
+          "w": 32,
+          "h": 32
+        },
+        "svgCount": 1,
+        "svgShapeCounts": [
+          {
+            "line": 0,
+            "path": 8,
+            "rect": 0,
+            "viewBox": "0 0 24 24"
+          }
+        ],
+        "outerHTMLHead": "<button type=\"button\" aria-label=\"Light Theme\" class=\"button button--variant_ghost button--size_xs bdr_full p_0 [&amp;_svg]:light:c_colorPalette.12 [&amp;_svg]:dark:c_colorPalette.12\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\""
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "ariaLabel": null,
+        "ariaExpanded": "false",
+        "ariaControls": null,
+        "role": null,
+        "id": "dialog::r19::trigger",
+        "dataAttrs": {
+          "data-scope": "dialog",
+          "data-part": "trigger",
+          "data-state": "closed"
+        },
+        "className": "button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative hover:bg_bg.3 ring_no",
+        "href": null,
+        "rect": {
+          "x": 352,
+          "y": 72,
+          "w": 44,
+          "h": 44
+        },
+        "svgCount": 1,
+        "svgShapeCounts": [
+          {
+            "line": 0,
+            "path": 2,
+            "rect": 0,
+            "viewBox": "0 0 24 24"
+          }
+        ],
+        "outerHTMLHead": "<button type=\"button\" data-scope=\"dialog\" data-part=\"trigger\" dir=\"ltr\" id=\"dialog::r19::trigger\" aria-haspopup=\"dialog\" aria-expanded=\"false\" data-state=\"closed\" class=\"button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative hover:bg_bg.3 ring_none dialog_"
+      }
+    ],
+    "textClickables": [
+      {
+        "tag": "button",
+        "text": "Detail Records"
+      },
+      {
+        "tag": "button",
+        "text": "Summary View"
+      }
+    ],
+    "visibleSvgs": [
+      {
+        "rect": {
+          "x": 16,
+          "y": 82,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 3,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left",
+        "cursor": "auto",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex jc_space-between",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 82,
+              "w": 32,
+              "h": 24
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 jc_space-between ai_center pt_2 w_full c_colorPalette.9",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 380,
+              "h": 52
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 px_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 412,
+              "h": 114
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 color-palette_info bg-c_colorPalette.3 h_full ff_Plus_Jakarta_Sans scr-ba",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left\" d"
+      },
+      {
+        "rect": {
+          "x": 320,
+          "y": 86,
+          "w": 16,
+          "h": 16
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 8,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-sun",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "button",
+            "role": null,
+            "ariaLabel": "Light Theme",
+            "className": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:da",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 312,
+              "y": 78,
+              "w": 32,
+              "h": 32
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 312,
+              "y": 72,
+              "w": 84,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 jc_space-between ai_center pt_2 w_full c_colorPalette.9",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 380,
+              "h": 52
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 px_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 412,
+              "h": 114
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 color-palette_info bg-c_colorPalette.3 h_full ff_Plus_Jakarta_Sans scr-ba",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-sun\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"></ci"
+      },
+      {
+        "rect": {
+          "x": 362,
+          "y": 82,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 2,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-bell",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "span",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_inline-flex trf-o_top_center ai_center jc_center [&_svg]:w_6 [&_svg]:h_6",
+            "onclick": false,
+            "cursor": "pointer",
+            "rect": {
+              "x": 362,
+              "y": 82,
+              "w": 24,
+              "h": 24
+            }
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "ariaLabel": null,
+            "className": "button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative h",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_0 flex-d_row h_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_10px flex-d_row",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 312,
+              "y": 72,
+              "w": 84,
+              "h": 44
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-bell\" aria-hidden=\"true\"><path d=\"M10.268 21a2 2 0 0 0 3.4"
+      },
+      {
+        "rect": {
+          "x": 348,
+          "y": 202,
+          "w": 16,
+          "h": 16
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 9,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-sliders-horizontal",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row cursor_pointer c_neutral.11 bg_transparent bdr_l2 px_2 py_0 drawer",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 298,
+              "y": 200,
+              "w": 74,
+              "h": 20
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex jc_flex-end ai_center px_2 py_1.5 bg_bg.default bd-b_1px_solid bd-c_neutral.3 flex-sh_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 32,
+              "y": 194,
+              "w": 348,
+              "h": 33
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column h_full w_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 32,
+              "y": 194,
+              "w": 348,
+              "h": 605
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "pos_absolute h_full w_full p_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 178,
+              "w": 380,
+              "h": 637
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 pos_relative bg-c_bg.default bdr_none bdr-e_l3 mdDown:bdr_l3 h_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 178,
+              "w": 380,
+              "h": 637
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-sliders-horizontal\" aria-hidden=\"true\"><path d=\"M10 5H3\"><"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 958,
+          "w": 314,
+          "h": 214
+        },
+        "viewBox": "0 0 314 214",
+        "shapes": {
+          "line": 6,
+          "path": 0,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "h_full w_full pt_2",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 950,
+              "w": 314,
+              "h": 260
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "flex_1 min-h_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 950,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"214\" viewBox=\"0 0 314 214\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"><g class=\"recharts-c"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 1290,
+          "w": 314,
+          "h": 214
+        },
+        "viewBox": "0 0 314 214",
+        "shapes": {
+          "line": 2,
+          "path": 0,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "h_full w_full pt_2",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1282,
+              "w": 314,
+              "h": 260
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "flex_1 min-h_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1282,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"214\" viewBox=\"0 0 314 214\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"><g class=\"recharts-c"
+      }
+    ],
+    "dialogCount": 1,
+    "navRoleCount": 0
+  },
+  "hamburgerCandidate": {
+    "rect": {
+      "x": 16,
+      "y": 82,
+      "w": 24,
+      "h": 24
+    },
+    "viewBox": "0 0 24 24",
+    "shapes": {
+      "line": 0,
+      "path": 3,
+      "rect": 0,
+      "polyline": 0
+    },
+    "classNameSvg": "lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left",
+    "cursor": "auto",
+    "ancestors": [
+      {
+        "tag": "div",
+        "role": null,
+        "ariaLabel": null,
+        "className": "d_flex jc_space-between",
+        "onclick": false,
+        "cursor": "auto",
+        "rect": {
+          "x": 16,
+          "y": 82,
+          "w": 32,
+          "h": 24
+        }
+      },
+      {
+        "tag": "div",
+        "role": null,
+        "ariaLabel": null,
+        "className": "d_flex flex_1 jc_space-between ai_center pt_2 w_full c_colorPalette.9",
+        "onclick": false,
+        "cursor": "auto",
+        "rect": {
+          "x": 16,
+          "y": 64,
+          "w": 380,
+          "h": 52
+        }
+      },
+      {
+        "tag": "div",
+        "role": null,
+        "ariaLabel": null,
+        "className": "d_flex flex-d_column gap_0 px_4",
+        "onclick": false,
+        "cursor": "auto",
+        "rect": {
+          "x": 0,
+          "y": 64,
+          "w": 412,
+          "h": 114
+        }
+      },
+      {
+        "tag": "div",
+        "role": null,
+        "ariaLabel": null,
+        "className": "d_flex flex-d_column gap_0 color-palette_info bg-c_colorPalette.3 h_full ff_Plus_Jakarta_Sans scr-ba",
+        "onclick": false,
+        "cursor": "auto",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 839
+        }
+      },
+      {
+        "tag": "div",
+        "role": null,
+        "ariaLabel": null,
+        "className": "",
+        "onclick": true,
+        "cursor": "auto",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 839
+        }
+      }
+    ],
+    "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left\" d",
+    "index": 0
+  },
+  "hamburgerClickTarget": {
+    "note": "no pointer-cursor ancestor; clicked the svg itself"
+  },
+  "after": {
+    "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/dashboard",
+    "viewport": {
+      "w": 412,
+      "h": 839
+    },
+    "navLinkTexts": [
+      "Dashboard",
+      "My Tasks",
+      "WAM",
+      "SO Mapping",
+      "Users",
+      "Configuration",
+      "Admin RFI UI"
+    ],
+    "iconOnlyClickables": [
+      {
+        "tag": "button",
+        "text": "",
+        "ariaLabel": "Light Theme",
+        "ariaExpanded": null,
+        "ariaControls": null,
+        "role": null,
+        "id": null,
+        "dataAttrs": {},
+        "className": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:dark:c_colorPalette.12",
+        "href": null,
+        "rect": {
+          "x": 312,
+          "y": 78,
+          "w": 32,
+          "h": 32
+        },
+        "svgCount": 1,
+        "svgShapeCounts": [
+          {
+            "line": 0,
+            "path": 8,
+            "rect": 0,
+            "viewBox": "0 0 24 24"
+          }
+        ],
+        "outerHTMLHead": "<button type=\"button\" aria-label=\"Light Theme\" class=\"button button--variant_ghost button--size_xs bdr_full p_0 [&amp;_svg]:light:c_colorPalette.12 [&amp;_svg]:dark:c_colorPalette.12\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\""
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "ariaLabel": null,
+        "ariaExpanded": "false",
+        "ariaControls": null,
+        "role": null,
+        "id": "dialog::r19::trigger",
+        "dataAttrs": {
+          "data-scope": "dialog",
+          "data-part": "trigger",
+          "data-state": "closed"
+        },
+        "className": "button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative hover:bg_bg.3 ring_no",
+        "href": null,
+        "rect": {
+          "x": 352,
+          "y": 72,
+          "w": 44,
+          "h": 44
+        },
+        "svgCount": 1,
+        "svgShapeCounts": [
+          {
+            "line": 0,
+            "path": 2,
+            "rect": 0,
+            "viewBox": "0 0 24 24"
+          }
+        ],
+        "outerHTMLHead": "<button type=\"button\" data-scope=\"dialog\" data-part=\"trigger\" dir=\"ltr\" id=\"dialog::r19::trigger\" aria-haspopup=\"dialog\" aria-expanded=\"false\" data-state=\"closed\" class=\"button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative hover:bg_bg.3 ring_none dialog_"
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "ariaLabel": null,
+        "ariaExpanded": null,
+        "ariaControls": null,
+        "role": null,
+        "id": "dialog::r4::close",
+        "dataAttrs": {
+          "data-scope": "dialog",
+          "data-part": "close-trigger"
+        },
+        "className": "button button--variant_ghost button--size_xs as_flex-end drawer__closeTrigger drawer__closeTrigger--variant_left",
+        "href": null,
+        "rect": {
+          "x": 224,
+          "y": 16,
+          "w": 48,
+          "h": 32
+        },
+        "svgCount": 1,
+        "svgShapeCounts": [
+          {
+            "line": 0,
+            "path": 2,
+            "rect": 0,
+            "viewBox": "0 0 24 24"
+          }
+        ],
+        "outerHTMLHead": "<button type=\"button\" data-scope=\"dialog\" data-part=\"close-trigger\" dir=\"ltr\" id=\"dialog::r4::close\" class=\"button button--variant_ghost button--size_xs as_flex-end drawer__closeTrigger drawer__closeTrigger--variant_left\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24"
+      }
+    ],
+    "textClickables": [
+      {
+        "tag": "button",
+        "text": "Detail Records"
+      },
+      {
+        "tag": "button",
+        "text": "Summary View"
+      },
+      {
+        "tag": "a",
+        "text": "Dashboard"
+      },
+      {
+        "tag": "a",
+        "text": "My Tasks"
+      },
+      {
+        "tag": "a",
+        "text": "WAM"
+      },
+      {
+        "tag": "a",
+        "text": "SO Mapping"
+      },
+      {
+        "tag": "a",
+        "text": "Users"
+      },
+      {
+        "tag": "a",
+        "text": "Configuration"
+      },
+      {
+        "tag": "a",
+        "text": "Admin RFI UI"
+      }
+    ],
+    "visibleSvgs": [
+      {
+        "rect": {
+          "x": 16,
+          "y": 82,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 3,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left",
+        "cursor": "auto",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex jc_space-between",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 82,
+              "w": 32,
+              "h": 24
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 jc_space-between ai_center pt_2 w_full c_colorPalette.9",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 380,
+              "h": 52
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 px_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 412,
+              "h": 114
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 color-palette_info bg-c_colorPalette.3 h_full ff_Plus_Jakarta_Sans scr-ba",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-menu mr_2 drawer__trigger drawer__trigger--variant_left\" d"
+      },
+      {
+        "rect": {
+          "x": 320,
+          "y": 86,
+          "w": 16,
+          "h": 16
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 8,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-sun",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "button",
+            "role": null,
+            "ariaLabel": "Light Theme",
+            "className": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:da",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 312,
+              "y": 78,
+              "w": 32,
+              "h": 32
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 312,
+              "y": 72,
+              "w": 84,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 jc_space-between ai_center pt_2 w_full c_colorPalette.9",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 380,
+              "h": 52
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 px_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 412,
+              "h": 114
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_0 color-palette_info bg-c_colorPalette.3 h_full ff_Plus_Jakarta_Sans scr-ba",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-sun\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"></ci"
+      },
+      {
+        "rect": {
+          "x": 362,
+          "y": 82,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 2,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-bell",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "span",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_inline-flex trf-o_top_center ai_center jc_center [&_svg]:w_6 [&_svg]:h_6",
+            "onclick": false,
+            "cursor": "pointer",
+            "rect": {
+              "x": 362,
+              "y": 82,
+              "w": 24,
+              "h": 24
+            }
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "ariaLabel": null,
+            "className": "button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative h",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_0 flex-d_row h_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_10px flex-d_row",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 352,
+              "y": 72,
+              "w": 44,
+              "h": 44
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 312,
+              "y": 72,
+              "w": 84,
+              "h": 44
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-bell\" aria-hidden=\"true\"><path d=\"M10.268 21a2 2 0 0 0 3.4"
+      },
+      {
+        "rect": {
+          "x": 348,
+          "y": 202,
+          "w": 16,
+          "h": 16
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 9,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-sliders-horizontal",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row cursor_pointer c_neutral.11 bg_transparent bdr_l2 px_2 py_0 drawer",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 298,
+              "y": 200,
+              "w": 74,
+              "h": 20
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex jc_flex-end ai_center px_2 py_1.5 bg_bg.default bd-b_1px_solid bd-c_neutral.3 flex-sh_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 32,
+              "y": 194,
+              "w": 348,
+              "h": 33
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column h_full w_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 32,
+              "y": 194,
+              "w": 348,
+              "h": 605
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "pos_absolute h_full w_full p_4",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 178,
+              "w": 380,
+              "h": 637
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex_1 pos_relative bg-c_bg.default bdr_none bdr-e_l3 mdDown:bdr_l3 h_full",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 178,
+              "w": 380,
+              "h": 637
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-sliders-horizontal\" aria-hidden=\"true\"><path d=\"M10 5H3\"><"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 290,
+          "w": 314,
+          "h": 197
+        },
+        "viewBox": "0 0 314 197",
+        "shapes": {
+          "line": 0,
+          "path": 3,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 290,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 290,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 290,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_full flex_1 min-h_0 pos_relative",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 290,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex h_full ai_center flex-d_column jc_space-between py_1",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 286,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg cx=\"50%\" cy=\"50%\" role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"197\" viewBox=\"0 0 314 197\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"></"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 622,
+          "w": 314,
+          "h": 197
+        },
+        "viewBox": "0 0 314 197",
+        "shapes": {
+          "line": 0,
+          "path": 4,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 622,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 622,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 622,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_full flex_1 min-h_0 pos_relative",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 622,
+              "w": 314,
+              "h": 197
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex h_full ai_center flex-d_column jc_space-between py_1",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 618,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg cx=\"50%\" cy=\"50%\" role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"197\" viewBox=\"0 0 314 197\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"></"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 958,
+          "w": 314,
+          "h": 214
+        },
+        "viewBox": "0 0 314 214",
+        "shapes": {
+          "line": 6,
+          "path": 2,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 958,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "h_full w_full pt_2",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 950,
+              "w": 314,
+              "h": 260
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "flex_1 min-h_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 950,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"214\" viewBox=\"0 0 314 214\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"><g class=\"recharts-c"
+      },
+      {
+        "rect": {
+          "x": 49,
+          "y": 1290,
+          "w": 314,
+          "h": 214
+        },
+        "viewBox": "0 0 314 214",
+        "shapes": {
+          "line": 5,
+          "path": 4,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "recharts-surface",
+        "cursor": "default",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-wrapper",
+            "onclick": true,
+            "cursor": "default",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 0,
+              "h": 0
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "recharts-responsive-container",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1290,
+              "w": 314,
+              "h": 214
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "h_full w_full pt_2",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1282,
+              "w": 314,
+              "h": 260
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "flex_1 min-h_0",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 49,
+              "y": 1282,
+              "w": 314,
+              "h": 260
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"314\" height=\"214\" viewBox=\"0 0 314 214\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"><g class=\"recharts-c"
+      },
+      {
+        "rect": {
+          "x": 240,
+          "y": 24,
+          "w": 16,
+          "h": 16
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 2,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-x",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "button",
+            "role": null,
+            "ariaLabel": null,
+            "className": "button button--variant_ghost button--size_xs as_flex-end drawer__closeTrigger drawer__closeTrigger--",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 224,
+              "y": 16,
+              "w": 48,
+              "h": 32
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "drawer__header drawer__header--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 64
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_70vw color-palette_info drawer__positioner drawer__positioner--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "body",
+            "role": null,
+            "ariaLabel": null,
+            "className": "",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 412,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-x\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d="
+      },
+      {
+        "rect": {
+          "x": 26,
+          "y": 72,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 0,
+          "rect": 4,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-layout-dashboard",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "Dashboard",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 109,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 109,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-layout-dashboard\" aria-hidden=\"true\"><rect width=\"7\" heigh"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 120,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 4,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-list-todo",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "My Tasks",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 112,
+              "w": 97,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 112,
+              "w": 97,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-list-todo\" aria-hidden=\"true\"><path d=\"M13 5h8\"></path><pa"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 168,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 4,
+          "rect": 1,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-grid3x3 lucide-grid-3x3",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "WAM",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 160,
+              "w": 78,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 160,
+              "w": 78,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-grid3x3 lucide-grid-3x3\" aria-hidden=\"true\"><rect width=\"1"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 216,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 3,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-file-check",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "SO Mapping",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 208,
+              "w": 116,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 208,
+              "w": 116,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-file-check\" aria-hidden=\"true\"><path d=\"M15 2H6a2 2 0 0 0-"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 264,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 1,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-user-round",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "Users",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 256,
+              "w": 78,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 256,
+              "w": 78,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-user-round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"5"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 312,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 5,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-file-chart-column-increasing",
+        "cursor": "auto",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": "treeitem",
+            "ariaLabel": "Reports",
+            "className": "d_flex ai_center gap_10px flex-d_row d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 304,
+              "w": 256,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_70vw color-palette_info drawer__positioner drawer__positioner--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-file-chart-column-increasing\" aria-hidden=\"true\"><path d=\""
+      },
+      {
+        "rect": {
+          "x": 240,
+          "y": 312,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 1,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-chevron-right icon icon--size_xs trf_rotate(0deg)_scale(1) pt_1 pos_relative bg_transparent pos_absolute right_0 trs_opacity_0.3s_ease-in-out,_transform_0.1s_ease trs-dly_0.20s ov_hidden ai_center op_1 vis_visible [[data-collapsed]_&]:trs-dly_0s [[data-collapsed]_&]:op_0 [[data-collapsed]_&]:vis_hidden",
+        "cursor": "auto",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": "treeitem",
+            "ariaLabel": "Reports",
+            "className": "d_flex ai_center gap_10px flex-d_row d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0",
+            "onclick": true,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 304,
+              "w": 256,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_70vw color-palette_info drawer__positioner drawer__positioner--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-right icon icon--size_xs trf_rotate(0deg)_scale(1)"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 360,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 1,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-settings",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "Configuration",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 352,
+              "w": 123,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 352,
+              "w": 123,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-settings\" aria-hidden=\"true\"><path d=\"M9.671 4.136a2.34 2."
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 408,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 1,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-settings",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "a",
+            "role": "treeitem",
+            "ariaLabel": "Admin RFI UI",
+            "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 400,
+              "w": 120,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 400,
+              "w": 120,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px ov-y_auto ov-x_hidden d_flex flex_1 flex-d_column gap_2 ai_flex-start ",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 64,
+              "w": 256,
+              "h": 671
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-settings\" aria-hidden=\"true\"><path d=\"M9.671 4.136a2.34 2."
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 743,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 6,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-languages",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 735,
+              "w": 256,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px d_flex flex_1 flex-d_column gap_2 ai_flex-start w_full jc_flex-end max",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 735,
+              "w": 256,
+              "h": 88
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_70vw color-palette_info drawer__positioner drawer__positioner--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-languages\" aria-hidden=\"true\"><path d=\"m5 8 6 6\"></path><p"
+      },
+      {
+        "rect": {
+          "x": 24,
+          "y": 791,
+          "w": 24,
+          "h": 24
+        },
+        "viewBox": "0 0 24 24",
+        "shapes": {
+          "line": 0,
+          "path": 3,
+          "rect": 0,
+          "polyline": 0
+        },
+        "classNameSvg": "lucide lucide-log-out",
+        "cursor": "pointer",
+        "ancestors": [
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex ai_center gap_2 flex-d_row d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s",
+            "onclick": true,
+            "cursor": "pointer",
+            "rect": {
+              "x": 16,
+              "y": 783,
+              "w": 256,
+              "h": 40
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "d_flex flex-d_column gap_10px d_flex flex_1 flex-d_column gap_2 ai_flex-start w_full jc_flex-end max",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 16,
+              "y": 735,
+              "w": 256,
+              "h": 88
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "bd_none ai_center pt_0 drawer__body drawer__body--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 64,
+              "w": 288,
+              "h": 775
+            }
+          },
+          {
+            "tag": "div",
+            "role": "dialog",
+            "ariaLabel": null,
+            "className": "drawer__content drawer__content--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          },
+          {
+            "tag": "div",
+            "role": null,
+            "ariaLabel": null,
+            "className": "w_70vw color-palette_info drawer__positioner drawer__positioner--variant_left",
+            "onclick": false,
+            "cursor": "auto",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 288,
+              "h": 839
+            }
+          }
+        ],
+        "outerHTMLHead": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-log-out\" aria-hidden=\"true\"><path d=\"m16 17 5-5-5-5\"></pat"
+      }
+    ],
+    "dialogCount": 2,
+    "navRoleCount": 0
+  },
+  "navItemsRevealed": [
+    "Dashboard",
+    "My Tasks",
+    "WAM",
+    "SO Mapping",
+    "Users",
+    "Configuration",
+    "Admin RFI UI"
+  ],
+  "revealedItemDetails": [
+    {
+      "text": "Dashboard",
+      "tag": "a",
+      "href": "/dashboard",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "My Tasks",
+      "tag": "a",
+      "href": "/my-tasks",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "WAM",
+      "tag": "a",
+      "href": "/wam",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "SO Mapping",
+      "tag": "a",
+      "href": "/so-mapping",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "Users",
+      "tag": "a",
+      "href": "/users/list",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "Configuration",
+      "tag": "a",
+      "href": "/configuration",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    },
+    {
+      "text": "Admin RFI UI",
+      "tag": "a",
+      "href": "/admin-ui",
+      "role": "treeitem",
+      "className": "d_flex w_full gap_2 p_2 td_none bdr_0 c_neutral.9 trs_padding_0.3s_ease-in-out trs-dly_0.20s [&_svg]:w_6 [&_svg]:h_6 [&_",
+      "ancestors": [
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        },
+        {
+          "tag": "div",
+          "role": "dialog",
+          "dataState": "open",
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "div",
+          "role": null,
+          "dataState": null,
+          "dataScope": "dialog"
+        },
+        {
+          "tag": "body",
+          "role": null,
+          "dataState": null,
+          "dataScope": null
+        }
+      ]
+    }
+  ]
+}

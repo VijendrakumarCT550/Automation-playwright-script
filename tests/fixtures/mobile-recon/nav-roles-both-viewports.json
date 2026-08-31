@@ -1,0 +1,136 @@
+{
+  "desktop": {
+    "viewport": {
+      "w": 1280,
+      "h": 720
+    },
+    "treeitemTotal": 8,
+    "treeitemVisible": 8,
+    "treeitems": [
+      {
+        "text": "Dashboard",
+        "tag": "a",
+        "href": "/dashboard",
+        "visible": true
+      },
+      {
+        "text": "My Tasks",
+        "tag": "a",
+        "href": "/my-tasks",
+        "visible": true
+      },
+      {
+        "text": "WAM",
+        "tag": "a",
+        "href": "/wam",
+        "visible": true
+      },
+      {
+        "text": "SO Mapping",
+        "tag": "a",
+        "href": "/so-mapping",
+        "visible": true
+      },
+      {
+        "text": "Users",
+        "tag": "a",
+        "href": "/users/list",
+        "visible": true
+      },
+      {
+        "text": "Reports",
+        "tag": "div",
+        "href": null,
+        "visible": true
+      },
+      {
+        "text": "Configuration",
+        "tag": "a",
+        "href": "/configuration",
+        "visible": true
+      },
+      {
+        "text": "Admin RFI UI",
+        "tag": "a",
+        "href": "/admin-ui",
+        "visible": true
+      }
+    ],
+    "drawerTriggerCount": 1,
+    "lucideMenuCount": 0,
+    "openDialogs": 0
+  },
+  "mobileClosed": {
+    "viewport": {
+      "w": 412,
+      "h": 839
+    },
+    "treeitemTotal": 0,
+    "treeitemVisible": 0,
+    "treeitems": [],
+    "drawerTriggerCount": 2,
+    "lucideMenuCount": 1,
+    "openDialogs": 0
+  },
+  "mobileOpen": {
+    "viewport": {
+      "w": 412,
+      "h": 839
+    },
+    "treeitemTotal": 8,
+    "treeitemVisible": 8,
+    "treeitems": [
+      {
+        "text": "Dashboard",
+        "tag": "a",
+        "href": "/dashboard",
+        "visible": true
+      },
+      {
+        "text": "My Tasks",
+        "tag": "a",
+        "href": "/my-tasks",
+        "visible": true
+      },
+      {
+        "text": "WAM",
+        "tag": "a",
+        "href": "/wam",
+        "visible": true
+      },
+      {
+        "text": "SO Mapping",
+        "tag": "a",
+        "href": "/so-mapping",
+        "visible": true
+      },
+      {
+        "text": "Users",
+        "tag": "a",
+        "href": "/users/list",
+        "visible": true
+      },
+      {
+        "text": "Reports",
+        "tag": "div",
+        "href": null,
+        "visible": true
+      },
+      {
+        "text": "Configuration",
+        "tag": "a",
+        "href": "/configuration",
+        "visible": true
+      },
+      {
+        "text": "Admin RFI UI",
+        "tag": "a",
+        "href": "/admin-ui",
+        "visible": true
+      }
+    ],
+    "drawerTriggerCount": 2,
+    "lucideMenuCount": 1,
+    "openDialogs": 3
+  }
+}
