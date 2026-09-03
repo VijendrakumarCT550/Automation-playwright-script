@@ -207,12 +207,20 @@ async function createFor(page, ctx, tcId) {
   ctx.tracker.setId(ctx.tracker.load(), tcId, result.rfiId, result.rfiCode);
   patchTc(ctx.tracker, tcId, {
     workArea: result.workArea,
-    // The section this TC actually landed on. Load-bearing twice over: it seeds
-    // the next create's exclusion set (see alreadyUsed above), and it is what a
-    // resubmit must re-select if the rejection cleared the field — picking
-    // "first option" there would grab a DIFFERENT, possibly already-taken
-    // section instead of this RFI's own.
+    // The section the SAVED RECORD holds, read back from its view page rather
+    // than taken from the label returned at click time — those have been proven
+    // to diverge (see the read-back in rfi-smoke-walk.js).
+    //
+    // Load-bearing twice over: it seeds the next create's exclusion set (see
+    // alreadyUsed above), and it is what a resubmit must re-select if the
+    // rejection cleared the field — picking "first option" there would grab a
+    // DIFFERENT, possibly already-taken section instead of this RFI's own.
     workSection: result.workSection,
+    // Kept for diagnosis only. When these two differ, the selection did not
+    // land where selectWorkSection reported — worth noticing rather than
+    // silently overwriting.
+    clickedWorkSection: result.clickedWorkSection,
+    workSectionVerified: result.workSectionVerified,
     checkpointCode: result.checkpoint.code,
     subActivity: result.checkpoint.subActivity,
     checklist: result.checkpoint.checklist,

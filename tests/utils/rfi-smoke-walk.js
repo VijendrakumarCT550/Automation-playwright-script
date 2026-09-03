@@ -1,6 +1,7 @@
 const { expect } = require('@playwright/test');
 const { fillPageOne, getVisibleCodeFor, discardCreateForm } = require('./rfi-dependency-flow');
 const RFIChecklistPage = require('../pages/RFIChecklistPage');
+const RFIReviewPage = require('../pages/RFIReviewPage');
 
 // The (WORK AREA x CHECKPOINT x WORK SECTION) walk that finds a genuinely-free
 // combination and raises an RFI on it. Extracted from SM05_rfi_flow.spec.js so
@@ -246,11 +247,53 @@ async function walkAndCreateRfi(page, {
     expect(rfiCode, 'A freshly submitted RFI should not still show a DRAFT code')
       .not.toMatch(/draft/i);
 
+    // READ THE WORK SECTION BACK FROM THE SAVED RECORD — do not trust the label
+    // returned at click time.
+    //
+    // PROVEN NECESSARY, 2026-09-04. A create logged
+    // `selected work section "R01-T01"` and was accepted, but the saved record
+    // (RFI-S05b-BL04-CIV-15) holds R01-T06. So selectWorkSection's returned
+    // label is not reliably the section the record ends up on — cause not yet
+    // established, but the value must not be taken on trust either way.
+    //
+    // This matters beyond bookkeeping: the resubmit path re-selects
+    // tc.workSection when a page-1 rejection clears the field, so a wrong value
+    // would attach a resubmit to the WRONG section — which, since work section is
+    // one of the five inputs to the visible code, would also change the code.
+    //
+    // Free to do here: getVisibleCodeFor above already navigated to this
+    // record's /view page, so this is one DOM read with no extra navigation.
+    // readAllFields handles the variable "Work Section - ( N )" label.
+    let recordedSection = null;
+    try {
+      const fields = await new RFIReviewPage(page).readAllFields();
+      recordedSection = fields.workSection ? String(fields.workSection).trim() : null;
+    } catch (err) {
+      log(`      (could not read the work section back from the record: ${String(err.message || err).split('\n')[0]})`);
+    }
+
+    if (recordedSection && selected && recordedSection !== String(selected).trim()) {
+      // Loud on purpose. A silent divergence here is what produced a confident,
+      // wrong claim that the application had accepted a duplicate work section.
+      log(
+        `      !! WORK SECTION MISMATCH: clicked "${selected}" but the saved record holds ` +
+        `"${recordedSection}". Recording the RECORD's value. The clicked label is kept ` +
+        `as clickedWorkSection for diagnosis.`
+      );
+    } else if (recordedSection) {
+      log(`      work section confirmed on the record: "${recordedSection}"`);
+    }
+
     return {
       kind: 'created',
       result: {
         rfiId, rfiCode, checkpoint: cp, workArea,
-        workSection: selected, observationCount: filled, attempts,
+        // Authoritative: what the RECORD holds, falling back to the clicked
+        // label only if the read-back failed outright.
+        workSection: recordedSection || selected,
+        clickedWorkSection: selected,
+        workSectionVerified: !!recordedSection,
+        observationCount: filled, attempts,
       },
     };
   }
