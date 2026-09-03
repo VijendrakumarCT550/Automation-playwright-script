@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
+const { resolveSmokeUsers } = require('../utils/smoke-users');
 const WAMPage = require('../pages/WAMPage');
 
 // Stage 3 of the E2E smoke chain: Admin assigns each of the four users created
@@ -20,7 +20,15 @@ const WAMPage = require('../pages/WAMPage');
 // Inspector have no such field; fillAssignmentFilters skips it when absent.
 test.describe.configure({ mode: 'serial' });
 
-const ROLE_ORDER = ['CI', 'CM', 'EE', 'QI'];
+// Only the FLOW roles are work-area-scoped, so only they belong in this stage's
+// one-dialog-many-rows model. The hierarchy tiers (PM and PAD are work-location
+// roles, SAD is site-level) are mapped by SM04's cascade instead.
+//
+// A module constant, because the per-role tests below are generated at
+// COLLECTION time, before the `profile` fixture exists. beforeAll then checks
+// the profile agrees, so a profile declaring a different flow set fails loudly
+// rather than having roles silently skipped.
+const FLOW_ROLES = ['CI', 'CM', 'EE', 'QI'];
 
 test.describe('Smoke stage 3 - WAM the created users onto the work area', () => {
   let context, page, dashboard, profile, users;
@@ -28,20 +36,20 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
   test.beforeAll(async ({ browser, profile: p }) => {
     profile = p;
 
-    // Resolve the users stage 1 created/reused. Fail with a readable message
-    // rather than letting an undefined name reach a dropdown search.
-    const recorded = loadLastCreatedUsers();
-    users = {};
-    for (const roleKey of ROLE_ORDER) {
-      const prefix = profile.users.prefixes[roleKey];
-      const entry = recorded[prefix];
-      expect(
-        entry && entry.profileKey === profile.key,
-        `No recorded user for ${roleKey} (prefix "${prefix}") on profile "${profile.key}" — ` +
-        `run the smoke-${profile.key.replace('-e2e', '')}-users stage first.`
-      ).toBeTruthy();
-      users[roleKey] = entry;
-    }
+    // Resolve the users stage 1 created/reused, checking both that they belong
+    // to this profile AND that they were created against THIS deployment — an
+    // undefined or foreign-environment name reaching a dropdown search fails
+    // with nothing readable to explain why. See smoke-users.js.
+    users = resolveSmokeUsers(profile, FLOW_ROLES);
+
+    // The profile's declared flow roles must match what this stage generates
+    // tests for, or a role it expects mapped would never be mapped.
+    const declared = (profile.users && profile.users.flowRoles) || FLOW_ROLES;
+    expect(
+      declared.filter((r) => !FLOW_ROLES.includes(r)),
+      `Profile "${profile.key}" declares flow role(s) this stage generates no test for. ` +
+      `Add them to FLOW_ROLES in this file.`
+    ).toEqual([]);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     const areas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
@@ -51,7 +59,7 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
       `\n=== Smoke WAM: profile "${profile.key}" -> ${profile.workLocations[0]} / ` +
       `${areas.length} work area(s): ${areas.join(', ')} ===`
     );
-    for (const roleKey of ROLE_ORDER) {
+    for (const roleKey of FLOW_ROLES) {
       console.log(`    ${roleKey} (${users[roleKey].role}): ${users[roleKey].name}`);
     }
     console.log('');
@@ -61,7 +69,7 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
     if (context) await context.close();
   });
 
-  for (const roleKey of ROLE_ORDER) {
+  for (const roleKey of FLOW_ROLES) {
     test(`assign the ${roleKey} user to every work area`, async () => {
       const user = users[roleKey];
       const workAreas = (profile.workAreas && profile.workAreas.filter(Boolean).length)

@@ -252,7 +252,22 @@ class RFIListPage extends BasePage {
 
       // Confirm we actually left the list, so a future UI change surfaces here
       // rather than as a mystery missing button on the "review" page.
-      await this.page.waitForURL(/\/my-tasks\/rfi\/[a-f0-9-]+\/view/i, { timeout: 20000 });
+      //
+      // BOTH destinations are legitimate, and assuming only /view cost a full
+      // run. CONFIRMED LIVE (2026-09-01, mobile P1 reject cycle on
+      // RFI-A-06c-BL22-CIV-683): when the actor is the CI and the RFI has been
+      // REJECTED, the same "Review" button opens the EDITABLE RESUBMIT FORM at
+      // /re-submit directly — screenshot shows "Page 1 of 2" with the rejection
+      // remark banner and every page-1 field active, plus Cancel/Draft/Proceed.
+      // It does NOT land on a read-only /view carrying a separate "Resubmit"
+      // button, which is what rfi-flow-turns.js's resubmitRfi assumes.
+      //
+      // The old /view-only pattern therefore timed out on a page that had loaded
+      // perfectly well, and reported it as "the RFI never became visible here" —
+      // pointing at the wrong thing entirely.
+      await this.page.waitForURL(
+        /\/my-tasks\/rfi\/[a-f0-9-]+\/(view|re-submit)/i, { timeout: 20000 }
+      );
       return;
     }
 

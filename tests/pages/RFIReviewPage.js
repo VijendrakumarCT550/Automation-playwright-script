@@ -38,14 +38,32 @@ class RFIReviewPage extends BasePage {
     // reject-confirm (>=1 Not Ok) depending on checklist state.
     this.submitButton = page.getByRole('button', { name: 'Submit' }).first();
 
-    // "Reject RFI" popup (Page 1 reject). NOTE the trailing .first() — both
-    // the dialog's "positioner" wrapper and its "content" div carry
-    // data-scope="dialog", so without it this resolves to 2 elements and
-    // throws a strict-mode violation the instant it's waited on (confirmed
-    // live: this exact bug silently ate an EE approval — the real confirm
-    // popup appeared in the browser but the test errored out before it
-    // could click Submit inside it, leaving the RFI stuck pending).
-    this.rejectPopup = page.locator('[role="dialog"], [data-scope="dialog"]')
+    // "Reject RFI" popup (Page 1 reject).
+    //
+    // BOTH popup locators below are scoped to data-part="content", and that
+    // matters far more than it looks. Ark UI mounts THREE elements per dialog —
+    // positioner, content, title — and the POSITIONER also carries
+    // data-scope="dialog" while having NO role attribute. Only the CONTENT gets
+    // `hidden` + data-state="closed" when the dialog closes; the positioner is a
+    // permanently-mounted full-viewport container (pointer-events: none) that
+    // Playwright therefore considers VISIBLE AT ALL TIMES.
+    //
+    // An earlier version selected '[role="dialog"], [data-scope="dialog"]' and
+    // took .first() to dodge the strict-mode violation — but .first() IS the
+    // positioner, i.e. precisely the wrong one of the two. Measured live at a
+    // mobile viewport (2026-09-01, tests/fixtures/mobile-dom-recon 54/55/56):
+    //   before opening : positioner present and "visible", content absent
+    //   popup OPEN     : content data-state="open",   no hidden attribute
+    //   popup DISMISSED: content data-state="closed" + hidden=""
+    // So waitFor({ state: 'visible' }) resolved INSTANTLY whether or not the
+    // popup had actually opened (asserting nothing at all), and
+    // waitFor({ state: 'hidden' }) could never resolve.
+    //
+    // The same trap is documented in DashboardFilterPage.js, and it is what made
+    // 00_inspect_rfi_cancel_confirm_releases_section.spec.js wrongly conclude that
+    // Cancel+confirm does not release a Work Section — see the SUPERSEDED note in
+    // docs/rfi-activity-dependency-chain.md.
+    this.rejectPopup = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: 'Reject RFI Details' }).first();
     this.rejectRemarksInput = this.rejectPopup.locator('input, textarea').first();
     this.rejectPopupButton = this.rejectPopup.getByRole('button', { name: 'Reject' });
@@ -54,7 +72,22 @@ class RFIReviewPage extends BasePage {
     // approve confirmation and the checklist-reject confirmation. The
     // action already taken (left everything Ok vs marked something Not Ok)
     // determines which one appears; the click target is the same either way.
-    this.confirmPopup = page.locator('[role="dialog"], [data-scope="dialog"]')
+    //
+    // MOUNTING DIFFERS PER DIALOG in this app, which is why some popup waits
+    // used to be silently meaningless while others happened to work:
+    //   * mounted ONLY WHILE OPEN — this approve/reject confirm. It detaches on
+    //     close, so both the visible and hidden waits behaved correctly even
+    //     before the positioner bug above was fixed.
+    //   * PERMANENTLY MOUNTED — the "Reject RFI Details" popup above, and the
+    //     create page's "Cancel RFI" / "submit RFI" confirms. Their positioners
+    //     sit in the DOM from first render (measured live: mobile-dom-recon
+    //     screen 54 shows the reject positioner present before anything was
+    //     clicked, and screen 03 shows both create-page confirms present on an
+    //     untouched form), so a wait against the positioner resolved instantly
+    //     and proved nothing.
+    // Do not assume either behaviour for a NEW dialog — check it, and always
+    // scope to data-part="content" so the wait keys off `hidden` either way.
+    this.confirmPopup = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: /are you sure/i }).first();
     this.confirmSubmitButton = this.confirmPopup.getByRole('button', { name: 'Submit' });
     this.confirmCancelButton = this.confirmPopup.getByRole('button', { name: 'Cancel' });
@@ -205,24 +238,146 @@ class RFIReviewPage extends BasePage {
   //
   // Without this, EE's approval died on a 30s wait for a Submit button that does
   // not exist on mobile page 1.
+  // Gets us onto the screen that actually holds the checklist and the Submit
+  // button, whichever viewport we are on. Returns true if it had to navigate.
+  //
+  // CONFIRMED LIVE (mobile-dom-recon screen 54): mobile review page 1 offers
+  // only Close / Reject RFI / Proceed — no Submit button and no checklist radios
+  // at all. Desktop renders both panes on one screen, so this is a no-op there.
+  //
+  // Needed by BOTH approve() and rejectFromChecklistPage(): the "Not Ok" radios
+  // a checklist rejection depends on live on page 2 alongside Submit.
+  async _ensureChecklistPage() {
+    if (await this.submitButton.isVisible().catch(() => false)) return false;
+
+    const proceed = this.page.getByRole('button', { name: /^\s*proceed\s*$/i }).first();
+    if (!(await proceed.isVisible().catch(() => false))) return false;
+
+    await proceed.click();
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.submitButton.waitFor({ state: 'visible', timeout: 20000 });
+    return true;
+  }
+
+  // Public form of the hop above. A caller that needs to TOUCH the checklist
+  // before approving — clearing carried-over "Not Ok" marks, say — has to get
+  // onto the right screen first, or it silently operates on mobile page 1,
+  // which has no checklist radios at all, and reports a confident zero.
+  async goToChecklistPage() {
+    return this._ensureChecklistPage();
+  }
+
   async approve() {
-    if (!(await this.submitButton.isVisible().catch(() => false))) {
-      const proceed = this.page.getByRole('button', { name: /^\s*proceed\s*$/i }).first();
-      if (await proceed.isVisible().catch(() => false)) {
-        await proceed.click();
-        await this.page.waitForLoadState('networkidle').catch(() => {});
-        // Page 2 carries the checklist, so expand it here — a caller that
-        // expanded before approve() was looking at page 1, where there is
-        // nothing to expand.
-        await this.expandAllChecklist().catch(() => {});
-        await this.submitButton.waitFor({ state: 'visible', timeout: 20000 });
-      }
+    // Expand AFTER the hop — a caller that expanded before approve() was
+    // looking at page 1, where there is nothing to expand.
+    if (await this._ensureChecklistPage()) {
+      await this.expandAllChecklist().catch(() => {});
     }
 
     await this.submitButton.click();
-    await this.confirmPopup.waitFor({ state: 'visible', timeout: 10000 });
+
+    // A bare waitFor here reported only "locator resolved to hidden ... 23x",
+    // which says the dialog never opened but not WHY — and the why IS on screen,
+    // in a toast or an unfilled required field. CONFIRMED LIVE (2026-09-01, wind
+    // mobile on the OGL Checklist): Submit SILENTLY NO-OPS when a checklist item
+    // has an empty mandatory "Capture Photo" box, so this wait just burned its
+    // timeout and blamed the dialog.
+    //
+    // Deliberately a try/catch around the SAME wait rather than a race against
+    // the toast: a lingering unrelated toast could otherwise win a race and make
+    // a perfectly good approval look like a failure. This only enriches the
+    // error, so no working path changes behaviour.
+    try {
+      await this.confirmPopup.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (firstMiss) {
+      // ONE retry after a settle, because a Submit click can simply not register
+      // on a form that is not fully ready yet — no toast, no dialog, nothing.
+      //
+      // HISTORY, so nobody re-derives the wrong conclusion: this presented on
+      // wind's OGL Checklist, where EE's review page also showed five empty
+      // "Capture Photo" boxes. I inferred the photos were mandatory, filled
+      // them, and Submit then worked — but the app owner disproved that by
+      // approving the SAME checklist manually with "No photos added" on every
+      // item. The photos were never the cause; the ~30 seconds that filling
+      // them took is the far likelier explanation, i.e. a timing problem. So the
+      // remedy is to wait and click again, NOT to fill anything.
+      await this.page.waitForTimeout(3000);
+      await this.page.waitForLoadState('networkidle').catch(() => {});
+      await this.submitButton.click({ timeout: 10000 }).catch(() => {});
+    }
+
+    try {
+      await this.confirmPopup.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (err) {
+      const toastText = ((await this.page
+        .locator('[data-scope="toast"], [role="alert"]').first()
+        .innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      const photoBoxes = await this.page
+        .getByText('Use Camera', { exact: false }).count().catch(() => 0);
+
+      const wrapped = new Error(
+        `SUBMIT_DID_NOT_CONFIRM: clicking Submit did not open the approve/reject ` +
+        `confirm dialog within 15s.\n` +
+        `  app message : ${toastText ? JSON.stringify(toastText) : '(no toast/alert visible)'}\n` +
+        `  "Use Camera" boxes still on the page: ${photoBoxes}\n` +
+        `  If that count is > 0, a checklist item's mandatory Capture Photo is ` +
+        `probably unfilled — Submit no-ops rather than reporting it. ` +
+        `BasePage.capturePhoto() fills one (NCReviewPage does this on the ` +
+        `reviewer's page for exactly this reason).`
+      );
+      wrapped.submitDidNotConfirm = true;
+      wrapped.toastText = toastText;
+      wrapped.photoBoxes = photoBoxes;
+      throw wrapped;
+    }
+
+    // The SAME Submit button approves or rejects depending on checklist state,
+    // and the only thing distinguishing the two is this popup's wording
+    // ("...approve RFI?" vs "...reject RFI?"). If any item is still marked
+    // "Not Ok" — exactly the state a resubmitted RFI can arrive in after a
+    // checklist rejection — clicking through would REJECT while the caller
+    // believes it approved, sending the RFI back to CI instead of on to QI,
+    // and the "left Pending with me" post-check would still pass. Fail loudly.
+    const confirmText = ((await this.confirmPopup.innerText().catch(() => '')) || '')
+      .replace(/\s+/g, ' ').trim();
+    if (/reject/i.test(confirmText)) {
+      throw new Error(
+        `approve() was about to submit a REJECTION — the confirm popup reads ` +
+        `"${confirmText}". At least one checklist item is still marked "Not Ok"; ` +
+        `call setAllChecklistOk() before approving.`
+      );
+    }
+
     await this.confirmSubmitButton.click();
     await this._waitForPopupToClose(this.confirmPopup);
+  }
+
+  // Flips every checklist item back to "Ok", returning how many it changed.
+  // Needed before approving an RFI that was previously rejected on the checklist
+  // page, where the "Not Ok" selections can carry over to the resubmitted child.
+  //
+  // `exact: true` matters: "Not Ok" contains "Ok" as a substring, so a loose
+  // name match would also grab the very radios we are trying to move away from.
+  //
+  // force: true for the reason rejectFromChecklistPage documents below — the real
+  // <input> sits under a styled [data-part="item-control"] sibling that
+  // permanently intercepts pointer events at the input's own coordinates.
+  // Returns { total, flipped }, NOT a bare count. A bare 0 is ambiguous — it
+  // could mean "all items were already Ok" or "no radios were found at all",
+  // which are opposite conclusions, and the second happens whenever the caller
+  // forgot goToChecklistPage()/expandAllChecklist() (the radios only exist in
+  // the DOM once the accordion is expanded). `total` disambiguates it.
+  async setAllChecklistOk() {
+    const okRadios = this.page.getByRole('radio', { name: 'Ok', exact: true });
+    const total = await okRadios.count();
+    let flipped = 0;
+    for (let i = 0; i < total; i++) {
+      const radio = okRadios.nth(i);
+      if (await radio.isChecked().catch(() => false)) continue;
+      await radio.click({ force: true }).catch(() => {});
+      flipped++;
+    }
+    return { total, flipped };
   }
 
   // Page-1 reject's REAL completion signal is the app's OWN automatic
@@ -249,6 +404,13 @@ class RFIReviewPage extends BasePage {
   }
 
   async rejectFromChecklistPage(remarks) {
+    // MOBILE: the checklist — and the "Not Ok" radios this whole method depends
+    // on — live on review page 2, behind Proceed. Without this hop
+    // expandAllChecklist() finds nothing to expand on page 1 and the "Not Ok"
+    // lookup then times out against a screen that never had any radios at all
+    // (confirmed live: mobile-dom-recon screen 54 lists only Close / Reject RFI
+    // / Proceed). No-op on desktop, which shows both panes at once.
+    await this._ensureChecklistPage();
     await this.expandAllChecklist();
     const notOkRadio = this.page.getByRole('radio', { name: 'Not Ok' }).first();
     // force:true — confirmed live: this radio group's real <input> is
@@ -263,6 +425,7 @@ class RFIReviewPage extends BasePage {
     const remarkInput = this.page.getByPlaceholder('Type your comments here').first();
     await remarkInput.waitFor({ state: 'visible', timeout: 5000 });
     await remarkInput.fill(remarks);
+
     await this.submitButton.click();
     await this.confirmPopup.waitFor({ state: 'visible', timeout: 10000 });
     await this.confirmSubmitButton.click();

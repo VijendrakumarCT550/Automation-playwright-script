@@ -5,7 +5,7 @@
 //   // playwright.config.js
 //   { name: 'smoke-wind-users', use: { profileKey: 'wind-e2e' } }
 //
-//   // tests/smoke/s01_user_creation.spec.js
+//   // tests/smoke/SM01_user_creation.spec.js
 //   const { test, expect } = require('../config/test-base');
 //   test('...', async ({ profile }) => { profile.workLocations // ['WTG-Khavda'] });
 //

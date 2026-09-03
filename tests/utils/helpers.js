@@ -2,6 +2,72 @@ const { expect } = require('@playwright/test');
 const LoginPage     = require('../pages/LoginPage');
 const DashboardPage = require('../pages/DashboardPage');
 
+// ===========================================================================
+// THE PULSE LOGIN RULE (app owner, 2026-09-01):
+//   BEFORE ANY NEW LOGIN, CLEAR THE BROWSER SESSION FIRST.
+//
+// Every login path in this suite MUST go through clearBrowserSession() below.
+// Do not hand-roll a login that skips it, and do not "just clear cookies".
+// ===========================================================================
+//
+// WHY clearCookies() ALONE IS NOT ENOUGH — this is the part that kept costing
+// real time. context.clearCookies() does NOT touch localStorage, and PULSE
+// keeps state there that outlives the cookie clear:
+//
+//   * The AUTOSAVED RFI DRAFT. Opening the Create-RFI form and selecting a
+//     Work Section autosaves a draft locally, and that draft keeps HOLDING the
+//     Work Section it selected. A "fresh" login that only cleared cookies still
+//     finds the old draft, so the backend keeps answering
+//     "Validation Error: An RFI already exists for the workSections: <x>" —
+//     which is exactly why relogin-and-retry never fixed it, and why retrying
+//     with `workSection: null` failed identically three times in a row (that
+//     means "pick the first available", so it re-picked the same held section).
+//     Documented at length in docs/rfi-activity-dependency-chain.md.
+//
+//   * Session/auth remnants, which can leave the app in a half-authenticated
+//     state where the previous user's context bleeds into the next login.
+//
+// localStorage is per-ORIGIN and only reachable from a page already ON that
+// origin — about:blank has no storage to clear — so this navigates to BASE_URL
+// first when it has to.
+//
+// Deliberately best-effort per step (each clear is independently guarded): a
+// context with no pages, a page mid-navigation, or a browser that refuses
+// storage access must NOT turn "clear the session" into a hard test failure.
+// The cookie clear is the one part that always runs.
+async function clearBrowserSession(context, page = null) {
+  const target = page || context.pages()[0] || null;
+
+  if (target) {
+    try {
+      const origin = new URL(process.env.BASE_URL).origin;
+      if (!target.url().startsWith(origin)) {
+        await target.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      }
+      await target.evaluate(() => {
+        try { window.localStorage.clear(); } catch (e) { /* blocked */ }
+        try { window.sessionStorage.clear(); } catch (e) { /* blocked */ }
+      });
+
+      // LEAVE THE PAGE ON A QUIET URL BEFORE RETURNING — do not skip this.
+      //
+      // CONFIRMED LIVE: omitting it broke EVERY login with
+      // "page.goto: net::ERR_ABORTED at <BASE_URL>". PULSE keeps navigating
+      // after domcontentloaded resolves (SPA redirect plus service-worker
+      // registration), and the caller's very next action is LoginPage.goto() to
+      // the SAME url — which Chromium aborts as a duplicate in-flight
+      // navigation. about:blank parks the page so that goto starts clean.
+      await target.goto('about:blank', { waitUntil: 'load', timeout: 30000 });
+    } catch (e) {
+      // Never fatal — see above.
+    }
+  }
+
+  // Cookies LAST, so anything the app wrote to them while loading above is
+  // cleared too rather than surviving the very call meant to remove it.
+  await context.clearCookies();
+}
+
 // Fresh session (new context, cleared cookies, geolocation pre-granted) logged
 // in as Admin, landed on the dashboard. Admin is an "online"/cached account —
 // no PWA install spinner wait needed, see DashboardPage.waitForContentOnly().
@@ -15,6 +81,11 @@ async function adminFreshLogin(browser, contextOptions = {}) {
     geolocation: { latitude: 23.0225, longitude: 72.5714 },
     ...contextOptions,
   });
+  // A BRAND-NEW context starts with no cookies and empty localStorage, so the
+  // full clearBrowserSession() is unnecessary here — it would only add an extra
+  // origin navigation. This clear is belt-and-braces. Any login that REUSES an
+  // existing page must use clearBrowserSession() instead; see the rule at the
+  // top of this file.
   await context.clearCookies();
   const page = await context.newPage();
 
@@ -59,6 +130,11 @@ async function loginFreshRoleSession(browser, role) {
   // what the caller does, since the caller never gets a handle to it (the
   // throw happens before this function returns anything).
   try {
+    // A BRAND-NEW context starts with no cookies and empty localStorage, so the
+    // full clearBrowserSession() is unnecessary here — it would only add an extra
+    // origin navigation. This clear is belt-and-braces. Any login that REUSES an
+    // existing page must use clearBrowserSession() instead; see the rule at the
+    // top of this file.
     await context.clearCookies();
     const page = await context.newPage();
 
@@ -88,11 +164,71 @@ async function loginFreshRoleSession(browser, role) {
 // inherits geolocation/permissions from playwright.config.js's `use` block.
 // Cookies are cleared first so no session/cookie state can carry over from
 // a previous role's login within the same run.
+// Like loginFreshRoleSession, but for a user whose credentials are passed in
+// rather than read from .env's ROLE_CREDENTIALS. The E2E smoke chain logs in as
+// users IT created (recorded in fixtures/last-created-users.json), so it can
+// never use loginFreshRoleSession — that would silently authenticate as the
+// solar regression's CI/EE/QI instead.
+//
+// contextOptions exists because a context created straight off `browser` does
+// NOT inherit the Playwright project's `use` block. For the mobile smoke
+// variants the caller must therefore pass the device descriptor explicitly
+// (viewport / userAgent / isMobile / hasTouch / deviceScaleFactor), or three
+// "mobile" sessions would quietly run at desktop size. adminFreshLogin takes the
+// same parameter for the same reason.
+async function loginFreshUserSession(browser, email, password, contextOptions = {}) {
+  if (!email || !password) {
+    throw new Error(
+      `loginFreshUserSession needs both an email and a password (got email=${email ? 'set' : 'MISSING'}, ` +
+      `password=${password ? 'set' : 'MISSING'}). Generated smoke users authenticate with ` +
+      `BULK_USER_DEFAULT_PASSWORD from .env.`
+    );
+  }
+
+  const context = await browser.newContext({
+    permissions: ['geolocation', 'camera'],
+    geolocation: { latitude: 23.0225, longitude: 72.5714 },
+    ...contextOptions,
+  });
+
+  // Close the context THIS call opened if anything below throws — the caller
+  // never gets a handle to it, so otherwise it leaks regardless of what they do.
+  try {
+    // A brand-new context has no cookies and empty localStorage, so the full
+    // clearBrowserSession() is unnecessary here (it would only add an extra
+    // origin navigation). Any login that REUSES a page must use
+    // clearBrowserSession instead — see the rule at the top of this file.
+    await context.clearCookies();
+    const page = await context.newPage();
+
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(email, password);
+
+    const dashboard = new DashboardPage(page);
+    await dashboard.waitForLoad();
+    // Freshly created CI/EE/QI users are PWA/offline accounts and can show the
+    // "data didn't finish downloading" banner after login, exactly like the .env
+    // ones. See DashboardPage.resolveIncompleteDownloadBanner().
+    await dashboard.resolveIncompleteDownloadBanner();
+    await dashboard.goToMyTasks();
+
+    return { context, page, dashboard, email };
+  } catch (err) {
+    await context.close().catch(() => {});
+    throw err;
+  }
+}
+
 async function loginAsRole(page, role) {
   const creds = ROLE_CREDENTIALS[role];
   if (!creds) throw new Error(`Unknown role: ${role}`);
 
-  await page.context().clearCookies();
+  // THE PULSE LOGIN RULE — clear the whole session, not just cookies.
+  // This page is being REUSED across logins, so a stale autosaved RFI draft in
+  // localStorage would survive a cookie-only clear and keep holding the Work
+  // Section it had selected. See clearBrowserSession at the top of this file.
+  await clearBrowserSession(page.context(), page);
 
   const login = new LoginPage(page);
   await login.goto();
@@ -127,7 +263,11 @@ async function loginAsRole(page, role) {
 // looking exactly like a hung page even though the dashboard was actually
 // already fully loaded underneath.
 async function loginAsUser(page, email, password) {
-  await page.context().clearCookies();
+  // THE PULSE LOGIN RULE — clear the whole session, not just cookies.
+  // This page is being REUSED across logins, so a stale autosaved RFI draft in
+  // localStorage would survive a cookie-only clear and keep holding the Work
+  // Section it had selected. See clearBrowserSession at the top of this file.
+  await clearBrowserSession(page.context(), page);
 
   const login = new LoginPage(page);
   await login.goto();
@@ -166,7 +306,11 @@ async function loginAsFlowUser(page, email, password, { navigateToMyTasks = true
     );
   }
 
-  await page.context().clearCookies();
+  // THE PULSE LOGIN RULE — clear the whole session, not just cookies.
+  // This page is being REUSED across logins, so a stale autosaved RFI draft in
+  // localStorage would survive a cookie-only clear and keep holding the Work
+  // Section it had selected. See clearBrowserSession at the top of this file.
+  await clearBrowserSession(page.context(), page);
 
   const login = new LoginPage(page);
   await login.goto();
@@ -245,6 +389,7 @@ async function clearAndFill(page, selector, value) {
 }
 
 module.exports = {
+  clearBrowserSession,
   waitAndClick,
   waitAndFill,
   assertText,
@@ -256,6 +401,7 @@ module.exports = {
   loginAsUser,
   loginAsFlowUser,
   loginFreshRoleSession,
+  loginFreshUserSession,
   stripLabelPrefix,
   sameLabel,
 };

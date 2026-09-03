@@ -34,7 +34,22 @@ test.describe.configure({ mode: 'serial' });
 // Order matters only for readability — each user is independent. Vendor roles
 // first so a failure in the vendor-category/vendor cascade (the part with the
 // most moving pieces) surfaces early.
-const ROLE_ORDER = ['CI', 'CM', 'EE', 'QI'];
+// CANONICAL creation order, and it MUST be a module constant: the per-role
+// tests below are generated at COLLECTION time, before the `profile` fixture
+// exists, so the list cannot come from the profile. Both profiles declare the
+// same ten roles in users.order; a profile that declares FEWER simply has those
+// roles skipped per-test (see the prefix check inside each test), and a profile
+// declaring a role missing from here would fail the beforeAll check.
+//
+// Vendor roles first: their Add User cascade has the most moving pieces (vendor
+// category + vendor), so a break there surfaces early. Then the AGEL flow
+// roles, then the hierarchy tiers.
+const ROLE_ORDER = ['CI', 'CM', 'EE', 'QI', 'EL', 'QL', 'PM', 'PAD', 'SAD', 'CAD'];
+
+// The profile's own declared order, used for the reuse check so that "do this
+// profile's users already exist?" asks about exactly the roles it declares.
+const roleOrderFor = (profile) =>
+  (profile.users && profile.users.order) || ROLE_ORDER;
 
 // IDEMPOTENCY. Playwright re-runs a project's `dependencies` on every
 // invocation, so `--project=smoke-wind-so` (or any later stage) pulls this
@@ -43,26 +58,51 @@ const ROLE_ORDER = ['CI', 'CM', 'EE', 'QI'];
 // batch 59 on top of batch 58's already-good users, and would keep piling up
 // one junk batch per iteration.
 //
-// So: if this profile's four users already exist in last-created-users.json,
-// skip creation and reuse them. Set SMOKE_RECREATE_USERS=1 to force a new
-// batch (e.g. after the app's user data is wiped, or to test creation itself).
+// So: reuse whichever of this profile's users already exist in
+// last-created-users.json and create only the rest. Set SMOKE_RECREATE_USERS=1
+// to force a new batch of everything (e.g. after the app's user data is wiped,
+// or to test creation itself).
+//
+// PER-ROLE, NOT ALL-OR-NOTHING, and that distinction is load-bearing. This used
+// to return null the moment ANY declared role was missing, which meant adding
+// the six hierarchy tiers to a profile whose four flow users already existed
+// would have recreated ALL TEN — replacing a CI/EE/QI that were already WAM'd
+// and had eighteen RFIs in flight against them. Growing the role list must add
+// users, not rebuild the world.
 function existingUsersFor(profile) {
   const recorded = loadLastCreatedUsers();
   const found = {};
-  for (const roleKey of ROLE_ORDER) {
+  const missing = [];
+  for (const roleKey of roleOrderFor(profile)) {
     const prefix = profile.users.prefixes[roleKey];
     const entry = recorded[prefix];
     // Must belong to THIS profile — a prefix could in principle be reused by
     // another profile later, and silently inheriting its user would scope the
     // whole chain to the wrong project type.
-    if (!entry || entry.profileKey !== profile.key) return null;
+    if (!entry || entry.profileKey !== profile.key) { missing.push(roleKey); continue; }
+    // AND the same deployment. This file has no environment dimension, so a
+    // user recorded against pulse-dev stays recorded when the suite is pointed
+    // at pulse-qa, where it does not exist. Found live 2026-09-03: this stage
+    // was pointed at pulse-qa, found four solar users from an earlier run,
+    // decided they already existed, SKIPPED all four tests and exited 0 — a
+    // clean-looking run that created nothing and left the chain pointing at
+    // users the target deployment had never heard of.
+    //
+    // Entries created before baseUrl was tracked carry undefined and so force
+    // one re-creation. That is the safe direction: re-creating costs minutes,
+    // trusting a phantom user fails much later at a dropdown search.
+    if (entry.baseUrl !== process.env.BASE_URL) { missing.push(roleKey); continue; }
     found[roleKey] = entry;
   }
-  return found;
+  return { found, missing };
 }
 
 test.describe('Smoke stage 1 - create flow users for a project type', () => {
-  let context, page, dashboard, batchNumber, profile, reusing;
+  // `toCreate` is the set of role keys this run will actually create; every
+  // other generated test skips. Per-role rather than one global "reusing" flag,
+  // so adding roles to a profile tops up instead of rebuilding.
+  let context, page, dashboard, batchNumber, profile;
+  let toCreate = new Set();
 
   test.beforeAll(async ({ browser, profile: p }) => {
     profile = p;
@@ -72,25 +112,43 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
       `so this stage has nothing to create.`
     ).toBe('created');
 
-    reusing = process.env.SMOKE_RECREATE_USERS === '1' ? null : existingUsersFor(profile);
-    if (reusing) {
-      console.log(
-        `\n=== Smoke user creation: profile "${profile.key}" — REUSING existing users ` +
-        `(set SMOKE_RECREATE_USERS=1 to force a new batch) ===`
-      );
-      for (const roleKey of ROLE_ORDER) {
-        console.log(`    ${roleKey}: ${reusing[roleKey].name} <${reusing[roleKey].email}>`);
-      }
-      console.log('');
+    // Every role the profile declares must be one this file GENERATES a test
+    // for, or it would silently never be created — the tests come from the
+    // module-level ROLE_ORDER, which cannot see the profile at collection time.
+    const declared = roleOrderFor(profile);
+    const ungenerated = declared.filter((r) => !ROLE_ORDER.includes(r));
+    expect(
+      ungenerated,
+      `Profile "${profile.key}" declares role(s) this stage generates no test for: ` +
+      `${ungenerated.join(', ')}. Add them to ROLE_ORDER in this file.`
+    ).toEqual([]);
+
+    const forceAll = process.env.SMOKE_RECREATE_USERS === '1';
+    const { found, missing } = forceAll
+      ? { found: {}, missing: declared }
+      : existingUsersFor(profile);
+    toCreate = new Set(missing);
+
+    console.log(
+      `\n=== Smoke user creation: profile "${profile.key}" ` +
+      `(${profile.projectType} @ ${profile.workLocations.join(', ')}) ===` +
+      (forceAll ? '\n    SMOKE_RECREATE_USERS=1 — recreating every role' : '')
+    );
+    const reusedKeys = Object.keys(found);
+    if (reusedKeys.length) {
+      console.log(`    reusing ${reusedKeys.length}: ` +
+        reusedKeys.map((k) => `${k}=${found[k].name}`).join(', '));
+    }
+    if (!toCreate.size) {
+      console.log('    nothing to create — every declared role already exists on this deployment.');
+      console.log('    (set SMOKE_RECREATE_USERS=1 to force a new batch)\n');
       return;
     }
+    console.log(`    creating ${toCreate.size}: ${[...toCreate].join(', ')}\n`);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     batchNumber = nextBatchNumber();
-    console.log(
-      `\n=== Smoke user creation: profile "${profile.key}" ` +
-      `(${profile.projectType} @ ${profile.workLocations.join(', ')}), batch ${batchNumber} ===\n`
-    );
+    console.log(`    batch ${batchNumber}\n`);
   });
 
   test.afterAll(async () => {
@@ -99,10 +157,12 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
 
   for (const roleKey of ROLE_ORDER) {
     test(`create the ${roleKey} user`, async () => {
-      test.skip(!!reusing, 'Users for this profile already exist — reusing them');
-
+      // A profile may legitimately declare fewer roles than this file generates
+      // tests for (the list is a module constant, see ROLE_ORDER), so an absent
+      // prefix is a skip rather than a failure.
       const prefix = profile.users.prefixes[roleKey];
-      expect(prefix, `Profile "${profile.key}" defines no prefix for role ${roleKey}`).toBeTruthy();
+      test.skip(!prefix, `Profile "${profile.key}" declares no ${roleKey} role`);
+      test.skip(!toCreate.has(roleKey), `${roleKey} already exists on this deployment — reusing it`);
       const { role, userType } = profile.users.roles[prefix];
 
       const users = new UserManagementPage(page);
@@ -171,6 +231,10 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
       recordLastCreatedUser(prefix, {
         ...identity, role, userType,
         profileKey: profile.key,
+        // WHICH DEPLOYMENT this user actually exists on. Without it a later
+        // stage cannot tell a usable user from one created against a different
+        // environment — see the reuse guard above.
+        baseUrl: process.env.BASE_URL,
         projectType: profile.projectType,
         workLocations: profile.workLocations,
         vendor: userType === 'VENDOR' ? profile.vendor.name : null,

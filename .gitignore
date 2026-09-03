@@ -6,3 +6,21 @@ playwright-report/
 
 # ad-hoc QA OOM capture logs (see project_qa_oom_capture memory)
 qa-oom-capture/
+
+# One-off DOM recon dumps from the mobile investigation — 23 MB of html/png/json
+# evidence that was useful once. Keep them locally; git would carry the weight
+# forever. (Contrast fixtures/so-mapping-baseline/, which IS committed because it
+# is a restore source for real data the suite overwrites.)
+tests/fixtures/mobile-dom-recon/
+
+# Smoke-chain tracker state, per (flow x profile x viewport x TC set). This is
+# per-deployment RUN state, not shared source of truth: it holds the RFI/NC codes
+# and UUIDs of one deployment's records, and createSmokeRfiTracker/
+# createSmokeNcTracker seed it on first read (seedIfMissing). Committing a
+# finished tracker would make a fresh clone's first run hit prepareRun's
+# "nothing is pending" refusal instead of starting cleanly.
+#
+# NOTE the contrast with fixtures/rfi-tracker.json and fixtures/nc-tracker.json,
+# which ARE tracked: those are the regression's single shared state that the team
+# resumes across sessions.
+tests/fixtures/smoke/

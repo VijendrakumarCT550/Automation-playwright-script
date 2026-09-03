@@ -2,6 +2,7 @@
 require('dotenv').config();
 const { defineConfig, devices } = require('@playwright/test');
 const { applyEnvironment } = require('./tests/config/environments');
+const { getProfile } = require('./tests/config/projects');
 
 // Resolve which PULSE deployment this run targets (PULSE_ENV=dev|test, or the
 // raw .env BASE_URL when PULSE_ENV is unset) and write it back into
@@ -42,10 +43,9 @@ const pathMod = require('path');
 // a desktop viewport, because Admin's SO Mapping / WAM / Users screens are not
 // what the mobile coverage is about — the flows are.
 const SMOKE_SETUP_STAGES = [
-  { id: 'users', file: 's01_user_creation.spec.js' },
-  { id: 'so', file: 's02_so_mapping.spec.js' },
-  { id: 'wam', file: 's03_wam_admin.spec.js' },
-  { id: 'wam-hierarchy', file: 's04_wam_hierarchy.spec.js' },
+  { id: 'users', file: 'SM01_user_creation.spec.js' },
+  { id: 'so', file: 'SM02_so_mapping.spec.js' },
+  { id: 'wam', file: 'SM03_wam_admin.spec.js' },
 ];
 
 // FLOW stages run once per VIEWPORT. Per the app owner: the RFI and NC flows
@@ -53,18 +53,33 @@ const SMOKE_SETUP_STAGES = [
 // views — business logic and flow are identical, only UI visibility and some
 // page values differ.
 const SMOKE_FLOW_STAGES = [
-  { id: 'rfi', file: 's05_rfi_flow.spec.js' },
-  { id: 'nc', file: 's06_nc_flow.spec.js' },
+  { id: 'rfi', file: 'SM05_rfi_flow.spec.js' },
+  { id: 'nc', file: 'SM06_nc_flow.spec.js' },
 ];
 
 // TAIL stages run once per profile, desktop, after the flows.
 const SMOKE_TAIL_STAGES = [
-  { id: 'dependency', file: 's07_rfi_activity_dependency.spec.js' },
+  // AFTER the flows, per the app owner: hierarchy-wise mapping is a separate
+  // concern from the flows and must not be replayed by every flow run. It used to
+  // sit in SMOKE_SETUP_STAGES, which meant it ran BEFORE the flows and — because
+  // every flow stage depends on the setup tail — got replayed on each of them.
+  { id: 'wam-hierarchy', file: 'SM04_wam_hierarchy.spec.js' },
+  { id: 'dependency', file: 'SM07_rfi_activity_dependency.spec.js' },
+  // STRICTLY LAST. Demapping removes Service Order mappings, i.e. exactly the
+  // access the flow stages need. It is pointed at profile.demapWorkArea — ground
+  // no flow uses — and restores what it removed, so it cannot strand the chain.
+  { id: 'so-demap', file: 'SM08_so_demapping.spec.js' },
 ];
 
 // Desktop first, then mobile — deliberately in this order so the desktop path
 // (the known-good one) proves the data is sound before the mobile UI is blamed
 // for anything.
+//
+// WHICH of these a chain actually uses is now PER PROFILE (profile.viewports),
+// not a global cross-product: solar runs both, wind runs desktop only. Mobile is
+// covered once, on solar, because solar never exhausts its work sections and can
+// absorb the reruns that mobile-layout debugging costs, whereas every wind
+// attempt spends an irreplaceable checkpoint.
 const SMOKE_VIEWPORTS = [
   { id: 'desktop', device: devices['Desktop Chrome'] },
   // defaultBrowserType is part of the device descriptor but not a valid
@@ -91,7 +106,7 @@ const SMOKE_VIEWPORTS = [
 // viewport its own Work Area. Depending only on the setup tail keeps each of the
 // four combinations genuinely independently runnable — the app owner's explicit
 // requirement — and the replayed prefix is cheap because the setup stages ARE
-// idempotent (s01 reuses existing users, s02 reports "remapped 0", s03 reports
+// idempotent (SM01 reuses existing users, SM02 reports "remapped 0", SM03 reports
 // "No changes to save").
 //
 // CONSEQUENCE: run smoke projects with --workers=1. The app is
@@ -122,6 +137,19 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
     previous = name;
   };
 
+  // Which viewports this profile wants, in SMOKE_VIEWPORTS order (desktop first).
+  // An unknown id is a config error worth failing the whole run for, rather than
+  // silently emitting a chain with no flow stages in it.
+  const wanted = getProfile(profileKey).viewports || SMOKE_VIEWPORTS.map((v) => v.id);
+  const viewports = SMOKE_VIEWPORTS.filter((v) => wanted.includes(v.id));
+  const unknown = wanted.filter((id) => !SMOKE_VIEWPORTS.some((v) => v.id === id));
+  if (unknown.length) {
+    throw new Error(
+      `Profile "${profileKey}" declares unknown viewport(s): ${unknown.join(', ')}. ` +
+      `Valid ids: ${SMOKE_VIEWPORTS.map((v) => v.id).join(', ')}`
+    );
+  }
+
   const desktop = SMOKE_VIEWPORTS[0].device;
 
   // Setup: strictly sequential, each depending on the previous.
@@ -136,8 +164,13 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
     push(name, file, device);
   };
 
-  for (const viewport of SMOKE_VIEWPORTS) {
-    for (const stage of SMOKE_FLOW_STAGES) {
+  // STAGE outer, VIEWPORT inner, so the emitted order is
+  // rfi-desktop -> rfi-mobile -> nc-desktop -> nc-mobile: a whole flow is proven
+  // across both viewports before the next flow starts. Ordering only affects a
+  // full-chain run (the stages are independent leaves), but that is the run whose
+  // sequence the app owner specified.
+  for (const stage of SMOKE_FLOW_STAGES) {
+    for (const viewport of viewports) {
       if (exists(stage.file)) {
         pushLeaf(`smoke-${chainName}-${stage.id}-${viewport.id}`, stage.file, viewport.device);
       }

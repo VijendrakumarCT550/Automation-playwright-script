@@ -118,7 +118,20 @@ class RFICreatePage extends BasePage {
   // really would already be satisfied for that recycled section). Random
   // selection makes colliding with a specific prior run's single choice
   // very unlikely without needing the dropdown to filter anything.
-  async selectWorkSection(label) {
+  // `exclude` — work section labels to SKIP when picking by position (the
+  // falsy-`label` branch below). It exists because THE APP DOES NOT FILTER OUT
+  // SECTIONS THAT ALREADY HAVE AN RFI, confirmed live on pulse-qa 2026-09-03:
+  // with an RFI already raised against R01-T01, the dropdown still offered it
+  // AND the Work Section Summary still read "Total 264 / Selected for RFI 0 /
+  // Pending RFI 264" — while the server rejected the submit with "An RFI already
+  // exists for the workSections: R01-T01."
+  //
+  // So "first option" is NOT "first available", and neither the option list nor
+  // the summary can be trusted to tell a spent section from a free one. A caller
+  // raising several RFIs in the same (work area, checkpoint) must therefore
+  // remember what it has already been rejected for and pass it here, or it picks
+  // the same section forever. See rfi-smoke-walk.js.
+  async selectWorkSection(label, { exclude = [] } = {}) {
     const listbox = await this._openDropdown(this.workSectionToggle);
     // This list is a real scrollable list (also has a "Select All (N)"
     // control at the top — the app owner's other suggested strategy), NOT
@@ -140,6 +153,25 @@ class RFICreatePage extends BasePage {
       option = options.nth(Math.floor(Math.random() * Math.max(count, 1)));
     } else if (label) {
       option = listbox.locator('[role="option"]').filter({ hasText: label }).first();
+    } else if (exclude.length) {
+      // First option whose label is not in `exclude`. Resolved against the real
+      // option texts rather than by index arithmetic, because the list is not
+      // guaranteed to be stably ordered between form opens.
+      const options = listbox.locator('[role="option"]');
+      await this.page.waitForTimeout(300);
+      const skip = new Set(exclude.map((s) => String(s).trim()));
+      const texts = (await options.allInnerTexts()).map((t) => t.trim());
+      const idx = texts.findIndex((t) => t && !skip.has(t));
+      if (idx === -1) {
+        const err = new Error(
+          `WORK_SECTION_NOT_FOUND: all ${texts.length} Work Section option(s) are in the ` +
+          `exclude list (${[...skip].join(', ')}), so there is no unused section left to try`
+        );
+        err.workSectionNotFound = true;
+        err.workSectionsExhausted = true;
+        throw err;
+      }
+      option = options.nth(idx);
     } else {
       option = listbox.locator('[role="option"]').first();
     }
@@ -313,13 +345,45 @@ class RFICreatePage extends BasePage {
     // free, same reasoning as that fix.
     try {
       await success.waitFor({ state: 'visible', timeout: 1000 });
-    } catch (err) {
-      const wrapped = new Error(
-        `PROCEED-DID-NOT-NAVIGATE: clicking "Proceed" did not reach the checklist page (Page 2) within 30s, and no ` +
-        `"stale Work Section" error appeared either — the click appears to have silently no-op'd. ${err.message}`
-      );
-      wrapped.negativeScenario = 'PROCEED_DID_NOT_NAVIGATE';
-      throw wrapped;
+      return;
+    } catch (firstMiss) {
+      // ONE retry after a settle before giving up.
+      //
+      // Safe to click again: we only get here after 30s in which NEITHER the
+      // checklist page NOR the stale-Work-Section toast appeared, so the form is
+      // still on page 1 and the Work Section is already selected — the second
+      // click cannot land on a different screen or consume another pair.
+      //
+      // WHY, and what this retry is NOT for. It is a cheap backstop for a
+      // genuinely lost click, nothing more.
+      //
+      // It does NOT fix the known P1-resubmit failure. That case was measured on
+      // 2026-09-01 (RFI-WTG-Khavda-KH 47-CIV-3047) and the real cause is an
+      // EMPTY REQUIRED FIELD: a P1-rejected resubmit arrives with the Work
+      // Section selection CLEARED, so Proceed correctly refuses to advance and
+      // the app shows no message at all. Adding this retry did not help and
+      // never could have — the caller must re-select the Work Section first (see
+      // the resubmit step in SM05_rfi_flow.spec.js).
+      //
+      // So if Proceed "no-ops", CHECK THE FORM FOR AN UNFILLED REQUIRED FIELD
+      // before assuming a timing problem. A red-outlined control with no toast
+      // is this app's normal way of refusing.
+      await this.page.waitForTimeout(3000);
+      await this.page.waitForLoadState('networkidle').catch(() => {});
+      await this.proceedButton.click({ timeout: 10000 }).catch(() => {});
+
+      try {
+        await success.waitFor({ state: 'visible', timeout: 20000 });
+        return;
+      } catch (err) {
+        const wrapped = new Error(
+          `PROCEED-DID-NOT-NAVIGATE: clicking "Proceed" did not reach the checklist page (Page 2) within 30s, ` +
+          `and no "stale Work Section" error appeared either — the click appears to have silently no-op'd. ` +
+          `A second click after a 3s settle did not help either. ${err.message}`
+        );
+        wrapped.negativeScenario = 'PROCEED_DID_NOT_NAVIGATE';
+        throw wrapped;
+      }
     }
   }
 

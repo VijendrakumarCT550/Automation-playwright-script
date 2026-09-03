@@ -1,10 +1,10 @@
 {
   "TC-01": {
-    "ncId": "135bc127-0fd6-425c-b10d-86f58327e626",
-    "ncCode": "NC-A-06c-BL01-CIV-33",
-    "currentStepIndex": 2,
-    "currentVersion": "v1",
-    "status": "pending",
+    "ncId": null,
+    "ncCode": null,
+    "currentStepIndex": 0,
+    "currentVersion": "V1",
+    "status": "failed",
     "steps": [
       {
         "actor": "CI",
@@ -18,14 +18,15 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create NC\")').first() to be visible\u001b[22m\n"
   },
   "TC-02": {
-    "ncId": "85103f09-4e74-4ff0-b1aa-07058af797df",
-    "ncCode": "NC-A-06c-BL01-CIV-34",
-    "currentStepIndex": 2,
-    "currentVersion": "v1",
-    "status": "pending",
+    "ncId": "ddc78d64-63eb-4651-a45e-fcdb1b2c6a6f",
+    "ncCode": "NC-A-06c-BL04-CIV-103",
+    "currentStepIndex": 5,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",
@@ -50,11 +51,11 @@
     ]
   },
   "TC-03": {
-    "ncId": "3e95aa75-5a5e-4462-8f50-bc8c82e3bb6a",
-    "ncCode": "NC-A-06c-BL01-CIV-35",
-    "currentStepIndex": 2,
-    "currentVersion": "v1",
-    "status": "pending",
+    "ncId": "5c937189-fe15-47ef-8b11-a0afd4b3f6ef",
+    "ncCode": "NC-A-06c-BL04-CIV-104",
+    "currentStepIndex": 6,
+    "currentVersion": "v2",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",
@@ -83,11 +84,11 @@
     ]
   },
   "TC-04": {
-    "ncId": "ca00b92b-74cb-48c2-9430-e53336a1a9cb",
-    "ncCode": "NC-A-06c-BL01-CIV-36",
-    "currentStepIndex": 2,
-    "currentVersion": "v1",
-    "status": "pending",
+    "ncId": "0e44f051-8e32-455a-85d4-c845af5df48d",
+    "ncCode": "NC-A-06c-BL04-CIV-105",
+    "currentStepIndex": 8,
+    "currentVersion": "v3",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",

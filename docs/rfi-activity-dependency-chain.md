@@ -182,6 +182,27 @@ delete the draft/RFI, releasing the Work Section — but confirmed live
 **not** work: the option went from `["BL09"]` to `[]` for that checkpoint
 even after Cancel + confirming the popup.
 
+> **SUPERSEDED (2026-08-31).** That last conclusion is wrong. The app owner
+> re-confirmed that Cancel **and** confirming the popup **does** release the
+> Work Section, and the inspector above never actually confirmed it: the popup
+> was located as `.first()` of a generic dialog selector, and this app keeps
+> several dialog elements mounted at once (the mobile recon measured three), so
+> `.first()` resolved to an unrelated dialog, the "Yes" button was never found
+> inside it, and the popup was silently left open — the section was released by
+> nothing, exactly as observed.
+>
+> `discardCreateForm()` in `tests/utils/rfi-dependency-flow.js` is the corrected
+> implementation: it finds the dialog by its own text (`/cancel\s*rfi/i`), clicks
+> "Yes" by exact accessible name so "No" can never match, and **throws** if the
+> popup will not close rather than reporting a release that did not happen.
+> `resetToMyTasks()` now discards *first*, while still on the form, and only then
+> navigates — the previous order navigated away first, which autosaves the draft
+> and permanently consumes the section on every abandoned form.
+>
+> The two-Work-Area strategy below is still correct and still in use — it does
+> not depend on the release working — but a blocked attempt is no longer
+> destructive, which is what makes the wind smoke walk viable at all.
+
 The fix that worked: a second orchestration function,
 `runDependencyChainForScarceWorkSectionActivity()` (in
 `rfi-dependency-flow.js`), using **two Work Areas** instead of two Work

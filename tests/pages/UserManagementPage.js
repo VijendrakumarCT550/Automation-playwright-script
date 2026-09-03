@@ -37,6 +37,17 @@ class UserManagementPage extends BasePage {
     this.searchInput = page.locator('input[placeholder="Search by name or email"]');
     this.addUserIcon = page.locator('svg.lucide-user-plus, svg.lucide-user-round-plus, svg.lucide-user-plus-2').first();
 
+    // The list is grouped into per-role collapsible cards (role badge +
+    // chevron heading; expanding one reveals that role's Personnel
+    // Name/Email/Contact/Work Locations detail) — confirmed live
+    // (tests/specs/inspection/00_inspect_online_role_extensive.spec.js): clicking a
+    // generic chevron icon grew the page's visible text substantially
+    // (141 -> 637 chars), consistent with one user's detail block appearing.
+    // Not scoped to a specific role here (that needs more DOM precision than
+    // was confirmed) — good enough to prove the expand mechanism itself
+    // works, which is what a regression check needs.
+    this.roleGroupChevrons = page.locator('svg[class*="chevron"]');
+
     this.dialog = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: 'Add User' }).first();
 
@@ -75,6 +86,18 @@ class UserManagementPage extends BasePage {
     // 500 -> 250: search results land with the networkidle; this is the
     // grid re-render buffer only.
     await this.page.waitForTimeout(250);
+  }
+
+  // Expands the first collapsed role-group card and reports whether it
+  // actually revealed more content — see roleGroupChevrons' comment above.
+  async expandFirstRoleGroup() {
+    const chevron = this.roleGroupChevrons.first();
+    if (!(await chevron.isVisible({ timeout: 5000 }).catch(() => false))) return false;
+    const before = (await this.page.locator('body').innerText()).length;
+    await chevron.click();
+    await this.page.waitForTimeout(500);
+    const after = (await this.page.locator('body').innerText()).length;
+    return after > before;
   }
 
   async openAddUserDialog() {

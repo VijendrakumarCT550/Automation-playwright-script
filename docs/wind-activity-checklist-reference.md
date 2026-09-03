@@ -85,7 +85,7 @@ Draft then rewrites or renumbers: `B1.1.1`, `B1.2.1`, and `C 1.1.1`.
 
 ## Live confirmation (pulse-dev, 2026-08-31)
 
-Captured read-only by `tests/specs/00_inspect_wind_master_and_mobile.spec.js`;
+Captured read-only by `tests/specs/inspection/00_inspect_wind_master_and_mobile.spec.js`;
 raw output in `test-results/wind-recon/wind-master-data.json`.
 
 - **Project Type options (7)**: `SOLAR`, `WIND`, `INFRA`, `PSS`, `ADMIN`,
@@ -693,7 +693,7 @@ column is repeated in the tables.
 
 ## Live confirmation round 2 — the RFI create form (pulse-dev, 2026-08-31)
 
-Captured by `tests/specs/00_inspect_wind_rfi_form.spec.js`, logged in as the
+Captured by `tests/specs/inspection/00_inspect_wind_rfi_form.spec.js`, logged in as the
 WTG Contractor Incharge created by the smoke chain, on WIND / WTG-Khavda /
 KH 34 / Civil / Crane Pad. Raw output in
 `tests/fixtures/so-mapping-baseline/wind-rfi-form-recon.json`. Nothing was
@@ -788,13 +788,27 @@ Struck through where recon answered them.
    doc's earlier reasoning about it (that a constant column probably meant an
    unfilled default relaxing the dependency) was wrong on both counts.
 
+   **CONFIRMED VISUALLY (app owner, 2026-09-01).** The checkbox is labelled
+   **"Inspection check not required"** and sits at the top of CI's Create-RFI
+   page 2, above "Answer all the questions". With it **CHECKED**, every
+   `Observation/Measured Value` input AND every `Capture Photo` box on that page
+   is **greyed out / disabled**, and the RFI can be submitted with no checklist
+   answers at all. With it **UNCHECKED**, the same fields are active and must be
+   filled (screenshots showed values `1` and `2` entered).
+
+   Consequence for the suite: `RFIChecklistPage.fillAllObservations()` assumes
+   the UNCHECKED state — it looks for fillable observation inputs. Nothing here
+   ever ticks that box, so the assumption holds; but a test that did tick it
+   would find zero fillable inputs, which `requireObservations` would then
+   report as a failure rather than as the expected outcome.
+
    That leaves a separate, still-unexercised feature: the page-2 optional
    checkbox and its greying-out of the checklist questions. Nothing in the suite
    covers it yet, for wind or solar.
 
 5b. **Wind DOES enforce the preceding-checkpoint dependency** — established
    independently of the column above. Measured by
-   `tests/specs/00_inspect_wind_dependency_enforcement.spec.js`: attempting
+   `tests/specs/inspection/00_inspect_wind_dependency_enforcement.spec.js`: attempting
    `A1.1.2` (Stone Column Work / "Inspection of Stone Column") while its
    predecessor `A1.1.1` had never been created was **blocked**, with the real
    toast:
@@ -832,9 +846,9 @@ Struck through where recon answered them.
   spec consumes. No wind counterpart is written yet, deliberately: that file
   only holds live-confirmed values, and the wind checkpoint/checklist layer is
   not confirmed yet.
-- `tests/specs/00_inspect_wind_master_and_mobile.spec.js` — the read-only recon
+- `tests/specs/inspection/00_inspect_wind_master_and_mobile.spec.js` — the read-only recon
   that produced the Live confirmation section; re-runnable with
-  `PULSE_ENV=dev npx playwright test tests/specs/00_inspect_wind_master_and_mobile.spec.js --project=chromium --workers=1`.
+  `PULSE_ENV=dev npx playwright test tests/specs/inspection/00_inspect_wind_master_and_mobile.spec.js --project=chromium --workers=1`.
 - `docs/work-region-hierarchy.md` — Work Region tree the RFI form cascades
   through, and how it combines with the Activity chain.
 - `docs/rfi-business-logic.md` §6a — the checkpoint-dependency rule itself.

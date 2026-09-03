@@ -3,7 +3,7 @@ const { BasePage } = require('./BasePage');
 // Covers the Dashboard's "Detail Records" table and its "Filter" drawer
 // (/dashboard). The table has its own RFI/NC toggle (separate from My
 // Tasks' RFI/NC tabs) — same Filter drawer content for both, confirmed via
-// DOM dump (tests/specs/00_inspect_dashboard_filter.spec.js): only the
+// DOM dump (tests/specs/inspection/00_inspect_dashboard_filter.spec.js): only the
 // underlying data differs.
 //
 // Filter drawer fields, in DOM order (all correctly wired via

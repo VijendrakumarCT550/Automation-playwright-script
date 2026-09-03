@@ -21,6 +21,21 @@ const ENVIRONMENTS = {
     baseUrl: 'https://pulse-dev.cfapps.ap11.hana.ondemand.com',
     description: 'pulse-dev — WTG/wind inclusion + mobile-view development',
   },
+  // The QA deployment. Added 2026-09-03: the E2E smoke chain runs here, and
+  // .env's BASE_URL already pointed at it — but with no named entry the config
+  // reported it as "custom", which is exactly the "silently running against the
+  // wrong deployment" problem this file exists to prevent. Naming it also makes
+  // PULSE_ENV=qa usable instead of hand-editing BASE_URL.
+  //
+  // NOTE: the long-standing .env CI account has been seen getting a 401 here
+  // (not provisioned in this deployment's user auth). The smoke chain creates
+  // its own users, so it should be unaffected — but that is worth confirming
+  // with a single login before relying on it.
+  qa: {
+    key: 'qa',
+    baseUrl: 'https://pulse-qa.cfapps.ap11.hana.ondemand.com',
+    description: 'pulse-qa — E2E smoke chain',
+  },
   test: {
     key: 'test',
     baseUrl: 'https://pulse-test.cfapps.ap11.hana.ondemand.com',

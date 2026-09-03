@@ -40,8 +40,18 @@ class WAMPage extends BasePage {
     this.myAssignmentHeading = page.locator('text=My Assignment');
     this.assignedAreasHint   = page.locator('text=Select to view your assigned areas');
 
-    // Main panel's own view-filter dropdowns (viewing your own assignments)
-    this.viewRoleField    = page.getByRole('combobox', { name: /^Role/i }).first();
+    // Main panel's own view-filter dropdowns (viewing your own assignments).
+    //
+    // viewRoleField is NOT a real combobox — confirmed live
+    // (tests/specs/inspection/00_inspect_online_role_extensive.spec.js): the "Role"
+    // field here is read-only display text ("Role" label directly above the
+    // logged-in user's own role name, e.g. "Cluster Admin"), unlike the Add
+    // Details dialog's Role field which genuinely is a combobox
+    // (dialogRoleDropdown below). getByRole('combobox', ...) against it
+    // resolves to nothing on the main page and hangs for the full timeout —
+    // exposed as a `page.getByText(roleName)` check instead, since that's
+    // the only thing worth asserting about it (own role is displayed), not a
+    // pickable field.
     this.viewClusterField = page.getByRole('combobox', { name: /Cluster/i }).first();
     this.viewSitesField   = page.getByRole('combobox', { name: /Sites/i }).first();
     this.viewWorkLocationField = page.getByRole('combobox', { name: /Work Location/i }).first();
@@ -86,6 +96,84 @@ class WAMPage extends BasePage {
 
   async waitForLoad() {
     await this.myAssignmentHeading.waitFor({ state: 'visible', timeout: 30000 });
+  }
+
+  // Confirms the "My Assignment" panel actually shows the logged-in user's
+  // OWN role — see viewRoleField's comment above for why this is a text
+  // check, not a field read.
+  async ownRoleVisible(roleName) {
+    // Scoped to "anywhere on the WAM page" rather than a specific ancestor
+    // depth off myAssignmentHeading — the role name (e.g. "Cluster Admin")
+    // is distinctive enough on this page that a false positive is not a
+    // realistic risk, and the exact DOM distance from the heading to the
+    // role text wasn't confirmed live down to the element.
+    return this.page.getByText(roleName, { exact: true }).first()
+      .isVisible({ timeout: 5000 }).catch(() => false);
+  }
+
+  // Fills whichever of the main panel's OWN view-filter cascade
+  // (Cluster -> Sites -> Work Location) is actually visible — role-dependent
+  // depth, same pattern as fillAssignmentFilters' dialog cascade (confirmed
+  // live: Cluster Admin's own view cascade stops at Cluster).
+  //
+  // CONFIRMED LIVE this is also role-dependent in a second way, not just
+  // depth: Cluster Admin's own Cluster field starts as an empty placeholder
+  // and genuinely needs picking, but Plot Admin's whole cascade
+  // (Cluster/Sites/Work Location) arrives ALREADY PRE-FILLED with their
+  // resolved scope (KHAVDA/KHAVDA/A-06c, screenshot-confirmed) — there is
+  // nothing to select, and trying to click-and-pick one anyway raced the
+  // dropdown's open/close animation and threw "none of the candidates
+  // found" even though the value shown was already correct. So: check the
+  // CURRENT displayed value first (via BasePage's combobox innerText, same
+  // "read before acting" idiom as WAMPage.assignUserIfNeeded elsewhere in
+  // this file) and only attempt an active pick when it still shows a
+  // placeholder ("Select ..."), never when a real value is already there.
+  async _currentFieldValue(field) {
+    return (await field.innerText().catch(() => '')).trim();
+  }
+
+  async _fillViewFieldIfPlaceholder(field, value) {
+    const current = await this._currentFieldValue(field);
+    if (current && !/^select\b/i.test(current)) return { changed: false, value: current };
+
+    if (Array.isArray(value)) await this.selectDropdownOptionAny(field, value);
+    else await this.selectDropdownOption(field, value);
+    return { changed: true, value: await this._currentFieldValue(field) };
+  }
+
+  async viewOwnAssignments({ cluster, site, workLocation } = {}) {
+    const hintVisibleBefore = await this.assignedAreasHint.isVisible({ timeout: 2000 }).catch(() => false);
+    let filledAny = false;
+    const resolved = {};
+
+    if (cluster != null && await this.viewClusterField.isVisible({ timeout: 5000 }).catch(() => false)) {
+      resolved.cluster = await this._fillViewFieldIfPlaceholder(this.viewClusterField, cluster);
+      filledAny = true;
+    }
+    if (site != null && await this.viewSitesField.isVisible({ timeout: 3000 }).catch(() => false)) {
+      resolved.site = await this._fillViewFieldIfPlaceholder(this.viewSitesField, site);
+      filledAny = true;
+    }
+    if (workLocation != null && await this.viewWorkLocationField.isVisible({ timeout: 3000 }).catch(() => false)) {
+      resolved.workLocation = await this._fillViewFieldIfPlaceholder(this.viewWorkLocationField, workLocation);
+      filledAny = true;
+    }
+
+    if (Object.values(resolved).some(r => r.changed)) {
+      await this.page.waitForLoadState('networkidle').catch(() => {});
+      await this.page.waitForTimeout(500);
+    }
+
+    // NOTE: the "Select to view your assigned areas" hint is a STATIC
+    // subheading, not a stateful placeholder — confirmed live it stays
+    // visible even once every field already shows a real resolved value
+    // (Plot Admin's screenshot: hint text AND "KHAVDA"/"KHAVDA"/"A-06c" all
+    // present at once). Still returned for callers that want it, but
+    // "resolved" (whether any processed field ended up with a real,
+    // non-placeholder value) is the actual signal for "scope confirmed".
+    const hintVisibleAfter = await this.assignedAreasHint.isVisible({ timeout: 2000 }).catch(() => false);
+    const scopeConfirmed = Object.values(resolved).some(r => r.value && !/^select\b/i.test(r.value));
+    return { filledAny, hintVisibleBefore, hintVisibleAfter, resolved, scopeConfirmed };
   }
 
   async openAddDetails() {
@@ -200,6 +288,25 @@ class WAMPage extends BasePage {
     await this.dialogLoadingText.first()
       .waitFor({ state: 'hidden', timeout })
       .catch(() => {});
+  }
+
+  // Every row label currently rendered in the dialog's grid for whatever
+  // cascade is filled (Site rows, Work Location rows, Work Area rows —
+  // whichever granularity the chosen target Role produces). This is the
+  // instrument for verifying WAM's tree-visibility rule
+  // (docs/work-region-hierarchy.md §2b: "WAM restricts the tree to only
+  // what the logged-in user is mapped to") — comparing the row set a
+  // narrower role sees against a broader-authority role's (e.g. Admin's)
+  // row set for the SAME parent scope is how to tell a genuine visibility
+  // bug apart from the parent scope simply having only one real child in
+  // this environment (per §8's own warning: confirm structural-vs-WAM
+  // before calling an absence a bug).
+  async listAssignmentRows() {
+    const rows = this.dialog.locator('div.d_grid');
+    const texts = await rows.allInnerTexts();
+    return texts
+      .map(t => WAMPage._stripSelectedMarker(t.split('\n')[0]))
+      .filter(Boolean);
   }
 
   // Scopes to the grid row for a given Work Area code (e.g. "BL01") — same

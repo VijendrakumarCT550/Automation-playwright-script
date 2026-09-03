@@ -9,7 +9,7 @@ class RFIChecklistPage extends BasePage {
     // Popup: <p>Are you sure you want to submit RFI?</p>
     //   Confirm: <button type="submit" form="rfi-form">Submit</button>
     //   Cancel:  <button type="button" class="...destructive...">Cancel</button>
-    this.confirmPopup     = page.locator('[role="dialog"], [data-scope="dialog"]')
+    this.confirmPopup     = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: /submit RFI/i }).first();
     // MUST be scoped to confirmPopup, not a bare page-level selector —
     // user-confirmed live: the underlying RFI create/checklist page has

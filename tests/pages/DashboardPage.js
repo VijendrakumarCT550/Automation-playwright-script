@@ -29,9 +29,37 @@ class DashboardPage extends BasePage {
     // Header: logged-in user name + role label (e.g. "Admin")
     this.userRoleLabel = page.locator('text=Admin').first();
 
+    // TAT Summary / Trend Analysis each carry their OWN RFI/NC toggle pair
+    // (confirmed live via DOM dump, tests/specs/inspection/00_inspect_online_role_
+    // extensive.spec.js) — separate from RFI Distribution/NC Distribution
+    // (two independent donut cards, no toggle) and separate from
+    // DashboardFilterPage's Detail-Records-table toggle (a different RFI/NC
+    // button pair further down the SAME page, which is why scoping to a bare
+    // "div containing the title text" is not safe — that would also walk up
+    // through <body> and could match the wrong toggle entirely). Every chart
+    // card shares one exact class combination
+    // (`d_flex flex-d_column ... bdr_2xl ... bx-sh_sm`, confirmed identical
+    // for both cards) — `chartCard()` below anchors on the distinctive subset
+    // of it, so `has: <title>` narrows to exactly the ONE card div, not every
+    // ancestor up to <body>. Within that single card, the two toggle
+    // `<div>`s are the only elements whose OWN text is exactly "RFI"/"NC"
+    // (the wrapper around both has text "RFINC", so the anchored `hasText`
+    // regex excludes it) — no `.last()`/`.first()` disambiguation needed.
+    const chartCard = (title) => page.locator('div.bdr_2xl.bx-sh_sm.min-w_300')
+      .filter({ has: page.getByText(title, { exact: true }) });
+    this.chartCard = chartCard;
+    this.tatSummaryToggle = {
+      rfi: chartCard('TAT Summary').locator('div').filter({ hasText: /^RFI$/ }),
+      nc: chartCard('TAT Summary').locator('div').filter({ hasText: /^NC$/ }),
+    };
+    this.trendAnalysisToggle = {
+      rfi: chartCard('Trend Analysis').locator('div').filter({ hasText: /^RFI$/ }),
+      nc: chartCard('Trend Analysis').locator('div').filter({ hasText: /^NC$/ }),
+    };
+
     // ---- Viewport-agnostic navigation (added for mobile support) ----
     //
-    // CONFIRMED live 2026-08-31 (tests/specs/00_inspect_mobile_nav.spec.js),
+    // CONFIRMED live 2026-08-31 (tests/specs/inspection/00_inspect_mobile_nav.spec.js),
     // measured on both viewports with the same probe:
     //
     //                      role=treeitem visible   .lucide-menu
@@ -54,6 +82,71 @@ class DashboardPage extends BasePage {
     // there. `.lucide-menu` is 1 on mobile and 0 on desktop.
     this.menuTrigger = page.locator('svg.lucide-menu').first();
     this.navDrawer   = page.locator('[data-scope="dialog"][data-state="open"]').first();
+  }
+
+  // Clicks a chart's RFI or NC toggle half (tatSummaryToggle/
+  // trendAnalysisToggle above) and waits for the chart to re-render. RFI is
+  // the default-active state on load (confirmed live) — no separate
+  // "already on this tab" short-circuit is needed since Ark UI's plain click
+  // handler re-renders idempotently either way.
+  async clickChartToggle(toggle) {
+    await toggle.click();
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForTimeout(500);
+  }
+
+  // The active half carries `bg_colorPalette.default` (confirmed live); the
+  // inactive one `bg_transparent`. Used to confirm a toggle click actually
+  // switched state, not just that the click landed.
+  async isChartToggleActive(half) {
+    const cls = await half.getAttribute('class').catch(() => '');
+    return /bg_colorPalette\.default/.test(cls || '');
+  }
+
+  // Fingerprints a chart card's ACTUAL RENDERED DATA — not just the toggle
+  // button's own active/inactive class. isChartToggleActive only proves the
+  // button visually switched state; it says nothing about whether the chart
+  // underneath re-rendered with the OTHER dataset (a toggle that just
+  // recolors the tab without re-fetching/re-rendering would still pass that
+  // check). Recharts (this app's charting lib, confirmed via
+  // `recharts-surface`/`recharts-wrapper` classes in the DOM) renders bars
+  // as `<rect>` and lines as `<path>` with numeric geometry attributes
+  // (width/height/d) that change whenever the underlying data changes —
+  // concatenating every bar/line's geometry into one string gives a cheap,
+  // reliable "did the actual data change" fingerprint: same string = same
+  // rendered shape = the chart did NOT change, regardless of what the
+  // toggle button's own class says.
+  async getChartDataFingerprint(title) {
+    const card = this.chartCard(title);
+    const svg = card.locator('svg.recharts-surface').first();
+    const rects = await svg.locator('rect').evaluateAll(
+      els => els.map(el => `${el.getAttribute('width')}x${el.getAttribute('height')}`).join('|')
+    ).catch(() => '');
+    const paths = await svg.locator('path').evaluateAll(
+      els => els.map(el => el.getAttribute('d')).join('|')
+    ).catch(() => '');
+    return `${rects}::${paths}`;
+  }
+
+  // Recharts animates entrances (bars grow, lines draw progressively) — a
+  // single fingerprint read right after a toggle click can land mid-
+  // animation, which is genuinely non-deterministic frame to frame.
+  // CONFIRMED live: Trend Analysis's line-draw animation produced a
+  // DIFFERENT fingerprint each time, including for the SAME underlying RFI
+  // data read twice in a row — not a real data difference, just caught at
+  // different animation frames. This polls until two CONSECUTIVE reads
+  // match (the animation has finished settling) rather than trusting one
+  // fixed-delay snapshot to be post-animation.
+  async waitForStableChartFingerprint(title, { timeout = 5000, intervalMs = 250 } = {}) {
+    const deadline = Date.now() + timeout;
+    let previous = await this.getChartDataFingerprint(title);
+    while (Date.now() < deadline) {
+      await this.page.waitForTimeout(intervalMs);
+      const current = await this.getChartDataFingerprint(title);
+      if (current === previous) return current;
+      previous = current;
+    }
+    return previous;
   }
 
   // A sidebar/drawer nav entry by its visible name, on either viewport.

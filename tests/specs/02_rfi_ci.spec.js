@@ -12,7 +12,7 @@ test.describe.serial('RFI - CI flow', () => {
 
   // ── Test data ──────────────────────────────────────────────────────────────
   const RFI_DATA = {
-    workLocation:         null,           // S05b auto-populated on form open — no interaction needed
+    workLocation:         'A-06c',
     workArea:             'BL01',
     package:              'Civil',
     subPackage:           'Piling (MMS, Inverter, LT Cable Hangers) + IDT Civil & Structural',

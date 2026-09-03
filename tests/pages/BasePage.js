@@ -73,8 +73,48 @@ class BasePage {
     // opened fine — same class of fix as RFICreatePage's own
     // _openDropdown timeout bump. Widened to 15000ms.
     await option.waitFor({ state: 'visible', timeout: 15000 });
+
+    // A SINGLE-select field that already has this exact option selected
+    // (e.g. SO Mapping's Cluster field pre-filled for a scoped role, same
+    // class of thing WAMPage's own-scope view fields showed for Plot Admin)
+    // can make that option become non-interactive/hidden moments after the
+    // listbox opens — clicking it then races Playwright's own actionability
+    // retry against that and times out, even though there was nothing left
+    // to actually do. Confirmed live (Plot Admin / pulse-dev, SO Mapping's
+    // Cluster field): "element is not visible" repeated for the full 30s on
+    // an option whose own data-state was already "checked". Skip the click
+    // when it's already the selected option — this can only ever turn a
+    // hang into a no-op; a genuinely unselected option is unaffected. NOT
+    // safe to apply to a MULTI-select field (clicking an already-checked
+    // option there TOGGLES IT OFF) — this method is documented/used for
+    // single-select only (see selectMultiAware for the multi-select case).
+    const alreadyChecked =
+      (await option.getAttribute('data-state').catch(() => null)) === 'checked' ||
+      (await option.getAttribute('aria-selected').catch(() => null)) === 'true';
+    if (alreadyChecked) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      return;
+    }
+
     await option.click();
     await this.page.waitForTimeout(150);
+  }
+
+  // Reads every option currently offered WITHOUT picking one, then closes
+  // the listbox again — the read-only counterpart to selectDropdownOption,
+  // for jurisdiction/role-restriction checks (e.g. "does this dropdown only
+  // offer the roles/locations this user is scoped to") where the point is
+  // the option LIST itself, not making a selection. Ark UI appends a
+  // checkmark to the currently-selected option's own text (confirmed
+  // elsewhere in this suite, e.g. WAMPage._stripSelectedMarker) — stripped
+  // here so callers get plain option text to compare against.
+  async getDropdownOptions(dropdown) {
+    const listbox = await this.openDropdown(dropdown);
+    const raw = await listbox.locator('[role="option"]').allInnerTexts();
+    await this.page.keyboard.press('Escape').catch(() => {});
+    await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    return raw.map(t => t.replace(/\s*✓\s*$/, '').trim()).filter(Boolean);
   }
 
   async selectFirstDropdownOption(dropdown) {
@@ -94,6 +134,17 @@ class BasePage {
     for (const candidate of candidates) {
       const option = listbox.locator('[role="option"]').filter({ hasText: candidate }).first();
       if (await option.isVisible({ timeout: 1500 }).catch(() => false)) {
+        // Same already-checked guard as selectDropdownOption above — a
+        // pre-filled single-select field can make its own checked option
+        // become non-interactive right as the listbox opens.
+        const alreadyChecked =
+          (await option.getAttribute('data-state').catch(() => null)) === 'checked' ||
+          (await option.getAttribute('aria-selected').catch(() => null)) === 'true';
+        if (alreadyChecked) {
+          await this.page.keyboard.press('Escape').catch(() => {});
+          await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+          return candidate;
+        }
         await option.click();
         await this.page.waitForTimeout(150);
         return candidate;
@@ -266,7 +317,7 @@ class BasePage {
   // screens (and referenced, still-unautomated, in RFIReviewPage's own
   // header comment) — a generic app-wide component, hence living here
   // rather than duplicated per NC page object. Confirmed live via
-  // tests/specs/00_inspect_nc_capture_photo.spec.js: clicking it opens a
+  // tests/specs/inspection/00_inspect_nc_capture_photo.spec.js: clicking it opens a
   // real getUserMedia <video> preview with "Capture"/"Cancel" buttons (no
   // native file picker involved — playwright.config.js grants the 'camera'
   // permission and launches Chromium with

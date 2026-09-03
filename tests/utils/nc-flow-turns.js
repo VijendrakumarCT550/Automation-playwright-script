@@ -45,7 +45,7 @@ async function withRetry(action) {
 
 const NC_DATA = {
   workLocation:     'A-06c',
-  workArea:         '__first__',
+  workArea:         'BL04',
   vendorName:       'CHOUHAN',
   package:          'Civil',
   activity:         'Piling - Robotic Docking System',

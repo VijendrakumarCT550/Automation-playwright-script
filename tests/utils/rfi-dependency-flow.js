@@ -88,7 +88,7 @@ async function discardCreateForm(page) {
   // Find the dialog by its OWN TEXT, and click "Yes" by exact accessible name so
   // "No" can never match.
   const yesButton = page.getByRole('button', { name: /^\s*yes\s*$/i }).first();
-  const confirmDialog = page.locator('[role="dialog"], [data-scope="dialog"]')
+  const confirmDialog = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
     .filter({ hasText: /cancel\s*rfi/i }).first();
 
   // Prefer the page-level Yes (unambiguous while this popup is up); fall back to

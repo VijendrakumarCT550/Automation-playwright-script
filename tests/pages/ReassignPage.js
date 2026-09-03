@@ -214,7 +214,7 @@ class ReassignPage extends BasePage {
     // Some app flows show an "Are you sure...?" confirm popup before the
     // action actually persists (see RFIReviewPage.approve/reject) — handle
     // it if present, otherwise fall straight through to the toast.
-    const confirmPopup = this.page.locator('[role="dialog"], [data-scope="dialog"]')
+    const confirmPopup = this.page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
       .filter({ hasText: /are you sure/i }).first();
     if (await confirmPopup.isVisible({ timeout: 3000 }).catch(() => false)) {
       const confirmButton = confirmPopup.getByRole('button', { name: /submit|confirm|yes/i });

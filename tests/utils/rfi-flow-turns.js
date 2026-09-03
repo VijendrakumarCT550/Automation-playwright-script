@@ -101,9 +101,9 @@ async function withLoginRetryOnStaleWorkSection(page, role, action) {
 // logic under test doesn't depend on field values, only on reject/approve
 // sequencing, so every RFI can share one definition.
 const RFI_DATA = {
-  // workLocation:         'A-06c',
-  workLocation:         'S05b',
-  workArea:             'BL02',
+  workLocation:         'A-06c',
+  // workLocation:         'S05b',
+  workArea:             'BL01',
   package:              'Civil',
   subPackage:           'Piling (MMS, Inverter, LT Cable Hangers)',
   activity:             'Piling - MMS',

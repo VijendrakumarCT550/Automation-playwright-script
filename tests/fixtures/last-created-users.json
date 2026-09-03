@@ -1,89 +1,89 @@
 {
   "EE": {
-    "name": "EEwavUser57",
-    "email": "EEwavUser57@adani.com",
-    "phone": "7233881048",
-    "number": 57,
+    "name": "EEpxqUser61",
+    "email": "EEpxqUser61@adani.com",
+    "phone": "9007484834",
+    "number": 61,
     "role": "Execution Engineer",
     "userType": "AGEL"
   },
   "QI": {
-    "name": "QIwotUser57",
-    "email": "QIwotUser57@adani.com",
-    "phone": "6404193846",
-    "number": 57,
+    "name": "QIkjoUser61",
+    "email": "QIkjoUser61@adani.com",
+    "phone": "8885652484",
+    "number": 61,
     "role": "Quality Inspector",
     "userType": "AGEL"
   },
   "EL": {
-    "name": "ELdnbUser57",
-    "email": "ELdnbUser57@adani.com",
-    "phone": "7411116472",
-    "number": 57,
+    "name": "ELexfUser61",
+    "email": "ELexfUser61@adani.com",
+    "phone": "7375929701",
+    "number": 61,
     "role": "Execution Lead",
     "userType": "AGEL"
   },
   "QL": {
-    "name": "QLsrwUser57",
-    "email": "QLsrwUser57@adani.com",
-    "phone": "6245573238",
-    "number": 57,
+    "name": "QLtcfUser61",
+    "email": "QLtcfUser61@adani.com",
+    "phone": "7272976293",
+    "number": 61,
     "role": "Quality Lead",
     "userType": "AGEL"
   },
   "PM": {
-    "name": "PMdtnUser57",
-    "email": "PMdtnUser57@adani.com",
-    "phone": "7902858545",
-    "number": 57,
+    "name": "PMqhlUser61",
+    "email": "PMqhlUser61@adani.com",
+    "phone": "9745403080",
+    "number": 61,
     "role": "Project Manager",
     "userType": "AGEL"
   },
   "PAD": {
-    "name": "PADxuxUser57",
-    "email": "PADxuxUser57@adani.com",
-    "phone": "8240229347",
-    "number": 57,
+    "name": "PADykwUser61",
+    "email": "PADykwUser61@adani.com",
+    "phone": "6438276861",
+    "number": 61,
     "role": "Plot Admin",
     "userType": "AGEL"
   },
   "SAD": {
-    "name": "SADmgwUser57",
-    "email": "SADmgwUser57@adani.com",
-    "phone": "7974183716",
-    "number": 57,
+    "name": "SADmpvUser61",
+    "email": "SADmpvUser61@adani.com",
+    "phone": "6134701443",
+    "number": 61,
     "role": "Site Admin",
     "userType": "AGEL"
   },
   "CAD": {
-    "name": "CADjktUser57",
-    "email": "CADjktUser57@adani.com",
-    "phone": "7318595762",
-    "number": 57,
+    "name": "CADrilUser61",
+    "email": "CADrilUser61@adani.com",
+    "phone": "8715109770",
+    "number": 61,
     "role": "Cluster Admin",
     "userType": "AGEL"
   },
   "ADM": {
-    "name": "ADMgkvUser57",
-    "email": "ADMgkvUser57@adani.com",
-    "phone": "7725791719",
-    "number": 57,
+    "name": "ADMiciUser61",
+    "email": "ADMiciUser61@adani.com",
+    "phone": "6969550229",
+    "number": 61,
     "role": "Admin",
     "userType": "AGEL"
   },
   "CIC": {
-    "name": "CICpwmUser57",
-    "email": "CICpwmUser57@adani.com",
-    "phone": "7817244956",
-    "number": 57,
+    "name": "CICkrrUser61",
+    "email": "CICkrrUser61@adani.com",
+    "phone": "9325114777",
+    "number": 61,
     "role": "Contractor Incharge",
     "userType": "VENDOR"
   },
   "CM": {
-    "name": "CMkdlUser57",
-    "email": "CMkdlUser57@adani.com",
-    "phone": "8631889827",
-    "number": 57,
+    "name": "CMeuaUser61",
+    "email": "CMeuaUser61@adani.com",
+    "phone": "6950791316",
+    "number": 61,
     "role": "Contractor Manager",
     "userType": "VENDOR"
   },
@@ -144,61 +144,151 @@
     "vendor": null
   },
   "CISL": {
-    "name": "CISLwttUser60",
-    "email": "CISLwttUser60@adani.com",
-    "phone": "7067868797",
-    "number": 60,
+    "name": "CISLqjfUser62",
+    "email": "CISLqjfUser62@adani.com",
+    "phone": "9921400841",
+    "number": 62,
     "role": "Contractor Incharge",
     "userType": "VENDOR",
     "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
     "projectType": "SOLAR",
     "workLocations": [
-      "A-06c",
       "S05b"
     ],
     "vendor": "M S CHOUHAN INFRAVENTURES"
   },
   "CMSL": {
-    "name": "CMSLlrsUser60",
-    "email": "CMSLlrsUser60@adani.com",
-    "phone": "6806564689",
-    "number": 60,
+    "name": "CMSLjzoUser62",
+    "email": "CMSLjzoUser62@adani.com",
+    "phone": "7038778672",
+    "number": 62,
     "role": "Contractor Manager",
     "userType": "VENDOR",
     "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
     "projectType": "SOLAR",
     "workLocations": [
-      "A-06c",
       "S05b"
     ],
     "vendor": "M S CHOUHAN INFRAVENTURES"
   },
   "EESL": {
-    "name": "EESLzntUser60",
-    "email": "EESLzntUser60@adani.com",
-    "phone": "8706191650",
-    "number": 60,
+    "name": "EESLvpmUser62",
+    "email": "EESLvpmUser62@adani.com",
+    "phone": "6526263001",
+    "number": 62,
     "role": "Execution Engineer",
     "userType": "AGEL",
     "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
     "projectType": "SOLAR",
     "workLocations": [
-      "A-06c",
       "S05b"
     ],
     "vendor": null
   },
   "QISL": {
-    "name": "QISLeubUser60",
-    "email": "QISLeubUser60@adani.com",
-    "phone": "7934731078",
-    "number": 60,
+    "name": "QISLidkUser62",
+    "email": "QISLidkUser62@adani.com",
+    "phone": "8743458314",
+    "number": 62,
     "role": "Quality Inspector",
     "userType": "AGEL",
     "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
     "projectType": "SOLAR",
     "workLocations": [
-      "A-06c",
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "ELSL": {
+    "name": "ELSLxbfUser63",
+    "email": "ELSLxbfUser63@adani.com",
+    "phone": "9544247410",
+    "number": 63,
+    "role": "Execution Lead",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "QLSL": {
+    "name": "QLSLzflUser63",
+    "email": "QLSLzflUser63@adani.com",
+    "phone": "9135583860",
+    "number": 63,
+    "role": "Quality Lead",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "PMSL": {
+    "name": "PMSLpmwUser63",
+    "email": "PMSLpmwUser63@adani.com",
+    "phone": "9238806061",
+    "number": 63,
+    "role": "Project Manager",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "PADSL": {
+    "name": "PADSLadrUser63",
+    "email": "PADSLadrUser63@adani.com",
+    "phone": "6268705500",
+    "number": 63,
+    "role": "Plot Admin",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "SADSL": {
+    "name": "SADSLdphUser63",
+    "email": "SADSLdphUser63@adani.com",
+    "phone": "8069473258",
+    "number": 63,
+    "role": "Site Admin",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
+      "S05b"
+    ],
+    "vendor": null
+  },
+  "CADSL": {
+    "name": "CADSLdkyUser63",
+    "email": "CADSLdkyUser63@adani.com",
+    "phone": "7446610912",
+    "number": 63,
+    "role": "Cluster Admin",
+    "userType": "AGEL",
+    "profileKey": "solar-e2e",
+    "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+    "projectType": "SOLAR",
+    "workLocations": [
       "S05b"
     ],
     "vendor": null

@@ -4,7 +4,7 @@
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -14,14 +14,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-01-CI-create-1788360937793.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-01-CI-create-1788360937793.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/20576b4b-7bfe-4118-9f68-040cd3e02b26/create"
   },
   "TC-02": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -40,14 +46,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-02-CI-create-1788360971206.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-02-CI-create-1788360971206.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/119bb2e1-f789-400d-8568-be0eed6cc4df/create"
   },
   "TC-03": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -66,14 +78,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-03-CI-create-1788361004602.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-03-CI-create-1788361004602.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/096363b6-ac74-4ce0-94f1-d48939d00981/create"
   },
   "TC-04": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -96,14 +114,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-04-CI-create-1788361037987.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-04-CI-create-1788361037987.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/b3790da1-f020-4b88-8146-35bab835ee98/create"
   },
   "TC-05": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -126,14 +150,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-05-CI-create-1788361071455.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-05-CI-create-1788361071455.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/53dcbc9e-ffc0-447d-a3eb-79f78db1558c/create"
   },
   "TC-06": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -165,14 +195,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-06-CI-create-1788361104754.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-06-CI-create-1788361104754.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/2db7b922-09cb-4811-910b-8838be94ebde/create"
   },
   "TC-07": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -204,14 +240,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-07-CI-create-1788361138121.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-07-CI-create-1788361138121.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/fcdbe4bb-a77f-47c5-ab6a-57f452baa3eb/create"
   },
   "TC-08": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -243,14 +285,20 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-08-CI-create-1788361171445.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-08-CI-create-1788361171445.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/45981a91-da18-4d88-bcc7-a8b5afa39886/create"
   },
   "TC-09": {
     "rfiId": null,
     "rfiCode": null,
     "currentStepIndex": 0,
     "currentVersion": "V1",
-    "status": "pending",
+    "status": "failed",
     "steps": [
       {
         "actor": "EE",
@@ -282,6 +330,12 @@
         "actor": "QI",
         "action": "approve"
       }
-    ]
+    ],
+    "failureReason": "locator.waitFor: Timeout 500ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\"listbox\"][data-state=\"open\"]').locator('[role=\"option\"]').filter({ hasText: 'S05b' }).first() to be visible\u001b[22m\n",
+    "failureStage": "CI create",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\negative-scenarios\\TC-09-CI-create-1788361204792.png",
+    "failureHtml": "test-results\\negative-scenarios\\TC-09-CI-create-1788361204792.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/46fe46f5-eeef-485f-a5a5-da9dff0bf843/create"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "_note": "Pre-change Service Order state of WIND / WTG-Khavda / KH 34, captured 2026-08-31 by 00_inspect_wind_master_and_mobile.spec.js BEFORE the smoke chain remapped anything. Reconstructed from the recon run log after Playwright wiped test-results/ at the start of the next run (which is why baselines now live under tests/fixtures/ instead). This is the restore source for KH 34's original vendor mappings: the smoke chain has since remapped the CIVIL package to 5710012136 - BAUER ENGINEERING INDIA PVT LTD; Electrical and Mechanical were NOT yet changed when this was captured or when the first s02 run failed.",
+  "_note": "Pre-change Service Order state of WIND / WTG-Khavda / KH 34, captured 2026-08-31 by 00_inspect_wind_master_and_mobile.spec.js BEFORE the smoke chain remapped anything. Reconstructed from the recon run log after Playwright wiped test-results/ at the start of the next run (which is why baselines now live under tests/fixtures/ instead). This is the restore source for KH 34's original vendor mappings: the smoke chain has since remapped the CIVIL package to 5710012136 - BAUER ENGINEERING INDIA PVT LTD; Electrical and Mechanical were NOT yet changed when this was captured or when the first SM02 run failed.",
   "projectType": "WIND",
   "workLocation": "WTG-Khavda",
   "workArea": "KH 34",

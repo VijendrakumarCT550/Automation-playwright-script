@@ -22,7 +22,7 @@
 //
 // CONFIRMED vs ASSUMED is called out per field. Wind's Work Region/activity
 // layer is live-confirmed (2026-08-31 recon,
-// tests/specs/00_inspect_wind_master_and_mobile.spec.js); its checkpoint and
+// tests/specs/inspection/00_inspect_wind_master_and_mobile.spec.js); its checkpoint and
 // checklist layer is NOT — see docs/wind-activity-checklist-reference.md's
 // open questions. Anything unconfirmed is marked and left null rather than
 // guessed, so a spec fails loudly on a missing value instead of silently
@@ -107,43 +107,72 @@ const WIND_E2E = {
   // "WTG 002" ... "WTG 557" (single outlier with no space: "WTG219"). An
   // exact-match lookup for 'KH34' silently finds nothing.
   //
-  // KH 34 is the app owner's chosen area and is explicitly approved for
-  // overwriting its existing Service Order mappings.
-  // MULTIPLE work areas, all SO-mapped (stage 2) and all WAM'd to the same WTG
-  // CI (stage 3) — the app owner's solution to a real problem: wind has exactly
-  // ONE Work Section per Work Area, and a run consumes the (checkpoint, Work
-  // Section) pair permanently, so a single work area is exhausted after about
-  // five runs and cannot support two viewport variants at once.
+  // THE 21 "WTG 4xx" AREAS REPLACE THE OLD "KH ..." SET (app owner, 2026-09-03,
+  // with the SO Mapping screen showing all 21 selected under WIND / WTG-Khavda /
+  // Civil). The KH areas were partly exhausted — KH 34 spent, several others
+  // partly used — and a clean pool is what makes the one-area-per-TC allocation
+  // below legible. Every name is verbatim from the live list; note the SPACE.
   //
-  // With the same CI mapped across several areas, the SAME activity and
-  // checkpoint chain can be run repeatedly by changing only the Work Area. That
-  // is what gives the desktop and mobile flow runs independent ground:
-  // flowWorkAreas below assigns one to each, so neither can consume the other's
-  // checkpoints and either can be re-run without disturbing the other.
-  // All SO-mapped (stage 2) and all WAM'd to the same WTG CI (stage 3). Every
-  // name is verbatim from the live 244-option list — note the SPACE.
-  //
-  // Six rather than two because a work area really does get exhausted: one Work
-  // Section per area, consumed permanently per checkpoint, so an area supports
-  // about as many runs as the activity has checkpoints (5 for Crane Pad). With
-  // six areas that is ~30 runs before anything needs re-provisioning, and
-  // extending the list further is a one-line change plus one re-run of stages
-  // 2 and 3.
-  //
-  // Provisioning six costs almost nothing now that both stages work in a single
-  // pass: SO mapping selects all six work areas at once and sets each activity's
-  // Service Order once, and WAM assigns all six rows in one dialog per role.
-  workAreas: ['KH 34', 'KH 35', 'KH 47', 'KH 51', 'KH 52', 'KH 53'],
-  primaryWorkArea: 'KH 34',
+  // WHY SO MANY. Wind has exactly ONE Work Section per Work Area and a run
+  // consumes that (checkpoint, Work Section) pair permanently, so wind buys
+  // capacity by adding AREAS rather than by reusing one. Provisioning is cheap
+  // now that both stages work in a single pass: SM02 selects every area at once
+  // and sets each activity's Service Order once, and SM03 assigns all rows in one
+  // dialog per role.
+  workAreas: [
+    'WTG 423', 'WTG 424', 'WTG 425', 'WTG 426', 'WTG 427', 'WTG 428',
+    'WTG 429', 'WTG 430', 'WTG 431', 'WTG 432', 'WTG 433',
+    'WTG 448', 'WTG 449', 'WTG 450', 'WTG 451', 'WTG 452', 'WTG 453',
+    'WTG 454', 'WTG 455', 'WTG 456', 'WTG 457',
+  ],
+  primaryWorkArea: 'WTG 423',
 
-  // Per-viewport PREFERENCE ORDER, not an exclusive assignment. The flow stage
-  // walks its own list first — so desktop and mobile normally stay out of each
-  // other's way and either can be re-run independently — and then falls through
-  // to the remaining areas rather than failing once its own are spent.
+  // Wind runs DESKTOP ONLY (app owner, 2026-09-03). Mobile is already covered by
+  // solar, and solar can absorb the reruns that mobile-layout debugging costs
+  // whereas every wind attempt spends an irreplaceable checkpoint. Wind's job is
+  // to prove the flow is not solar-specific, which is a PROJECT-TYPE axis, not a
+  // viewport one.
+  viewports: ['desktop'],
+
+  // PREFERENCE ORDER, not an exclusive assignment: the flow stage walks its own
+  // list first and then falls through to the remaining areas, so a pool whose
+  // areas are spent still finds ground instead of failing.
+  //
+  // ONE WORK AREA PER TC is the point, not just raw capacity. Wind enforces the
+  // preceding-checkpoint rule, so within a SINGLE area checkpoint N+1 is blocked
+  // until N is approved — nine TCs created up front on one area would mostly sit
+  // blocked. Nine TCs on nine DIFFERENT areas all sit at checkpoint A1.18.1 and
+  // run cleanly. Every TC ends in a QI approval, so a completed pass leaves each
+  // area advanced by exactly one checkpoint and the next pass runs on A1.18.2.
+  // With 5 Crane Pad checkpoints that is ~5 clean passes before re-provisioning.
+  //
+  // The RFI and NC pools are DISJOINT because a non-approved NC blocks RFI
+  // create/resubmit on the same (checkpoint, work section) — and on wind the work
+  // section IS the work area, so one unfinished NC would lock a whole area out of
+  // the RFI stage.
   flowWorkAreas: {
-    desktop: ['KH 34', 'KH 47', 'KH 51'],
-    mobile: ['KH 35', 'KH 52', 'KH 53'],
+    rfi: {
+      desktop: [
+        'WTG 423', 'WTG 424', 'WTG 425', 'WTG 426', 'WTG 427', 'WTG 428',
+        'WTG 429', 'WTG 430', 'WTG 431', 'WTG 432', 'WTG 433',
+        // Spare capacity. Deliberately assigned to a POOL rather than left
+        // unallocated: an unclaimed area is reachable by the fallthrough of
+        // BOTH flows, which would put an NC and an RFI on the same ground and
+        // reintroduce exactly the block the disjoint pools prevent.
+        'WTG 456',
+      ],
+    },
+    nc: {
+      desktop: [
+        'WTG 448', 'WTG 449', 'WTG 450', 'WTG 451',
+        'WTG 452', 'WTG 453', 'WTG 454', 'WTG 455',
+      ],
+    },
   },
+
+  // Sacrificial ground for the SO demapping stage (SM08). WTG 456 is left as
+  // unallocated spare.
+  demapWorkArea: 'WTG 457',
 
   // CONFIRMED live (00_inspect_wind_rfi_form.spec.js): wind has exactly ONE
   // Work Section per Work Area, and it is the Work Area's own name — selecting
@@ -206,7 +235,13 @@ const WIND_E2E = {
     // 5710009696, 5710012136, 5710017100, 5710018312. A vendor-name-only
     // match resolves to 5710008038, i.e. the WRONG service order. The app
     // owner specified 5710012136.
-    serviceOrder: '5710012136 - BAUER ENGINEERING INDIA PVT LTD',
+    // DECIDED 2026-09-03: 5710008038, matching what the SO Mapping screen
+    // actually shows on the mapped rows. This SUPERSEDES 5710012136, which was
+    // the number recorded from the app owner earlier. The full
+    // "<number> - <NAME>" string stays mandatory: BAUER appears under five
+    // different SO numbers and a vendor-name-only match resolves to the wrong
+    // one.
+    serviceOrder: '5710008038 - BAUER ENGINEERING INDIA PVT LTD',
   },
 
   // Mapped to EVERY activity, so one WTG CI has access to all of them when
@@ -220,20 +255,44 @@ const WIND_E2E = {
     source: 'created',
     // Prefix encodes project type so a solar and a wind user of the same role
     // can never be confused (app owner: "cisl for solar, ciwtg for wind").
-    // NOTE: the existing 11-role batch spec (12_user_management.spec.js) calls
-    // Contractor Incharge "CIC"; these are separate, project-scoped users and
-    // do not touch that spec or its recorded prefixes.
+    // ORDERED creation list. Vendor roles first: their Add User cascade has the
+    // most moving pieces (vendor category + vendor), so a break there surfaces
+    // early. Then the AGEL flow roles, then the hierarchy tiers.
+    order: ['CI', 'CM', 'EE', 'QI', 'EL', 'QL', 'PM', 'PAD', 'SAD', 'CAD'],
+
+    // The four that actually drive the RFI/NC flows. SM03 maps EXACTLY these onto
+    // the work areas; the hierarchy tiers are handled by SM04's cascade instead,
+    // because they are not all work-area-scoped (PM and PAD are work-location
+    // roles, SAD is site-level) and need different dialog handling.
+    flowRoles: ['CI', 'CM', 'EE', 'QI'],
+
+    // The tiers SM04 walks DOWN, top first, each one mapping the tier below it.
+    // Admin is the root of that cascade and comes from .env — never created here.
+    hierarchyRoles: ['CAD', 'SAD', 'PAD', 'PM', 'EL', 'QL'],
+
+    // Every prefix is project-scoped so it can never collide with
+    // 12_user_management.spec.js's bare CAD/SAD/PAD/PM/EL/QL/CIC keys in the
+    // shared fixtures/last-created-users.json. 18_wam_hierarchy.spec.js resolves
+    // ITS users by those bare prefixes, so overwriting them would break it.
     prefixes: {
-      CI: 'CIWTG', // Contractor Incharge — raises RFIs
-      CM: 'CMWTG', // Contractor Manager
-      EE: 'EEWTG', // Execution Engineer — first reviewer
-      QI: 'QIWTG', // Quality Inspector — second reviewer, raises NCs
+      CI: 'CIWTG', CM: 'CMWTG', EE: 'EEWTG', QI: 'QIWTG',
+      EL: 'ELWTG', QL: 'QLWTG', PM: 'PMWTG',
+      PAD: 'PADWTG', SAD: 'SADWTG', CAD: 'CADWTG',
     },
+
+    // Role labels and userTypes are verbatim from 12_user_management.spec.js,
+    // which is the creation source of truth for all eleven roles.
     roles: {
       CIWTG: { role: 'Contractor Incharge', userType: 'VENDOR' },
       CMWTG: { role: 'Contractor Manager', userType: 'VENDOR' },
       EEWTG: { role: 'Execution Engineer', userType: 'AGEL' },
       QIWTG: { role: 'Quality Inspector', userType: 'AGEL' },
+      ELWTG: { role: 'Execution Lead', userType: 'AGEL' },
+      QLWTG: { role: 'Quality Lead', userType: 'AGEL' },
+      PMWTG: { role: 'Project Manager', userType: 'AGEL' },
+      PADWTG: { role: 'Plot Admin', userType: 'AGEL' },
+      SADWTG: { role: 'Site Admin', userType: 'AGEL' },
+      CADWTG: { role: 'Cluster Admin', userType: 'AGEL' },
     },
   },
 
@@ -256,7 +315,7 @@ const WIND_E2E = {
   // least ambiguous option.
   rfi: {
     workLocation: 'WTG-Khavda',
-    workArea: 'KH 34',
+    workArea: 'WTG 423',
     package: 'Civil',
 
     // "Crane Pad" chosen as the smoke path: it is the smallest Civil activity
@@ -329,38 +388,62 @@ const SOLAR_E2E = {
   cluster: CLUSTER_CANDIDATES,
   site: SITE,
 
-  // App owner revised this: A16b/A16d are dropped, solar stays on the existing
-  // locations. Both are listed at user-creation scope.
-  workLocations: ['A-06c', 'S05b'],
+  // S05b ONLY, and index 0 matters: SM02 (SO mapping) and SM03 (WAM) both
+  // provision `workLocations[0]`. A-06c is deliberately absent — it is the app
+  // owner's manual-testing ground and smoke must not touch it at all.
+  workLocations: ['S05b'],
 
-  // CONFIRMED live (00_inspect_solar_e2e_ground.spec.js): A-06c has 85 work
-  // areas — BL01..BL40 plus 45 non-BL ones (Culvert 1-5, Drain1-20, Road1-20).
+  // CONFIRMED by the app owner: every BL{nn} area supports the solar activities
+  // and returns a usable Work Section list. Only Road* / Drain* areas fail to
+  // show work sections, so they must never be used. Screenshot evidence for this
+  // band: S05b / BL01 / Piling - MMS / Pre Pour Inspection - Pile reports
+  // Total 264 / Selected 0 / Pending 264.
   //
-  // MUST be BL{nn} format — never Culvert / Drain / Road.
+  // WHY BL03..BL06 AND NOT BL01..BL03 as originally requested. Three separate
+  // rules decide this band; see docs/smoke-e2e-framework.md section 4.1.
   //
-  // App owner, and it is a hard functional constraint rather than a preference:
-  // those areas do not contain the Piling activities, so a Piling RFI there finds
-  // NO WORK SECTION at all. The activity dropdown is misleading on this point —
-  // the recon confirmed "Culvert 1" happily offers all 23 Civil activities
-  // including Piling - MMS, so nothing fails until the Work Section list comes
-  // back empty. Only the Work Section list tells the truth about whether an area
-  // really supports an activity.
+  //   BL01 belongs to 02_rfi_ci.spec.js (S05b / BL01).
+  //   BL02 belongs to the tracked 9-TC regression — rfi-flow-turns.js RFI_DATA
+  //        is S05b / BL02 — i.e. specs 08/09/10, 21, 23 and 24.
   //
-  // BL21+ specifically, because the existing suite only ever touches BL01..BL10
-  // (05_so_mapping maps those ten, 07_wam_ci assigns them, and the specs use
-  // BL02 for the tracked 9-TC regression and BL09/BL10 for the dependency
-  // specs). A-06c has BL01..BL40, so BL11..BL40 are both untouched AND the right
-  // kind of area.
-  workAreas: ['BL21', 'BL22'],
-  primaryWorkArea: 'BL21',
+  // Sharing either would not merely muddle the queues. WAM's Contractor Incharge
+  // and Quality Inspector rows are SINGLE-ASSIGNEE (WAMPage.js:500-504 — "one
+  // pick simply replaces whoever was there"), so SM03 assigning the freshly
+  // created smoke CI to BL01/BL02 would EVICT the .env CI those seven specs log
+  // in as, and they would start failing with the work area invisible. Shifting
+  // two areas up removes the eviction entirely and costs nothing.
+  //
+  // BL09/BL10 (dependency specs) and BL03 (03_rfi_bulk_create) are all on A-06c,
+  // not S05b, so they do not collide with this band.
+  workAreas: ['BL03', 'BL04', 'BL05', 'BL06'],
+  primaryWorkArea: 'BL03',
 
-  // Desktop and mobile get their own area, as for wind — not because solar can
-  // exhaust (it cannot; see workSectionGranularity below) but so the two
-  // viewports stay independently re-runnable.
+  // Solar carries BOTH viewports: it never exhausts (see workSectionGranularity
+  // below), so it can absorb the rerun cost that mobile-layout debugging incurs.
+  viewports: ['desktop', 'mobile'],
+
+  // ONE WORK AREA PER (FLOW x VIEWPORT), and the RFI/NC split is not cosmetic.
+  //
+  //   RFI consumes work sections. A 9-TC pass spends ~9-10 (checkpoint, work
+  //   section) pairs and every rerun spends another ~10, so desktop and mobile
+  //   get their own area to stay independently re-runnable. 264 sections is
+  //   roughly 26 passes per area.
+  //
+  //   NC does not consume anything — duplicate NCs against identical details are
+  //   legal — so both NC viewports SHARE BL05. What matters is that BL05 is
+  //   DISJOINT from the RFI areas: an NC left in a non-approved state BLOCKS RFI
+  //   create/resubmit for the same (inspection checkpoint, work section). A
+  //   bug-interrupted NC cycle on BL03 would therefore lock the RFI stage out of
+  //   that ground permanently.
   flowWorkAreas: {
-    desktop: ['BL21'],
-    mobile: ['BL22'],
+    rfi: { desktop: ['BL03'], mobile: ['BL04'] },
+    nc:  { desktop: ['BL05'], mobile: ['BL05'] },
   },
+
+  // Sacrificial ground for the SO demapping stage (SM08), which removes mappings
+  // and must never be pointed at an area a flow depends on. SM02 maps it like any
+  // other area so there is something to demap.
+  demapWorkArea: 'BL06',
 
   // SOLAR HAS MANY WORK SECTIONS PER WORK AREA — BL02 alone has ~490 for
   // Piling - MMS. That is the fundamental difference from wind, and it is why
@@ -391,12 +474,44 @@ const SOLAR_E2E = {
 
   users: {
     source: 'created',
-    prefixes: { CI: 'CISL', CM: 'CMSL', EE: 'EESL', QI: 'QISL' },
+    // ORDERED creation list. Vendor roles first: their Add User cascade has the
+    // most moving pieces (vendor category + vendor), so a break there surfaces
+    // early. Then the AGEL flow roles, then the hierarchy tiers.
+    order: ['CI', 'CM', 'EE', 'QI', 'EL', 'QL', 'PM', 'PAD', 'SAD', 'CAD'],
+
+    // The four that actually drive the RFI/NC flows. SM03 maps EXACTLY these onto
+    // the work areas; the hierarchy tiers are handled by SM04's cascade instead,
+    // because they are not all work-area-scoped (PM and PAD are work-location
+    // roles, SAD is site-level) and need different dialog handling.
+    flowRoles: ['CI', 'CM', 'EE', 'QI'],
+
+    // The tiers SM04 walks DOWN, top first, each one mapping the tier below it.
+    // Admin is the root of that cascade and comes from .env — never created here.
+    hierarchyRoles: ['CAD', 'SAD', 'PAD', 'PM', 'EL', 'QL'],
+
+    // Every prefix is project-scoped so it can never collide with
+    // 12_user_management.spec.js's bare CAD/SAD/PAD/PM/EL/QL/CIC keys in the
+    // shared fixtures/last-created-users.json. 18_wam_hierarchy.spec.js resolves
+    // ITS users by those bare prefixes, so overwriting them would break it.
+    prefixes: {
+      CI: 'CISL', CM: 'CMSL', EE: 'EESL', QI: 'QISL',
+      EL: 'ELSL', QL: 'QLSL', PM: 'PMSL',
+      PAD: 'PADSL', SAD: 'SADSL', CAD: 'CADSL',
+    },
+
+    // Role labels and userTypes are verbatim from 12_user_management.spec.js,
+    // which is the creation source of truth for all eleven roles.
     roles: {
       CISL: { role: 'Contractor Incharge', userType: 'VENDOR' },
       CMSL: { role: 'Contractor Manager', userType: 'VENDOR' },
       EESL: { role: 'Execution Engineer', userType: 'AGEL' },
       QISL: { role: 'Quality Inspector', userType: 'AGEL' },
+      ELSL: { role: 'Execution Lead', userType: 'AGEL' },
+      QLSL: { role: 'Quality Lead', userType: 'AGEL' },
+      PMSL: { role: 'Project Manager', userType: 'AGEL' },
+      PADSL: { role: 'Plot Admin', userType: 'AGEL' },
+      SADSL: { role: 'Site Admin', userType: 'AGEL' },
+      CADSL: { role: 'Cluster Admin', userType: 'AGEL' },
     },
   },
 
@@ -419,8 +534,8 @@ const SOLAR_E2E = {
   //   * Solar activity/checkpoint names carry NO numeric prefix (that is a wind
   //     rendering trait), so these are the bare names.
   rfi: {
-    workLocation: 'A-06c',
-    workArea: 'BL21',
+    workLocation: 'S05b',
+    workArea: 'BL03',
     package: 'Civil',
     subPackage: 'Piling (MMS, Inverter, LT Cable Hangers)',
     activity: 'Piling - MMS',
@@ -444,10 +559,35 @@ const SOLAR_E2E = {
     ],
   },
 
-  // The solar NC form has not been driven by this chain yet. NC_DATA in
-  // nc-flow-turns.js has the proven values (A-06c, Piling - Robotic Docking
-  // System, CHOUHAN) if/when stage 6 is written.
-  nc: null,
+  // NC create-form data. Every value here is the PROVEN combination from
+  // nc-flow-turns.js NC_DATA, which the tracked 4-TC NC regression has always
+  // used — only the Work Location and Work Area move (S05b / BL05 instead of
+  // A-06c / __first__), so the activity, defect and category strings are not
+  // guesswork.
+  //
+  // NEEDS FIRST-RUN CONFIRMATION: "Piling - Robotic Docking System" has only ever
+  // been driven on A-06c. The app owner confirms every BL{nn} area supports the
+  // solar activities, but that this activity is present under S05b's Civil
+  // package is inferred rather than observed. It fails loudly at the activity
+  // dropdown if not.
+  //
+  // BL05 is shared by both NC viewports and is disjoint from the RFI areas — see
+  // flowWorkAreas above for why that separation is a hard requirement.
+  nc: {
+    workLocation: 'S05b',
+    workArea: 'BL05',
+    vendorName: 'CHOUHAN',
+    package: 'Civil',
+    activity: 'Piling - Robotic Docking System',
+    subActivity: 'Piling - Robotic Docking System',
+    workSectionCount: 2,
+    ncQuantity: 2,
+    unit: 'EA',
+    defectType: 'Workmanship defect',
+    category: 'Critical',
+    // Mandatory per an app change; 14 days from the run date.
+    targetDateClosureDays: 14,
+  },
 };
 
 const PROFILES = {
@@ -466,6 +606,52 @@ function getProfile(key) {
   return profile;
 }
 
+// Resolves the ORDERED work-area pool for one (flow, viewport), most-preferred
+// first. Lives here because this file owns the flowWorkAreas shape, so the RFI
+// stage, the NC stage and the recon specs cannot disagree about how to read it.
+//
+// FALLTHROUGH IS DELIBERATELY LIMITED to areas no flow has claimed and that are
+// not the demap sacrificial area. Appending "every other work area" — which an
+// earlier version did — would let the NC stage fall through onto RFI ground, and
+// a non-approved NC there BLOCKS RFI create/resubmit for the same (checkpoint,
+// work section). The pools are disjoint on purpose; the fallthrough must not
+// undo that.
+//
+// Accepts the legacy FLAT shape ({ desktop, mobile }) as well as the canonical
+// per-flow one ({ rfi: {...}, nc: {...} }), so a profile that has not been
+// migrated keeps resolving instead of silently returning an empty pool.
+function resolveFlowWorkAreas(profile, { flow, viewport }) {
+  const all = (profile.workAreas || []).filter(Boolean);
+  const map = profile.flowWorkAreas || {};
+
+  const perFlow = map[flow] && !Array.isArray(map[flow]) ? map[flow] : null;
+  const raw = perFlow ? perFlow[viewport] : map[viewport];
+  const preferred = (Array.isArray(raw) ? raw : [raw]).filter(Boolean);
+
+  // Everything any flow claims, plus the demap area — not valid fallthrough.
+  const claimed = new Set();
+  const collect = (v) => {
+    if (!v) return;
+    if (Array.isArray(v)) v.filter(Boolean).forEach((a) => claimed.add(a));
+    else if (typeof v === 'object') Object.values(v).forEach(collect);
+  };
+  collect(map);
+  if (profile.demapWorkArea) claimed.add(profile.demapWorkArea);
+
+  const spare = all.filter((a) => !claimed.has(a) && !preferred.includes(a));
+  const pool = [...preferred, ...spare];
+  if (pool.length) return pool;
+
+  const fallback = [profile.primaryWorkArea || (profile.rfi && profile.rfi.workArea)].filter(Boolean);
+  if (!fallback.length) {
+    throw new Error(
+      `Profile "${profile.key}" resolves no work area for flow "${flow}" / viewport ` +
+      `"${viewport}". Check flowWorkAreas and workAreas in tests/config/projects.js.`
+    );
+  }
+  return fallback;
+}
+
 // Throws with a useful message rather than letting a null flow into a
 // dropdown selection and fail as an inscrutable timeout 40 lines deeper.
 function requireField(profile, fieldPath) {
@@ -481,7 +667,7 @@ function requireField(profile, fieldPath) {
 }
 
 module.exports = {
-  PROFILES, getProfile, requireField,
+  PROFILES, getProfile, requireField, resolveFlowWorkAreas,
   SOLAR_REGRESSION, SOLAR_E2E, WIND_E2E,
   CLUSTER_CANDIDATES, SITE,
 };
