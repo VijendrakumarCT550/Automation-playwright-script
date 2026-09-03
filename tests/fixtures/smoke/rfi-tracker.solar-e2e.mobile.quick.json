@@ -1,0 +1,26 @@
+{
+  "TC-01": {
+    "rfiId": "a580eda0-4f55-4881-b5b7-65e6b7eba1f6",
+    "rfiCode": "RFI-S05b-BL04-CIV-10",
+    "currentStepIndex": 2,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL04",
+    "workSection": "R01-T01",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16
+  }
+}

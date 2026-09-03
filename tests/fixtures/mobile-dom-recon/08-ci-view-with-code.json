@@ -1,0 +1,81 @@
+{
+  "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/7007ecd5-bee9-4acc-b799-54d4d4f9f17b/view",
+  "viewport": {
+    "w": 412,
+    "h": 839
+  },
+  "headings": [],
+  "buttons": [
+    {
+      "text": "",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": null,
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_ghost button--size_lg ml_-2 p_0"
+    },
+    {
+      "text": "",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": "Light Theme",
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:dark:c_colorPalette.12"
+    },
+    {
+      "text": "Close",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": null,
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_outline button--size_xs c_destructive.9 bd-c_destructive.5 px_2"
+    },
+    {
+      "text": "Proceed",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": null,
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_gradient button--size_xs"
+    }
+  ],
+  "links": [
+    {
+      "text": "C.I. CISLwttUser60",
+      "href": "tel:7067868797"
+    },
+    {
+      "text": "E.E. EESLzntUser60",
+      "href": "tel:8706191650"
+    },
+    {
+      "text": "Q.I. QISLeubUser60",
+      "href": "tel:7934731078"
+    }
+  ],
+  "comboboxes": [],
+  "radios": [],
+  "checkboxes": [],
+  "textInputs": [],
+  "dialogs": [],
+  "dialogTriggers": 0,
+  "grids": [],
+  "toasts": [],
+  "bodyText": "Project Lifecycle Platform\n\nRFI-A-06c-BL22-CIV-680\n\nv1\n\nRFI Details\n\n(* Required fields)\n\nPage 1 of 2\n\nC.I.\n\nCISLwttUser60\n\n›\n\nE.E.\n\nEESLzntUser60\n\n›\n\nQ.I.\n\nQISLeubUser60\n\nCreated at\n\n01 Sept 11:25 AM\n\n19 seconds ago\n\nLast updated on\n\n01 Sept 11:25 AM\n\n6 seconds ago\n\nProject Name\n\nMLP T3 AP\n\nWork Location\n\nA-06c\n\nWork Area\n\nBL22\n\nContractor Name\n\nM S CHOUHAN INFRAVENTURES PVT LTD\n\nSub-Contractor Name\n\nService Order\n\n4810024058\n\nPackage\n\nCivil\n\nSub-Package\n\nPiling (MMS, Inverter, LT Cable Hangers)\n\nActivity\n\nPiling - MMS\n\nSub-Activity\n\nPiling - MMS\n\nQuantity\n\n-\n\nUnit of Measurement\n\n-\n\nInspection Checkpoint\n\nPre Pour Inspection - Pile\n\nInspection Checklist\n\nMicro Pile Checklist\n\nWork Section - ( 1 ) *\n\nR01-S03\n\nClose\nProceed"
+}

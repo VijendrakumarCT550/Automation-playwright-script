@@ -1,0 +1,380 @@
+{
+  "TC-01": {
+    "rfiId": "e58b7c4c-4a70-4ff6-8b54-95b2123f691c",
+    "rfiCode": "RFI-S05b-BL03-CIV-1",
+    "currentStepIndex": 2,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T02",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16
+  },
+  "TC-02": {
+    "rfiId": "e131853a-2d3a-495b-b083-9d32ea2c6194",
+    "rfiCode": "RFI-S05b-BL03-CIV-2",
+    "currentStepIndex": 4,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T03",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16,
+    "failureReason": null,
+    "failureStage": null,
+    "failureScenario": null,
+    "failureScreenshot": null,
+    "failureHtml": null,
+    "failureUrl": null
+  },
+  "TC-03": {
+    "rfiId": "19fb291f-12e0-4781-89a1-0e3407fc82e1",
+    "rfiCode": "RFI-S05b-BL03-CIV-3",
+    "currentStepIndex": 4,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T04",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16,
+    "failureReason": null,
+    "failureStage": null,
+    "failureScenario": null,
+    "failureScreenshot": null,
+    "failureHtml": null,
+    "failureUrl": null
+  },
+  "TC-04": {
+    "rfiId": "cac05d92-84b5-401c-903b-0bac5704cb4b",
+    "rfiCode": "RFI-S05b-BL03-CIV-4",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T05",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16,
+    "failureReason": null,
+    "failureStage": null,
+    "failureScenario": null,
+    "failureScreenshot": null,
+    "failureHtml": null,
+    "failureUrl": null
+  },
+  "TC-05": {
+    "rfiId": "88e399de-58dd-4f68-b51a-381a43ae1afb",
+    "rfiCode": "RFI-S05b-BL03-CIV-5",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T06",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16
+  },
+  "TC-06": {
+    "rfiId": "9f6a4fdc-4dc5-43a8-b4cd-ed31df1ffac1",
+    "rfiCode": "RFI-S05b-BL03-CIV-6",
+    "currentStepIndex": 7,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T07",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16
+  },
+  "TC-07": {
+    "rfiId": "4faf935b-75c4-404b-bf81-baf7023871bf",
+    "rfiCode": "RFI-S05b-BL03-CIV-7",
+    "currentStepIndex": 7,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T08",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16,
+    "failureReason": null,
+    "failureStage": null,
+    "failureScenario": null,
+    "failureScreenshot": null,
+    "failureHtml": null,
+    "failureUrl": null
+  },
+  "TC-08": {
+    "rfiId": "adaa8fcd-43e6-450e-abd8-2be52c808e68",
+    "rfiCode": "RFI-S05b-BL03-CIV-8",
+    "currentStepIndex": 7,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P1"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T09",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16
+  },
+  "TC-09": {
+    "rfiId": "585d5921-0450-4d0b-b04c-5af8f2431bcd",
+    "rfiCode": "RFI-S05b-BL03-CIV-9",
+    "currentStepIndex": 7,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "EE",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject",
+        "page": "P2"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL03",
+    "workSection": "R01-T10",
+    "checkpointCode": "A.1.1.1",
+    "subActivity": "Piling - MMS",
+    "checklist": "Micro Pile Checklist",
+    "expectObservations": true,
+    "observationCount": 16,
+    "failureReason": null,
+    "failureStage": null,
+    "failureScenario": null,
+    "failureScreenshot": null,
+    "failureHtml": null,
+    "failureUrl": null
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks",
+  "viewport": {
+    "w": 412,
+    "h": 839
+  },
+  "headings": [],
+  "buttons": [
+    {
+      "text": "",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": null,
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_ghost button--size_lg ml_-2 p_0"
+    },
+    {
+      "text": "",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": "Light Theme",
+      "id": null,
+      "dataScope": null,
+      "dataPart": null,
+      "dataState": null,
+      "disabled": false,
+      "cls": "button button--variant_ghost button--size_xs bdr_full p_0 [&_svg]:light:c_colorPalette.12 [&_svg]:dark:c_colorPalette.12"
+    },
+    {
+      "text": "",
+      "tag": "button",
+      "role": null,
+      "ariaLabel": null,
+      "id": "dialog::r3::trigger",
+      "dataScope": "dialog",
+      "dataPart": "trigger",
+      "dataState": "closed",
+      "disabled": false,
+      "cls": "button button--variant_ghost button--size_xs c_fg.default bdr_full min-w_11 h_11 px_2 pos_relative hover:bg_bg.3 ring_none dialog__trigger"
+    },
+    {
+      "text": "RFI",
+      "tag": "button",
+      "role": "tab",
+      "ariaLabel": null,
+      "id": "tabs::r2::trigger-rfi",
+      "dataScope": "tabs",
+      "dataPart": "trigger",
+      "dataState": null,
+      "disabled": false,
+      "cls": "bd_none w_50% c_neutral.default selected:c_accent.1 tabs__trigger tabs__trigger--size_sm tabs__trigger--variant_enclosed h_8 min-w_8 textStyle_sm px_3"
+    },
+    {
+      "text": "NC",
+      "tag": "button",
+      "role": "tab",
+      "ariaLabel": null,
+      "id": "tabs::r2::trigger-nc",
+      "dataScope": "tabs",
+      "dataPart": "trigger",
+      "dataState": null,
+      "disabled": false,
+      "cls": "bd_none w_50% c_neutral.default selected:c_accent.1 tabs__trigger tabs__trigger--size_sm tabs__trigger--variant_enclosed h_8 min-w_8 textStyle_sm px_3"
+    }
+  ],
+  "links": [
+    {
+      "text": "Pending with me",
+      "href": "/my-tasks/rfi/list/pending-with-me"
+    },
+    {
+      "text": "Pending with others",
+      "href": "/my-tasks/rfi/list/pending-with-others"
+    },
+    {
+      "text": "Approved",
+      "href": "/my-tasks/rfi/list/approved"
+    }
+  ],
+  "comboboxes": [],
+  "radios": [],
+  "checkboxes": [],
+  "textInputs": [],
+  "dialogs": [],
+  "dialogTriggers": 1,
+  "grids": [],
+  "toasts": [],
+  "bodyText": "Project Lifecycle Platform\n\nMy Tasks\n\nRFI\nNC\n\nPending with me\n\nPending with others\n\nApproved"
+}

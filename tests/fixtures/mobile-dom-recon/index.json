@@ -1,0 +1,238 @@
+{
+  "capturedAt": "2026-09-01T07:46:53.274Z",
+  "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+  "profile": "solar-e2e",
+  "workArea": "BL22",
+  "rejectMode": "P1",
+  "rfiId": "44045677-b858-4a50-a250-70b896b3d487",
+  "rfiCode": "RFI-A-06c-BL22-CIV-686",
+  "screens": [
+    {
+      "file": "101-reject-P1-ee-review-page1",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Reject RFI",
+        "Proceed"
+      ],
+      "dialogCount": 1,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "102-reject-P1-popup",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/view",
+      "headings": [
+        "Reject RFI Details"
+      ],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Reject RFI",
+        "Proceed",
+        "Reject"
+      ],
+      "dialogCount": 3,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "103-reject-P1-popup-filled",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/view",
+      "headings": [
+        "Reject RFI Details"
+      ],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Reject RFI",
+        "Proceed",
+        "Reject"
+      ],
+      "dialogCount": 3,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "104-reject-P1-after",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "RFI",
+        "NC"
+      ],
+      "dialogCount": 0,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "105-resubmit-P1-ci-my-tasks",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "21",
+        "RFI",
+        "NC",
+        "Create RFI"
+      ],
+      "dialogCount": 0,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "106-resubmit-P1-ci-opened-view",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/re-submit",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "A-06c",
+        "BL22",
+        "Civil",
+        "Piling (MMS, Inverter, LT Cable Hangers)",
+        "Piling - MMS",
+        "Piling - MMS",
+        "Select Unit",
+        "Pre Pour Inspection - Pile",
+        "Micro Pile Checklist",
+        "R01-S06",
+        "Cancel",
+        "Draft",
+        "Proceed"
+      ],
+      "dialogCount": 1,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "107-resubmit-P1-form-page1",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/re-submit",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "A-06c",
+        "BL22",
+        "Civil",
+        "Piling (MMS, Inverter, LT Cable Hangers)",
+        "Piling - MMS",
+        "Piling - MMS",
+        "Select Unit",
+        "Pre Pour Inspection - Pile",
+        "Micro Pile Checklist",
+        "R01-S06",
+        "Cancel",
+        "Draft",
+        "Proceed"
+      ],
+      "dialogCount": 1,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "108-resubmit-P1-checklist",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/358deb70-60b6-49bd-86e2-3921c8b7f422/re-submit",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Cancel",
+        "Draft",
+        "Submit"
+      ],
+      "dialogCount": 2,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "109-resubmit-P1-after-submit",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/44045677-b858-4a50-a250-70b896b3d487/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Dismiss notification"
+      ],
+      "dialogCount": 0,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": [
+        "RFI Submitted",
+        "RFI Submitted"
+      ]
+    },
+    {
+      "file": "110-resubmit-P1-ee-review",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/44045677-b858-4a50-a250-70b896b3d487/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Reject RFI",
+        "Proceed"
+      ],
+      "dialogCount": 1,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "111-resubmit-P1-ee-approved",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/44045677-b858-4a50-a250-70b896b3d487/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Dismiss notification"
+      ],
+      "dialogCount": 0,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": [
+        "RFI Reviewed",
+        "RFI Reviewed"
+      ]
+    },
+    {
+      "file": "112-resubmit-P1-qi-review",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/44045677-b858-4a50-a250-70b896b3d487/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Reject RFI",
+        "Proceed"
+      ],
+      "dialogCount": 1,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": []
+    },
+    {
+      "file": "113-resubmit-P1-qi-approved",
+      "url": "https://pulse-dev.cfapps.ap11.hana.ondemand.com/my-tasks/rfi/44045677-b858-4a50-a250-70b896b3d487/view",
+      "headings": [],
+      "buttons": [
+        "Light Theme",
+        "Close",
+        "Dismiss notification"
+      ],
+      "dialogCount": 0,
+      "gridCount": 0,
+      "radioCount": 0,
+      "toasts": [
+        "RFI Reviewed",
+        "RFI Reviewed"
+      ]
+    }
+  ]
+}
