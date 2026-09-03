@@ -49,6 +49,13 @@ Built so far — see section 6 for detail:
 
 ---
 
+> **Durable rules, conventions and the decision log live in**
+> **[app-owner-decisions-and-conventions.md](app-owner-decisions-and-conventions.md).**
+> Read that first: it holds the business rules (code composition, the
+> NC-blocks-RFI rule, single-assignee WAM), the environment facts, the working
+> conventions, and every dated decision. This doc is the smoke chain's own
+> design and running record.
+
 ## 1. What this suite is for
 
 One ordered chain per project type that proves the whole product works end to
