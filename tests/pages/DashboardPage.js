@@ -137,16 +137,59 @@ class DashboardPage extends BasePage {
   // different animation frames. This polls until two CONSECUTIVE reads
   // match (the animation has finished settling) rather than trusting one
   // fixed-delay snapshot to be post-animation.
-  async waitForStableChartFingerprint(title, { timeout = 5000, intervalMs = 250 } = {}) {
-    const deadline = Date.now() + timeout;
-    let previous = await this.getChartDataFingerprint(title);
-    while (Date.now() < deadline) {
-      await this.page.waitForTimeout(intervalMs);
-      const current = await this.getChartDataFingerprint(title);
-      if (current === previous) return current;
-      previous = current;
+  async waitForStableChartFingerprint(title, { timeout = 5000, intervalMs = 250, emptyTimeout = 10000, emptyRetries = 2 } = {}) {
+    const settle = async (deadline) => {
+      let previous = await this.getChartDataFingerprint(title);
+      while (Date.now() < deadline) {
+        await this.page.waitForTimeout(intervalMs);
+        const current = await this.getChartDataFingerprint(title);
+        if (current === previous) return current;
+        previous = current;
+      }
+      return previous;
+    };
+
+    let result = await settle(Date.now() + timeout);
+
+    // An EMPTY result (rects present, zero paths — e.g. "202x136::") is
+    // AMBIGUOUS in a way a non-empty one is not: it can mean either "this
+    // chart genuinely has no data to draw" or "the data fetch simply hasn't
+    // resolved yet, and two consecutive reads happened to both land before
+    // anything painted." Found live 2026-09-05 on tests/smoke/SM18's role
+    // sweep: Cluster Admin's and Site Admin's baseline RFI read settled on
+    // "202x136::" within the normal 5s window, then the SAME chart's later
+    // "switch back to RFI" read came back with real path data — proving the
+    // first read was the pre-paint race, not a genuinely empty chart. (Execution
+    // Lead's and Quality Lead's charts stayed empty on BOTH the RFI and NC
+    // reads, consistent with the same race just not resolving in time either
+    // way — or with those tiers genuinely having nothing to show; this fix
+    // cannot tell those apart, it can only stop settling on "empty" too early.)
+    //
+    // So an empty settle gets more, LONGER chances before being trusted —
+    // this can only ever turn a premature empty read into the real one; a
+    // chart that settles non-empty on the first pass, or is still genuinely
+    // empty after every retry, is completely unaffected.
+    //
+    // CONFIRMED LIVE 2026-09-05, run 4 of the full smoke chain (~2h in):
+    // ONE extra 10s pass (the original fix) was not always enough either —
+    // Cluster Admin's and Site Admin's baseline RFI reads STILL settled
+    // empty after that single retry, and were STILL proven wrong afterward
+    // (the same chart's later "switch back to RFI" read, elsewhere in the
+    // same test, came back with real path data for the identical query).
+    // Retrying the longer window a few times (default: 2, so up to
+    // timeout + emptyTimeout*2 worst-case) gives a genuinely slow paint —
+    // more likely this deep into a long, loaded run — more real chances
+    // before this method commits to "empty" as the final answer. Execution
+    // Lead's and Quality Lead's NC-side charts stayed empty through every
+    // retry in that same run; this cannot distinguish "still too slow" from
+    // "genuinely nothing to draw for that tier" — it can only keep giving a
+    // slow paint more time to prove itself.
+    let attempts = 0;
+    while (result.endsWith('::') && attempts < emptyRetries) {
+      result = await settle(Date.now() + emptyTimeout);
+      attempts++;
     }
-    return previous;
+    return result;
   }
 
   // A sidebar/drawer nav entry by its visible name, on either viewport.

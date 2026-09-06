@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
 const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { smokeMappedWorkAreas } = require('../config/projects');
 const WAMPage = require('../pages/WAMPage');
 
 // Stage 3 of the E2E smoke chain: Admin assigns each of the four users created
@@ -8,16 +9,29 @@ const WAMPage = require('../pages/WAMPage');
 // flow. Without this, the users exist and have activity access via SO Mapping
 // but no work area, and nothing can be raised.
 //
-// Deliberately assigns only the work areas the profile NAMES (profile.workAreas
-// — currently a single entry for wind), not every area of the work location.
-// WTG-Khavda has 244 work areas; a full-location assignment would be a very
-// different, much slower test, and the flow stages only need the named ones.
+// Deliberately assigns only the work areas the chain NAMES
+// (smokeMappedWorkAreas — the flow areas plus the feature-depth areas that need
+// flow-role access), not every area of the work location. WTG-Khavda has 244
+// work areas; a full-location assignment would be a very different, much slower
+// test, and no stage needs the rest.
 //
 // Contractor Incharge and Contractor Manager are VENDOR roles and their WAM
-// dialog carries an extra Service Order field (see 07_wam_ci.spec.js) which
-// gates assignment to work already mapped to that vendor in SO Mapping — i.e.
-// this stage depends on stage 2 having run. Execution Engineer and Quality
-// Inspector have no such field; fillAssignmentFilters skips it when absent.
+// dialog carries an extra Service Order field which gates assignment to work
+// already mapped to that vendor. Execution Engineer and Quality Inspector have
+// no such field; fillAssignmentFilters skips it when absent.
+//
+// THAT GATE IS ALREADY SATISFIED AND NEEDS NO STAGE OF ITS OWN. This comment
+// used to say "this stage depends on stage 2 having run" — stale and actively
+// misleading in two ways: SM02 is no longer a stage at all (SO mapping was
+// removed from PULSE and now lives in DRS, so there is no screen here to drive
+// it from), and the mapping is already in place regardless. App owner,
+// 2026-09-04: "SO is mapped proerly in S05b whole work location so dont worry
+// about SO mappping prerequisite."
+//
+// So a vendor-role assignment failing here is NOT a missing prerequisite to go
+// provision — it is either the wrong Service Order being picked (the profile
+// passes the precise SO string first with the vendor name only as a fallback,
+// because a vendor can hold several SOs) or a genuine app problem.
 test.describe.configure({ mode: 'serial' });
 
 // Only the FLOW roles are work-area-scoped, so only they belong in this stage's
@@ -52,9 +66,10 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
     ).toEqual([]);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
-    const areas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
-      ? profile.workAreas.filter(Boolean)
-      : [profile.primaryWorkArea].filter(Boolean);
+    // FLOW areas plus the feature-depth areas that need flow-role access —
+    // see smokeMappedWorkAreas() in tests/config/projects.js for what it
+    // includes and, more importantly, what it deliberately leaves out.
+    const areas = smokeMappedWorkAreas(profile);
     console.log(
       `\n=== Smoke WAM: profile "${profile.key}" -> ${profile.workLocations[0]} / ` +
       `${areas.length} work area(s): ${areas.join(', ')} ===`
@@ -72,9 +87,7 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
   for (const roleKey of FLOW_ROLES) {
     test(`assign the ${roleKey} user to every work area`, async () => {
       const user = users[roleKey];
-      const workAreas = (profile.workAreas && profile.workAreas.filter(Boolean).length)
-        ? profile.workAreas.filter(Boolean)
-        : [profile.primaryWorkArea].filter(Boolean);
+      const workAreas = smokeMappedWorkAreas(profile);
       expect(workAreas.length, `Profile "${profile.key}" has no work areas set`).toBeGreaterThan(0);
 
       // ONE dialog, ALL work area rows, ONE Submit.

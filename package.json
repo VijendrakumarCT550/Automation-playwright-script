@@ -13,7 +13,23 @@
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
     "reset:rfi-tracker": "node tests/utils/reset-tracker.js",
-    "reset:nc-tracker": "node tests/utils/reset-nc-tracker.js"
+    "reset:nc-tracker": "node tests/utils/reset-nc-tracker.js",
+    "smoke:status": "node tests/utils/print-smoke-trackers.js",
+    "smoke:status:json": "node tests/utils/print-smoke-trackers.js --json",
+    "smoke:full": "node tests/utils/run-smoke.js solar",
+    "smoke:full:artifacts": "cross-env PLAYWRIGHT_JSON_OUTPUT_NAME=smoke-reports/results.json PLAYWRIGHT_JUNIT_OUTPUT_NAME=smoke-reports/junit.xml node tests/utils/run-smoke.js solar -- --reporter=list,html,json,junit",
+    "smoke:full:qa": "cross-env PULSE_ENV=qa npm run smoke:full:artifacts",
+    "smoke:full:test": "cross-env PULSE_ENV=test npm run smoke:full:artifacts",
+    "smoke:full:qa:reset": "cross-env PULSE_ENV=qa SMOKE_RESET=1 npm run smoke:full:artifacts",
+    "smoke:full:test:reset": "cross-env PULSE_ENV=test SMOKE_RESET=1 npm run smoke:full:artifacts",
+    "smoke:full:reuse": "cross-env SMOKE_USERS=reuse node tests/utils/run-smoke.js solar",
+    "smoke:full:reset": "cross-env SMOKE_RESET=1 node tests/utils/run-smoke.js solar",
+    "smoke:full:retry": "cross-env SMOKE_RETRY_FAILED=1 node tests/utils/run-smoke.js solar",
+    "smoke:wind": "node tests/utils/run-smoke.js wind",
+    "smoke:restore": "playwright test --workers=1 --project=smoke-solar-restore",
+    "smoke:list": "node tests/utils/run-smoke.js solar --list",
+    "smoke:solar": "node tests/utils/run-smoke.js solar",
+    "smoke:solar:artifacts": "cross-env PLAYWRIGHT_JSON_OUTPUT_NAME=smoke-reports/results.json PLAYWRIGHT_JUNIT_OUTPUT_NAME=smoke-reports/junit.xml node tests/utils/run-smoke.js solar -- --reporter=list,html,json,junit"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +37,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.61.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "xlsx": "^0.18.5"
   }

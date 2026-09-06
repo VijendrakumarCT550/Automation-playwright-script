@@ -1,7 +1,7 @@
 {
   "TC-01": {
-    "ncId": "683a5f27-f03b-4e53-b5df-705b11aa4370",
-    "ncCode": "NC-S05b-BL05-CIV-1",
+    "ncId": "97cdc4b8-cdc0-43d9-a418-e6351d7381f1",
+    "ncCode": "NC-S05b-BL03-CIV-13",
     "currentStepIndex": 3,
     "currentVersion": "V1",
     "status": "done",
@@ -19,11 +19,11 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL05"
+    "workArea": "BL03"
   },
   "TC-02": {
-    "ncId": "8a9c3e88-3aa0-4b88-8181-7a809f93e400",
-    "ncCode": "NC-S05b-BL05-CIV-2",
+    "ncId": "a885dbbe-f5f3-40e1-91e7-b1550e4480e9",
+    "ncCode": "NC-S05b-BL03-CIV-14",
     "currentStepIndex": 5,
     "currentVersion": "V1",
     "status": "done",
@@ -49,14 +49,14 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL05"
+    "workArea": "BL03"
   },
   "TC-03": {
-    "ncId": "bc40d090-7694-4cba-b4f5-121ee82d2c8b",
-    "ncCode": "NC-S05b-BL05-CIV-3",
-    "currentStepIndex": 6,
+    "ncId": "02809e5c-a4ee-49d6-82ab-4fafe1947a3c",
+    "ncCode": "NC-S05b-BL03-CIV-15",
+    "currentStepIndex": 4,
     "currentVersion": "V1",
-    "status": "done",
+    "status": "failed",
     "steps": [
       {
         "actor": "CI",
@@ -83,11 +83,17 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL05"
+    "workArea": "BL03",
+    "failureReason": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Review' }).first()\u001b[22m\n",
+    "failureStage": "EE approve",
+    "failureScenario": null,
+    "failureScreenshot": "test-results\\smoke-nc-failures\\TC-03-EE-approve.png",
+    "failureHtml": "test-results\\smoke-nc-failures\\TC-03-EE-approve.html",
+    "failureUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com/my-tasks/nc/cd8fd337-03de-4099-9dce-d47c86413e25"
   },
   "TC-04": {
-    "ncId": "3935cafa-005b-43e5-aea1-46bcc64ac2b1",
-    "ncCode": "NC-S05b-BL05-CIV-4",
+    "ncId": "512786f3-496e-4de6-87d8-ba308978de1c",
+    "ncCode": "NC-S05b-BL03-CIV-16",
     "currentStepIndex": 8,
     "currentVersion": "V1",
     "status": "done",
@@ -125,6 +131,6 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL05"
+    "workArea": "BL03"
   }
 }

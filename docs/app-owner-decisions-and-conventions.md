@@ -25,6 +25,26 @@ is linked, not duplicated:
 
 These are instructions about *how to work*, not about the app.
 
+**DO NOT COLLAPSE THE SMOKE STRUCTURE TO SOLAR-ONLY.** App owner, 2026-09-04:
+*"we will include different project type later in future so dont change this
+smoke structure, as of now we are only going with Solar."*
+
+Solar being the only ACTIVE project type is a matter of current focus, not a
+reason to simplify. Specifically, do not:
+
+* delete or inline the `WIND_E2E` profile, or fold the profile layer back into
+  hardcoded literals;
+* remove the `smoke-wind-*` projects from `playwright.config.js`;
+* replace anything profile-driven with a solar constant — `workSectionGranularity`,
+  `viewports`, `flowWorkAreas`, `users.prefixes`, `cluster`/`site` and the
+  per-checkpoint `subPackage`/`activity` overrides all exist precisely so a new
+  project type declares its own behaviour instead of inheriting solar's.
+
+More project types are coming (the app offers SOLAR, WIND, INFRA, PSS, BESS,
+TRANSMISSION_LINE and ADMIN), and DRS can host pilot projects of every kind. The
+cost of keeping the seams is a little indirection; the cost of removing them is
+rebuilding the whole parameterisation later.
+
 **One run at a time.** Never overlap flow-test invocations. Confirm the previous
 one has fully exited before launching the next.
 
@@ -36,6 +56,34 @@ one has fully exited before launching the next.
 > the matched process tree — `node.exe` whose command line contains
 > `playwright*test`, plus any `chrome.exe` under `ms-playwright` (never by image
 > name alone) — and verify clean *before* launching.
+
+**Build a new feature spec in `tests/specs/` first, then promote it.** App owner,
+2026-09-06: *"if u want a feature related spec to create and run you can do it in
+specs folder — once its working properly then u can add that in smoke folder as
+part of chain."*
+
+`tests/specs/` is the exploration tier, so a spec under development can be run
+one at a time, iterated on and left broken without touching the chain. Only once
+it passes live does it become an `SM*` replica and get a project in
+`playwright.config.js`. This supersedes nothing about the smoke tier being
+self-contained — the promoted copy still resolves its users through
+`resolveSmokeUsers()` and its ground through `profile.featureGround`; it just
+means the chain never carries an unproven stage.
+
+*(SM28 was built the other way round — straight into `tests/smoke/` — because it
+was written before this rule was stated. Everything for G-01…G-26 follows the
+rule.)*
+
+**While developing, skip the flow stages.** App owner, 2026-09-06: *"our whole
+smoke project full run takes about 1.5~2 hours so you can skip RFI and NC flow
+which is much time taking, and once newly added features are working properly
+then run a full smoke run to test everything together."*
+
+`SM05` (RFI 9-TC, ~17 min desktop + ~22 min mobile) and `SM06` (NC 4-TC, ~9 min
+each viewport) are roughly **57 of the ~120 minutes**. Iterate without them, then
+prove the whole thing together once. Concretely, that means running the specific
+`--project` under development with `--no-deps`, and reserving `npm run smoke:full`
+for the confirmation pass.
 
 **No automatic commits.** Do not `git add`/`commit` unprompted. The app owner
 stages and commits, or says explicitly when to.
@@ -88,6 +136,29 @@ before trusting where a run went.
 Measured on pulse-qa: creating 10 users took 1.4 min; WAM for 4 roles across 4
 work areas took 59 s. Earlier estimates that assumed every login was a PWA load
 were wrong by more than an order of magnitude.
+
+**THE LONG-STANDING .env ACCOUNTS ARE NOW A LIABILITY ON QA** (measured
+2026-09-04). Freshly created users log in fast; the .env role accounts do not:
+
+| Account | Login on pulse-qa |
+|---|---|
+| created smoke users (CISL/EESL/QISL...) | fast — three in parallel, a whole RFI quick pass in 4 min |
+| `.env` CI | **7.9 minutes** |
+| `.env` EE | **hung** — screenshot shows the PWA spinner at **100%**, never reaching the dashboard, until the 10-minute test timeout |
+| `.env` QI | never got to run |
+
+Note it does NOT fail — it reaches 100% and stalls. Likeliest cause: these
+accounts carry months of accumulated offline data across many work areas, so
+their PWA sync payload is far larger than a fresh user's. This also supersedes
+the older note that the `.env` CI got a 401 on QA — it authenticates fine now.
+
+**Consequence for the smoke suite.** The SM* stages are unaffected (they use
+created users). But six feature stages resolve `.env` users and are therefore
+slow or flaky here: `23_rfi_data_integrity`, `24_rfi_draft_autosave`,
+`29_rfi_activity_dependency`, `30_..._scarce_work_section`, and anything else
+going through `loginAsRole`. Options, in increasing cost: raise the global test
+timeout above 10 minutes as a stopgap; re-point those specs at created users (a
+real rewrite); or have the accounts' offline data trimmed.
 
 **Before any new login, clear the whole browser session** — cookies *and*
 localStorage *and* sessionStorage. A cookie-only clear leaves PULSE's autosaved
@@ -155,8 +226,17 @@ released the section. **It does not. Nothing releases it except deleting the RFI
 from the database.**
 
 The reason is what an RFI *is*: a record that a piece of work was completed. Once
-an activity is done for a work section, that activity's RFI cannot be raised
-against it again, because the work is not there to do twice.
+that work is done for a work section, its RFI cannot be raised against it again,
+because the work is not there to do twice.
+
+**The consumption key is (SUB-ACTIVITY, CHECKPOINT, WORK SECTION)** — app owner,
+2026-09-04. Their example: sub-activities A and B, A with 4 checkpoints and B with
+3, and each one's FIRST checkpoint depending on nothing. Both first checkpoints
+can hold an RFI **in the same work area and the same work section**, because they
+are different (sub-activity, checkpoint) pairs.
+
+So the same work section stays selectable when the SUB-ACTIVITY and its related
+checkpoint change — not merely when the activity label changes.
 
 **Two ways to keep going when a work area runs dry**, and the second is the one
 worth remembering:
@@ -210,17 +290,93 @@ still counted it pending. A run starting seconds after a create read
 what the run has consumed, and treat the server's rejection toast as the
 authority.
 
-### 3.6 WAM's CI and QI rows are single-assignee
+### 3.6 Per-tier role restriction, measured
+
+Which roles a tier may assign, read live off the WAM Role dropdown during SM04's
+cascade (2026-09-04):
+
+| Logged in as | May assign | Count |
+|---|---|---|
+| Admin | everything | 10 |
+| Cluster Admin | all but Cluster Admin | 9 |
+| Site Admin | all but SAD, CAD | 8 |
+| Plot Admin | all but PAD, SAD, CAD | 7 |
+| **Project Manager** | Execution Lead, Quality Lead | **2** |
+| **Execution Lead** | Contractor Manager, Execution Engineer | **2** |
+| **Quality Lead** | Quality Inspector | **1** |
+| **Contractor Manager** | Contractor Incharge | **1** |
+
+**The "assigns every role below it" rule stops at Plot Admin.** CAD/SAD/PAD each
+drop exactly their own row and everything above it, so they really do assign
+every subordinate role. PM and below are strictly NEXT-TIER-ONLY. An earlier note
+recorded the first half of this and did not establish where it stopped.
+
+**Row granularity also changes with the role being assigned**, which is why this
+cannot share SM03's single-dialog model:
+
+| Assigning | Filters needed | Rows are |
+|---|---|---|
+| Cluster Admin | none | Clusters |
+| Site Admin | cluster | Sites |
+| Plot Admin, Project Manager | cluster + site | Work Locations |
+| EE / QI / EL / QL / CM / CI | + work location, package, and a Service Order for VENDOR roles | Work Areas |
+
+### 3.7 WAM's CI and QI rows are single-assignee
 
 One pick **replaces** whoever held the row (`WAMPage.js`). So assigning a
 freshly-created user to a work area **evicts** the incumbent. This is why the
 smoke chain must stay off the regression's work areas — otherwise it strips the
 `.env` CI/QI of the areas specs 02, 08-10, 21, 23 and 24 depend on.
 
-### 3.7 Keep NC files independent of RFI's
+### 3.8 Keep NC files independent of RFI's
 
 Standing instruction: NC work stays in its own files even where the logic looks
 reusable. See the decision log for how this was resolved for the smoke chain (option C).
+
+### 3.9 SO Mapping hands off to DRS — all landing pages are correct
+
+**App owner, 2026-09-06. This is a NOT-A-BUG rule.** Following PULSE's
+"SO Mapping" menu entry may end on **any** of these, and every one is expected
+behaviour:
+
+| # | Landing page | When |
+|---|---|---|
+| 1 | The PULSE SO Mapping screen | older deployments that still have it |
+| 2 | PULSE's "Desktop Mode Required" migration notice | PULSE route kept, screen removed |
+| 3 | The **DRS login page** (`drs-*.cfapps…/login`) | handed off, no DRS session yet |
+| 4 | A **DRS application page** (e.g. `/projects`) | handed off, DRS already logged in as admin |
+
+Verbatim: *"if after clicking SO mapping screen user either lands on SO mapping
+screen or on drs login page (or on dashboard if drs platform is already logged
+in with admin credential) is expected behaviour not a bug."*
+
+SO mapping moved out of PULSE to DRS on 2026-09-04 (§4.2 / the decision log), so
+the sidebar entry is a **live hand-off, not a dead link**. Do not report any of
+the four as a defect, and do not "fix" the app-side navigation.
+
+**Why this needed code, not just a doc entry.** Outcomes 3 and 4 leave the PULSE
+origin. The menu sweeps (`SM17`, spec 31) assert `not.toHaveURL(/\/login/i)`
+after opening each item — and DRS's own login URL ends in `/login`, so the
+hand-off was going to be reported as *"SO Mapping bounced to /login"*, i.e. a
+PULSE session failure. Anything driving the page afterwards is also on the wrong
+origin, where no PULSE locator resolves.
+
+Encoded as:
+
+* `isDrsUrl(url)` / `isPulseUrl(url)` — [tests/config/environments.js](../tests/config/environments.js).
+  Matched on **hostname prefix** (`drs-…`), so the DRS deployment can track the
+  PULSE one without any test knowing which; `DRS_BASE_URL` in `.env` can name an
+  exact host as well.
+* `SOMappingPage.DESTINATIONS` + `SOMappingPage.classifyDestination(page)` —
+  returns which of the four happened, and asserts nothing.
+* `returnToPulse(page)` — [tests/utils/helpers.js](../tests/utils/helpers.js).
+  Closes a DRS tab if the hand-off opened one, and navigates back to PULSE if it
+  navigated in place.
+
+Call sites updated: `SM17_hierarchy_dashboard_menu.spec.js`,
+`31_hierarchy_roles_dashboard_menu.spec.js` (the two menu sweeps) and
+`online-role-regression.js` (which now reports the hand-off as an expected
+outcome instead of only recognising the migration notice).
 
 ---
 
@@ -240,29 +396,97 @@ reusable. See the decision log for how this was resolved for the smoke chain (op
 - Smoke solar sits on `S05b`, areas `BL03`-`BL06`. Detail and reasoning in
   [smoke-e2e-framework.md](smoke-e2e-framework.md) §4.2.
 
-### 4.2 Wind (WTG-Khavda)
+### 4.2 Wind — PARKED 2026-09-04, focus is solar
 
-- Exactly **one Work Section per Work Area**, named after the area. Selecting it
-  consumes that (checkpoint, work section) pair permanently — submitting is not
-  required, though a proper Cancel+confirm releases it. So wind buys capacity by
-  adding **areas**, not by reusing one.
-- The app owner provisioned **21 areas**: `WTG 423`-`WTG 433` and
-  `WTG 448`-`WTG 457`. SO-map all of them and WAM the WTG CI/CM/EE/QI onto all of
-  them, then vary the work area per RFI.
-- Service Order: **`5710008038 - BAUER ENGINEERING INDIA PVT LTD`** (decided
-  2026-09-03, superseding an earlier `5710012136`). Always the full
-  `"<number> - <NAME>"` string — BAUER appears under five different SO numbers and
-  a name-only match resolves to the wrong one.
-- Wind is scoped to the **Civil** package: the per-activity Service Order dropdown
-  is scoped per package, and BAUER has **zero** Electrical or Mechanical service
-  orders on this work location. Covering those would need a different vendor per
-  package, hence a separate CI/CM pair per package.
-- **Wind runs desktop only.** Mobile is covered once, on solar, because solar
-  never exhausts and can absorb reruns whereas every wind attempt spends an
-  irreplaceable checkpoint. Wind's job is the second *project type*, which is a
-  different axis from viewport.
-- **Run order:** all 9 RFI TCs on wind desktop *after* solar desktop and solar
-  mobile, so a wind failure is known to be project-type-specific.
+**App owner: "I am going to drop the idea of testing wtg rfi flow and going to
+focus on Solar itself, no need WTG as of now."** Everything below is left intact
+and correct as of that date so wind can be picked up later without re-deriving
+it. Nothing wind-related should be run meanwhile.
+
+State when parked — all of it working:
+
+| Stage | Result |
+|---|---|
+| SM01 users | 10 roles created, scoped `Gujarat / Mandvi / WTG-Mandvi`, 2.3 min |
+| SM03 WAM | 4 flow roles across all 7 areas, 1.1 min |
+| SM05 RFI `quick` | passed twice — `RFI-WTG-Mandvi-MNP29-CIV-0` on `A1.18.1`, then `CIV-1` on `A1.18.2` |
+
+Also settled before parking: all four DRS-observed activity labels
+(`1. Stone Column Installation`, `1. DT`, `2. HT Foundation`,
+`3. Burnt Oil Tank`) resolve correctly in PULSE, as does a bare
+`Pre-Activity Work` sub-activity.
+
+**One thing left UNRESOLVED, recorded so it is not lost.** With only Crane Pad's
+`A1.18.1` raised on `MNP29`, the create form reported
+`selectedForRfi=1 pendingRfi=0` for the first checkpoint of the four OTHER
+activities too — which looks like it contradicts the (sub-activity, checkpoint,
+work section) key above. Two candidate readings, untested:
+
+1. The Work Section Summary is **section-level, not per (sub-activity,
+   checkpoint)** — in which case those four were viable and the walk's pre-check
+   skipped them needlessly. This suite already records that the summary is not a
+   reliable spent-detector on solar.
+2. The app keys consumption on the sub-activity/checkpoint **NAMES**, and all five
+   independent starts share both (`Pre-Activity Work` / `Pre-Activity
+   Checkpoint`) — which made them the worst possible case for demonstrating that
+   varying the activity frees the section.
+
+Settling it needs one attempt with the pre-check bypassed, to see whether the
+server accepts or rejects. Costs one pair on wind if accepted. Not worth doing
+while wind is parked.
+
+### 4.2a Wind reference (retained) — WTG-Mandvi and DRS
+
+**Changed 2026-09-04.** SO mapping was **removed from PULSE**; it now lives in the
+**DRS** application, and PULSE syncs project and work-location configuration from
+DRS. Consequences for this suite:
+
+* **SM02 (SO mapping) and SM08 (SO demapping) are no longer stages** — there is no
+  PULSE screen for either to drive. Both spec files are kept as documentation of
+  how the screen behaved, but the chain is now users -> WAM -> flows.
+* The "SO Mapping app bug" recorded on 2026-09-03 was really this feature being
+  taken out.
+* If SO demapping coverage is still wanted, it belongs against DRS — a different
+  application.
+
+**The already-mapped WTG work location on QA is `WTG-Mandvi`, not Khavda.** From
+DRS: project "Mandvi (WTG-Mandvi)", Configuration -> 4. SO Configuration, package
+Civil.
+
+| | |
+|---|---|
+| Work location | `WTG-Mandvi` |
+| Work areas (complete set) | `MNP29`, `MP-P1`, `MP561`, `MP611`, `MP738`, `MP758`, `MP763` |
+| Vendor / SO | `5710017045 - GODARA INFRATECH PVT LTD` |
+
+**Naming breaks from Khavda.** Khavda's areas always contained a space ("KH 34",
+"WTG 423"). Mandvi's do not, use mixed prefixes, and one is hyphenated. Any
+lookup assuming a space or a plain numeric tail does not apply.
+
+**Watch the dash.** DRS renders the SO with an EN DASH; PULSE's dropdowns have
+used a plain hyphen. The profile stores the hyphen form, because that is what the
+PULSE selectors and the `"<number> - <NAME>"` guard expect.
+
+**Wind's one-section-per-area behaviour is CONFIRMED on Mandvi** (live,
+2026-09-04): the create form reported `total=1 selectedForRfi=0 pendingRfi=1`,
+and the single section is named after the area (`MNP29`). Exactly what §2d of
+[work-region-hierarchy.md](work-region-hierarchy.md) predicts — depth follows the
+Sub-Activity's Min. Unit of RFI (*Per WTG* -> Block -> collapses onto the Work
+Area), so it is a property of the activity, not the site.
+
+**Wind is proven end to end on Mandvi** (2026-09-04): SM01 created all ten users
+scoped `Gujarat / Mandvi / WTG-Mandvi` in 2.3 min, SM03 WAM'd the four flow roles
+across all seven areas in 1.1 min, and a `quick` RFI pass went create -> EE
+approve -> QI approve in 3.5 min. First code: `RFI-WTG-Mandvi-MNP29-CIV-0`.
+
+Two things that run also settled:
+
+* `1. Crane Pad` and its `A1.18.1`..`A1.18.5` chain exist on Mandvi unchanged —
+  the activity master is shared with Khavda.
+* PULSE's WAM dialog DOES see the DRS-side SO mapping: the CI is a VENDOR role
+  whose WAM dialog carries a Service Order field, and GODARA resolved. WAM also
+  assigned `MP763` fine, so WAM is per (work area, package) and NOT
+  activity-sensitive — the Crane Pad gap there only bites at RFI creation.
 
 ---
 
@@ -302,7 +526,7 @@ section.
 
 | Date | Decision |
 |---|---|
-| 2026-09-03 | **Solar smoke band shifted** to `BL03`/`BL04`/`BL05`/`BL06` instead of the originally requested `BL01`-`BL03`, because of the single-assignee WAM eviction in §3.6 |
+| 2026-09-03 | **Solar smoke band shifted** to `BL03`/`BL04`/`BL05`/`BL06` instead of the originally requested `BL01`-`BL03`, because of the single-assignee WAM eviction in §3.7 |
 | 2026-09-03 | **NC shares one work area** across both viewports — NC consumes nothing |
 | 2026-09-03 | **Wind Service Order** = `5710008038` |
 | 2026-09-03 | **Wind pool** = the 21 `WTG 4xx` areas, replacing the older `KH ...` set |
@@ -319,36 +543,71 @@ section.
 
 ## 6. Known blockers
 
-**s02 (SO mapping) — app-side bug on the SO Mapping screen.** Reported by the app
-owner 2026-09-03; a dev fix was expected the next day. Consequences:
+**None.** Both previous blockers are resolved:
 
-- **Solar** does not need s02 right now — the mapping for its band was done
-  manually. Run the solar stages with `--no-deps` so the chain cannot try to
-  re-run it.
-- **Wind cannot be provisioned at all** until this is fixed — mapping the 21 areas
-  *is* the broken screen.
-
-Do not treat an s02 failure as a suite defect until the fix lands.
+* The s02 SO Mapping blocker is gone — the feature moved to DRS and the stage was
+  removed (§4.2).
+* Wind's Cluster/Site is resolved from
+  [work-region-hierarchy.md](work-region-hierarchy.md) — see §4.2.
 
 ---
 
 ## 7. Open questions for the app owner
 
-1. **`s04` (WAM hierarchy)** must cover the angles of both
-   `13_wam_all_roles.spec.js` (Admin assigns every role) and
-   `18_wam_hierarchy.spec.js` (each tier assigns the tier below). The plan: s03
-   keeps mapping the four work-area-scoped flow roles, and s04 walks the cascade
-   Admin -> CAD -> SAD -> PAD -> PM -> EL/QL -> CM -> CI. Prerequisites are done —
-   all ten roles are created and all six hierarchy tiers log in with WAM in their
-   menu. **Still to confirm:** the WAM row granularity per tier (work-area roles
-   EE/QI/EL/QL/CIC/CM, work-location roles PM/PAD, site-level SAD).
-2. **`s08` (SO demapping)** — `SOMappingPage` has no remove method. The `x` beside
-   each Service Order field is *assumed* to clear the mapping; needs one live
-   confirmation, including what an emptied row reads back as.
-3. **Wind NC form** — never opened for wind, so `WIND_E2E.nc` is deliberately
-   `null`. Needs a recon pass.
-4. *(Withdrawn 2026-09-04 — there was no contradiction and no app bug. See
-   "A recording bug of mine, not an app bug" below.)*
+1. *(Answered 2026-09-04 — SM04 is written and passes 10/10 in 2.2 min. The row
+   granularity per tier is recorded as §3.6, read live rather than assumed.)*
 
-5. *(Answered 2026-09-04 — a resubmit reuses the same work section and
-   checklist. Recorded as §3.4.)*
+   **One caveat worth carrying:** the Contractor Manager -> Contractor Incharge
+   step failed ONCE, on its first full run, with a 30s timeout waiting for the
+   Role combobox inside the WAM dialog — and the screenshot showed no dialog at
+   all, just CM's own read-only "My Assignment" page. It then passed in isolation
+   AND on a full re-run, and the defensive reopen-the-dialog guard added
+   afterwards NEVER FIRED on either. So the failure was transient and its cause is
+   NOT identified; that guard is unexercised code, not a fix. If it recurs, the
+   likeliest reading is order-dependence — it failed running tenth on a shared
+   page after nine prior logins, and passed running first in a fresh context — in
+   which case a fresh context for that step is the real answer.
+
+2. **Wind NC form** — never opened for wind, so `WIND_E2E.nc` is deliberately
+   `null`. Needs a recon pass before SM06 can run for wind.
+
+3. *(Withdrawn — was the SO demapping `x` control. Moot now that SO mapping is in
+   DRS.)*
+
+4. *(Answered 2026-09-04 from [work-region-hierarchy.md](work-region-hierarchy.md),
+   the Location Master snapshot exported from DRS. Its Cluster/Site table reads*
+   *"Gujarat | Mandvi | 2 work locations | 70 work areas | wind, pss", so*
+   *`WTG-Mandvi` is Cluster `Gujarat` -> Site `Mandvi`. Wind no longer shares*
+   *solar's `SITE` constant.)*
+
+   Note it is stored as a plain string, not the `CLUSTER_CANDIDATES` list. That
+   list exists because the KHAVDA site's Cluster field has been seen rendering as
+   either "Gujarat" or "Khavda" — a quirk with no evidence either way for Mandvi.
+   Widen it the same way if a live cascade cannot find "Gujarat".
+
+5. **Six usable areas against nine wind TCs — and it is a MAPPING limit, not a
+   data limit.**
+
+   Per [work-region-hierarchy.md](work-region-hierarchy.md) Appendix B,
+   `WTG-Mandvi` actually holds **69** work areas (`MP{n}` x66, `MNP{n}` x2,
+   `MP-P{n}` x1). The seven in the profile are simply the ones **SO-mapped in
+   DRS**, and a CI can only raise against mapped ground. Of those seven, DRS shows
+   **"1. Crane Pad" UNMAPPED on `MP763`**, leaving six for a Crane Pad RFI.
+   `MP763` is parked for NC, which uses a different activity.
+
+   Wind wants one area per TC because the preceding-checkpoint rule blocks
+   checkpoint N+1 until N is approved, so six areas cannot carry a 9-TC pass.
+
+   **The ceiling is now CONFIRMED, not predicted.** The first Mandvi run reported
+   `total=1` work section for the area, so one area really does carry one RFI per
+   checkpoint. Six areas therefore cannot host a nine-TC pass, which needs nine
+   areas all sitting at checkpoint A1.18.1.
+
+   **Mapping more areas is deferred** (app owner, 2026-09-04): DRS can host pilot
+   projects of every kind and work sections can be created to order, but that is
+   "a different big journey" — use the existing ground for now.
+
+   So the live options are a reduced wind TC set, or a different wind activity
+   mapped across all seven. **Awaiting the app owner's preference; nothing is
+   blocked meanwhile, since wind setup and a `quick` pass both fit inside six
+   areas.**

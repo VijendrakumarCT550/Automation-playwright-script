@@ -82,6 +82,17 @@ const SOLAR_REGRESSION = {
     activity: 'Piling - Robotic Docking System',
     subActivity: 'Piling - Robotic Docking System',
   },
+
+  // The regression tier has no feature-depth ground of its own: it IS the
+  // ground the SM10+ replicas were built to stop borrowing (A-06c and
+  // S05b/BL01-BL02). Set explicitly rather than left undefined so
+  // requireFeatureGround() names the profile in its error instead of failing on
+  // a property read.
+  featureGround: null,
+
+  // Same reasoning: SM28 is a smoke stage and must never run on the regression
+  // tier's ground, since it deliberately leaves a non-approved NC behind.
+  ncBlock: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -89,43 +100,49 @@ const SOLAR_REGRESSION = {
 // ---------------------------------------------------------------------------
 const WIND_E2E = {
   key: 'wind-e2e',
-  label: 'Wind E2E smoke (WTG-Khavda, fresh WTG users)',
+  label: 'Wind E2E smoke (WTG-Mandvi, fresh WTG users)',
   tier: 'smoke',
 
   // CONFIRMED live: Project Type dropdown offers SOLAR, WIND, INFRA, PSS,
   // ADMIN, BESS, TRANSMISSION_LINE. Wind is one of seven, not one of two.
   projectType: 'WIND',
-  cluster: CLUSTER_CANDIDATES,
-  site: SITE,
 
-  // CONFIRMED live: exactly ONE Work Location exists under WIND, spelled
-  // "WTG-Khavda" — NOT "WTG-Khavada" as the brief had it.
-  workLocations: ['WTG-Khavda'],
+  // RESOLVED from docs/work-region-hierarchy.md, not guessed. That doc is the
+  // Location Master snapshot exported from DRS, and its Cluster/Site table puts
+  // Mandvi under Gujarat:
+  //
+  //   | Gujarat | Mandvi | 2 work locations | 70 work areas | wind, pss |
+  //
+  // So wind no longer shares solar's SITE. Note this is a plain string, not the
+  // candidate list CLUSTER_CANDIDATES uses: that list exists because the Khavda
+  // site's Cluster field has been seen rendering as either "Gujarat" or "Khavda",
+  // a quirk with no evidence either way for Mandvi. If a live cascade cannot find
+  // "Gujarat" here, widen this to candidates the same way.
+  cluster: ['Gujarat'],
+  site: 'Mandvi',
 
-  // CONFIRMED live: 244 Work Areas under WTG-Khavda, in two naming families
-  // and every name contains a SPACE — "KH 34", "KH 35", ... "KH 622" and
-  // "WTG 002" ... "WTG 557" (single outlier with no space: "WTG219"). An
-  // exact-match lookup for 'KH34' silently finds nothing.
+  // MOVED TO WTG-Mandvi, 2026-09-04 (app owner). SO mapping no longer happens in
+  // PULSE at all: it lives in DRS now, and PULSE syncs project/work-location
+  // configuration from there. The app owner located an already-SO-mapped WTG work
+  // location on QA via DRS, and it is Mandvi, not Khavda.
   //
-  // THE 21 "WTG 4xx" AREAS REPLACE THE OLD "KH ..." SET (app owner, 2026-09-03,
-  // with the SO Mapping screen showing all 21 selected under WIND / WTG-Khavda /
-  // Civil). The KH areas were partly exhausted — KH 34 spent, several others
-  // partly used — and a clean pool is what makes the one-area-per-TC allocation
-  // below legible. Every name is verbatim from the live list; note the SPACE.
+  // DRS reference: project "Mandvi (WTG-Mandvi)", Configuration ->
+  // 4. SO Configuration, package Civil.
+  workLocations: ['WTG-Mandvi'],
+
+  // THE SEVEN WORK AREAS MAPPED IN DRS for WTG-Mandvi / Civil, verbatim from the
+  // SO Configuration matrix (app owner screenshot, 2026-09-04). The DRS filter
+  // read "MNP29 x  +6 more" and the matrix rendered exactly seven columns, so this
+  // is the COMPLETE set, not a visible subset of a longer one.
   //
-  // WHY SO MANY. Wind has exactly ONE Work Section per Work Area and a run
-  // consumes that (checkpoint, Work Section) pair permanently, so wind buys
-  // capacity by adding AREAS rather than by reusing one. Provisioning is cheap
-  // now that both stages work in a single pass: SM02 selects every area at once
-  // and sets each activity's Service Order once, and SM03 assigns all rows in one
-  // dialog per role.
+  // NOTE THE NAMING BREAK FROM KHAVDA. Khavda's areas always contained a space
+  // ("KH 34", "WTG 423"). Mandvi's do not, use mixed prefixes, and one is
+  // hyphenated: MNP29, MP-P1, MP561. Any lookup that assumed a space or a plain
+  // numeric tail does not apply here.
   workAreas: [
-    'WTG 423', 'WTG 424', 'WTG 425', 'WTG 426', 'WTG 427', 'WTG 428',
-    'WTG 429', 'WTG 430', 'WTG 431', 'WTG 432', 'WTG 433',
-    'WTG 448', 'WTG 449', 'WTG 450', 'WTG 451', 'WTG 452', 'WTG 453',
-    'WTG 454', 'WTG 455', 'WTG 456', 'WTG 457',
+    'MNP29', 'MP-P1', 'MP561', 'MP611', 'MP738', 'MP758', 'MP763',
   ],
-  primaryWorkArea: 'WTG 423',
+  primaryWorkArea: 'MNP29',
 
   // Wind runs DESKTOP ONLY (app owner, 2026-09-03). Mobile is already covered by
   // solar, and solar can absorb the reruns that mobile-layout debugging costs
@@ -135,44 +152,47 @@ const WIND_E2E = {
   viewports: ['desktop'],
 
   // PREFERENCE ORDER, not an exclusive assignment: the flow stage walks its own
-  // list first and then falls through to the remaining areas, so a pool whose
-  // areas are spent still finds ground instead of failing.
+  // list first and then falls through to any UNCLAIMED area, so a pool whose
+  // areas are spent still finds ground instead of failing outright.
   //
-  // ONE WORK AREA PER TC is the point, not just raw capacity. Wind enforces the
-  // preceding-checkpoint rule, so within a SINGLE area checkpoint N+1 is blocked
-  // until N is approved — nine TCs created up front on one area would mostly sit
-  // blocked. Nine TCs on nine DIFFERENT areas all sit at checkpoint A1.18.1 and
-  // run cleanly. Every TC ends in a QI approval, so a completed pass leaves each
-  // area advanced by exactly one checkpoint and the next pass runs on A1.18.2.
-  // With 5 Crane Pad checkpoints that is ~5 clean passes before re-provisioning.
+  // ONE WORK AREA PER TC is what wind needs, because it enforces the
+  // preceding-checkpoint rule: within a single area, checkpoint N+1 is blocked
+  // until N is approved, so nine TCs created up front on one area would mostly
+  // sit blocked. Nine on nine different areas all sit at checkpoint A1.18.1.
   //
-  // The RFI and NC pools are DISJOINT because a non-approved NC blocks RFI
-  // create/resubmit on the same (checkpoint, work section) — and on wind the work
-  // section IS the work area, so one unfinished NC would lock a whole area out of
-  // the RFI stage.
+  // *** ONLY SIX AREAS ARE USABLE FOR A CRANE PAD RFI, against nine TCs. This is
+  // *** an open constraint, not a solved allocation. See
+  // *** docs/app-owner-decisions-and-conventions.md.
+  //
+  // AND IT IS A MAPPING LIMIT, NOT A DATA LIMIT. Per
+  // docs/work-region-hierarchy.md Appendix B, WTG-Mandvi actually holds 69 work
+  // areas (MP{n} x66, MNP{n} x2, MP-P{n} x1). The seven below are simply the ones
+  // SO-mapped in DRS, and a CI can only raise against mapped ground. Mapping more
+  // is deferred (app owner: DRS can host pilot projects and work sections to
+  // order, but that is "a different big journey").
+  //
+  // Seven areas are mapped, and DRS shows "1. Crane Pad" UNMAPPED on MP763 (its cell
+  // reads "Select SO" while every other activity/area pair holds GODARA). So a
+  // Crane Pad RFI has SIX usable areas, not nine, and a 9-TC pass cannot give
+  // each TC its own.
+  //
+  // MP763 is therefore parked for NC, which uses a different activity and so does
+  // not care that Crane Pad is unmapped there. That keeps the RFI and NC pools
+  // disjoint, which rule R2 requires: a non-approved NC blocks RFI on the same
+  // (checkpoint, work section), and on wind the section IS the area.
   flowWorkAreas: {
     rfi: {
-      desktop: [
-        'WTG 423', 'WTG 424', 'WTG 425', 'WTG 426', 'WTG 427', 'WTG 428',
-        'WTG 429', 'WTG 430', 'WTG 431', 'WTG 432', 'WTG 433',
-        // Spare capacity. Deliberately assigned to a POOL rather than left
-        // unallocated: an unclaimed area is reachable by the fallthrough of
-        // BOTH flows, which would put an NC and an RFI on the same ground and
-        // reintroduce exactly the block the disjoint pools prevent.
-        'WTG 456',
-      ],
+      desktop: ['MNP29', 'MP-P1', 'MP561', 'MP611', 'MP738', 'MP758'],
     },
     nc: {
-      desktop: [
-        'WTG 448', 'WTG 449', 'WTG 450', 'WTG 451',
-        'WTG 452', 'WTG 453', 'WTG 454', 'WTG 455',
-      ],
+      desktop: ['MP763'],
     },
   },
 
-  // Sacrificial ground for the SO demapping stage (SM08). WTG 456 is left as
-  // unallocated spare.
-  demapWorkArea: 'WTG 457',
+  // SO DEMAPPING IS NO LONGER A PULSE CONCERN (app owner, 2026-09-04): SO mapping
+  // moved to DRS, so there is no PULSE screen left to demap on. Null rather than
+  // deleted, so requireField() fails loudly if anything still asks for it.
+  demapWorkArea: null,
 
   // CONFIRMED live (00_inspect_wind_rfi_form.spec.js): wind has exactly ONE
   // Work Section per Work Area, and it is the Work Area's own name — selecting
@@ -224,10 +244,12 @@ const WIND_E2E = {
   allPackages: ['Civil', 'Electrical', 'Mechanical'],
 
   vendor: {
-    // CONFIRMED by the app owner: BAUER is a "Service Contractor" kind
-    // vendor, used for both the WTG CI and the WTG CM.
+    // GODARA, per the app owner 2026-09-04: this is what DRS has mapped across the
+    // WTG-Mandvi / Civil matrix. Replaces BAUER, which belonged to Khavda.
+    // Category assumed to stay "Service Contractor" (the kind used for both the
+    // WTG CI and CM); not separately re-confirmed for GODARA.
     category: 'Service Contractor',
-    name: 'BAUER ENGINEERING INDIA PVT LTD',
+    name: 'GODARA INFRATECH PVT LTD',
 
     // MUST be the full "<number> - <name>" string. CONFIRMED live: the
     // Service Order dropdown holds 137 options and BAUER ENGINEERING INDIA
@@ -235,13 +257,14 @@ const WIND_E2E = {
     // 5710009696, 5710012136, 5710017100, 5710018312. A vendor-name-only
     // match resolves to 5710008038, i.e. the WRONG service order. The app
     // owner specified 5710012136.
-    // DECIDED 2026-09-03: 5710008038, matching what the SO Mapping screen
-    // actually shows on the mapped rows. This SUPERSEDES 5710012136, which was
-    // the number recorded from the app owner earlier. The full
-    // "<number> - <NAME>" string stays mandatory: BAUER appears under five
-    // different SO numbers and a vendor-name-only match resolves to the wrong
-    // one.
-    serviceOrder: '5710008038 - BAUER ENGINEERING INDIA PVT LTD',
+    // The exact SO the app owner confirmed for WTG-Mandvi (2026-09-04).
+    //
+    // WATCH THE DASH: DRS renders it with an EN DASH ("5710017045 <en dash>
+    // GODARA...") while PULSE's own dropdowns have used a plain hyphen. The
+    // hyphen form is used here because that is what the PULSE selectors and
+    // SOMappingPage's "<number> - <NAME>" guard expect. If a live lookup misses
+    // this string, check the dash character first.
+    serviceOrder: '5710017045 - GODARA INFRATECH PVT LTD',
   },
 
   // Mapped to EVERY activity, so one WTG CI has access to all of them when
@@ -314,8 +337,8 @@ const WIND_E2E = {
   // passing the full live label including its prefix is both correct and the
   // least ambiguous option.
   rfi: {
-    workLocation: 'WTG-Khavda',
-    workArea: 'WTG 423',
+    workLocation: 'WTG-Mandvi',
+    workArea: 'MNP29',
     package: 'Civil',
 
     // "Crane Pad" chosen as the smoke path: it is the smallest Civil activity
@@ -349,32 +372,79 @@ const WIND_E2E = {
 
     observationValue: 'OK - as per standard (wind smoke)',
 
-    // The A1.18 Crane Pad chain in sheet order. The smoke stage walks this to
-    // find the next checkpoint still raisable against Work Section "KH 34",
-    // because each successful run permanently CONSUMES one (checkpoint,
-    // "KH 34") pair — merely selecting a Work Section consumes it, and there is
-    // no spare within a Work Area. That gives roughly 5 runs before this
-    // activity is exhausted and the stage needs a fresh Work Area.
+    // MULTI-ACTIVITY, and this is the fix for what looked like an area shortage.
     //
-    // `expectObservations: false` marks the two bookend checkpoints, whose only
-    // checklist is the generic "Documents and report information" and which may
-    // legitimately render zero Observation/Measured Value inputs — see
-    // RFIChecklistPage.fillAllObservations' requireObservations option.
+    // The chain used to be Crane Pad's five checkpoints alone, which meant every
+    // TC competed for the SAME (activity, checkpoint) pair and so needed its OWN
+    // work area. With one Work Section per area on wind, nine TCs then wanted nine
+    // areas and only six had Crane Pad mapped — which read as "we need DRS to map
+    // more areas". It was not a ground problem at all: it was this list being one
+    // activity long.
+    //
+    // App owner: consumption is per (activity/checkpoint, work section), so
+    // changing the ACTIVITY on the same work area re-exposes that area's section.
+    // So capacity is areas x independent-checkpoints, not areas.
+    //
+    // THE FIVE INDEPENDENT STARTING CHECKPOINTS, taken from the activity master
+    // (wind-activity-checklist.json) by filtering CIVIL rows to preceding === '-'.
+    // Five of 96 Civil rows have no predecessor, so these five are raisable on a
+    // fresh work area with nothing approved first. 6 areas x 5 = 30 pairs, which
+    // covers a 9-TC pass three times over.
+    //
+    // LABELS: activity names carry a numeric prefix as DRS renders them
+    // ("1. Stone Column Installation"). Crane Pad's prefix was live-confirmed in
+    // PULSE; the other four are DRS-observed and PULSE-UNCONFIRMED. Sub-activity
+    // is passed BARE ("Pre-Activity Work") because RFICreatePage.selectOption does
+    // a substring match and that dropdown is already scoped by the chosen
+    // activity, so the prefix is unnecessary there and one less thing to get wrong.
+    //
+    // CHECKLIST: the master records "-" for all five, and Crane Pad's "-" was
+    // live-confirmed to render as "Documents and report information" with no
+    // observation rows. The other four are assumed to follow the same mapping —
+    // expectObservations: false covers the no-rows case either way.
     checkpointChain: [
-      { code: 'A1.18.1', subActivity: '1.1 Pre-Activity Work',  checkpoint: 'Pre-Activity Checkpoint',  checklist: 'Documents and report information', expectObservations: false },
-      { code: 'A1.18.2', subActivity: '1.2 OGL',                checkpoint: 'Pre-Inspection',           checklist: 'OGL Checklist' },
-      { code: 'A1.18.3', subActivity: '1.3 Boulder laying',     checkpoint: 'Routine Inspection',       checklist: 'Boulder Laying Checklist' },
-      // NOTE: the app offers "GSB Inspection Checklist" here, while the activity
-      // master says "GSB Laying Checklist" (that name belongs to A1.13.4 in the
-      // sheet). The app's string is what the dropdown needs.
-      { code: 'A1.18.4', subActivity: '1.4 GSB laying',         checkpoint: 'Final Inspection',         checklist: 'GSB Inspection Checklist' },
-      { code: 'A1.18.5', subActivity: '1.5 Post-Activity Work', checkpoint: 'Post-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.1.1',  subPackage: 'Stone Column',            activity: '1. Stone Column Installation', subActivity: 'Pre-Activity Work',     checkpoint: 'Pre-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.14.1', subPackage: 'USS Civil and Structural', activity: '1. DT',                        subActivity: 'Pre-Activity Work',     checkpoint: 'Pre-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.15.1', subPackage: 'USS Civil and Structural', activity: '2. HT Foundation',             subActivity: 'Pre-Activity Work',     checkpoint: 'Pre-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.16.1', subPackage: 'USS Civil and Structural', activity: '3. Burnt Oil Tank',            subActivity: 'Pre-Activity Work',     checkpoint: 'Pre-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+      { code: 'A1.18.1', subPackage: 'Crane Pad',                activity: '1. Crane Pad',                 subActivity: '1.1 Pre-Activity Work', checkpoint: 'Pre-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
+
+      // Crane Pad's deeper checkpoints, kept as fallback. Each becomes raisable
+      // only once the one before it is APPROVED on that area, so they are listed
+      // after every independent start rather than mixed in.
+      { code: 'A1.18.2', subPackage: 'Crane Pad', activity: '1. Crane Pad', subActivity: '1.2 OGL',                checkpoint: 'Pre-Inspection',           checklist: 'OGL Checklist' },
+      { code: 'A1.18.3', subPackage: 'Crane Pad', activity: '1. Crane Pad', subActivity: '1.3 Boulder laying',     checkpoint: 'Routine Inspection',       checklist: 'Boulder Laying Checklist' },
+      // NOTE: the app offers "GSB Inspection Checklist" here while the master says
+      // "GSB Laying Checklist" (that name belongs to A1.13.4). The app's string wins.
+      { code: 'A1.18.4', subPackage: 'Crane Pad', activity: '1. Crane Pad', subActivity: '1.4 GSB laying',         checkpoint: 'Final Inspection',         checklist: 'GSB Inspection Checklist' },
+      { code: 'A1.18.5', subPackage: 'Crane Pad', activity: '1. Crane Pad', subActivity: '1.5 Post-Activity Work', checkpoint: 'Post-Activity Checkpoint', checklist: 'Documents and report information', expectObservations: false },
     ],
   },
 
   // NOT YET CONFIRMED — the NC create form has not been opened for wind at all.
   // Deliberately null so anything that needs it fails loudly.
   nc: null,
+
+  // DELIBERATELY NULL, same reasoning: the app owner parked WTG RFI work
+  // entirely (2026-09-02, "dropping the idea of testing wtg rfi flow ... no need
+  // WTG as of now") because of already-raised RFIs on the scarce
+  // one-per-work-area ground, and SM07's dependency chain needs to CREATE new
+  // RFIs. Fails loudly (expect(...).toBeTruthy() in SM07) rather than skipping,
+  // matching how `nc: null` is handled above.
+  dependencyChain: null,
+
+  // Parked with the rest of wind's RFI/NC work. SM28 fails loudly on a null
+  // here rather than skipping, the same way SM06 does on `nc: null`.
+  ncBlock: null,
+
+  // Wind is PARKED (app owner, 2026-09-02: "no need WTG as of now"), and the
+  // feature-depth replicas are solar-only for the same reason SM07's dependency
+  // chain is: every wind attempt spends an irreplaceable work section
+  // (workSectionGranularity: 'one-per-work-area'), so a thirteen-stage feature
+  // sweep would exhaust WTG ground with no way to reset it. The SM10+ stages
+  // guard on this being non-null and fail loudly rather than skipping quietly —
+  // the same pattern SM06 uses for `nc: null`.
+  featureGround: null,
 };
 
 // ---------------------------------------------------------------------------
@@ -415,7 +485,24 @@ const SOLAR_E2E = {
   //
   // BL09/BL10 (dependency specs) and BL03 (03_rfi_bulk_create) are all on A-06c,
   // not S05b, so they do not collide with this band.
-  workAreas: ['BL03', 'BL04', 'BL05', 'BL06'],
+  //
+  // BL07 was added 2026-09-04 for SM07 (the smoke replica of the activity
+  // dependency chain, replacing .env CI/EE/QI — see dependencyChain below).
+  //
+  // CORRECTED 2026-09-04 (adversarial review of the SM07/SM08 additions): the
+  // area originally reads "must be its own, not a reuse of BL06, because SM04's
+  // hierarchy cascade would evict the smoke flow's CI/QI from BL06's
+  // single-assignee row." That specific mechanism does NOT hold — SM04's
+  // cascade re-targets BL06 with the SAME CI/QI accounts resolveSmokeUsers()
+  // already resolves for SM03 (one fixed fixture entry per profile+role, reused
+  // identically everywhere), so it is a self-reassignment/no-op
+  // (WAMPage.assignUserIfNeeded() short-circuits when the row already holds
+  // that exact name), never an eviction of a different identity. BL07 stays
+  // dedicated anyway, for a real reason: resolveFlowWorkAreas()'s fallthrough
+  // pool must never be able to land an RFI on the same ground SM07's dependency
+  // assertions depend on (see that function's own dependencyChain.workArea
+  // exclusion below) — genuine ground isolation, not eviction-avoidance.
+  workAreas: ['BL03', 'BL04', 'BL05', 'BL06', 'BL07'],
   primaryWorkArea: 'BL03',
 
   // Solar carries BOTH viewports: it never exhausts (see workSectionGranularity
@@ -437,7 +524,19 @@ const SOLAR_E2E = {
   //   that ground permanently.
   flowWorkAreas: {
     rfi: { desktop: ['BL03'], mobile: ['BL04'] },
-    nc:  { desktop: ['BL05'], mobile: ['BL05'] },
+    // TEMPORARY-BL03 (2026-09-05) — was ['BL05'] for both viewports.
+    // App owner: "vendor name is not populating for BL05 while creating NC ...
+    // for BL03 vendor is populating ... BL03 for NC flow is temporary for just
+    // today run". Revert to BL05 once the vendor bug on BL05 is fixed:
+    // `grep -rn TEMPORARY-BL03 tests/config/projects.js` finds all three sites.
+    //
+    // BL03 is the RFI desktop flow area, so rule R2 applies — but see R2a in
+    // docs/smoke-e2e-framework.md for its real (much narrower) scope, and the
+    // fuller note at ncCreate below. Short version: the block is per
+    // (activity, checkpoint, work section) triple, not per work area, and the
+    // RFI flows run before the NC flows, so the RFI work here is already done
+    // and approved by the time any NC exists.
+    nc:  { desktop: ['BL03'], mobile: ['BL03'] },
   },
 
   // Sacrificial ground for the SO demapping stage (SM08), which removes mappings
@@ -575,7 +674,10 @@ const SOLAR_E2E = {
   // flowWorkAreas above for why that separation is a hard requirement.
   nc: {
     workLocation: 'S05b',
-    workArea: 'BL05',
+    // TEMPORARY-BL03 (2026-09-05) — was 'BL05'. Vendor Name does not populate
+    // on BL05 during NC create (app bug, app-owner confirmed); it does on
+    // BL03. Revert to 'BL05' when that is fixed.
+    workArea: 'BL03',
     vendorName: 'CHOUHAN',
     package: 'Civil',
     activity: 'Piling - Robotic Docking System',
@@ -587,6 +689,249 @@ const SOLAR_E2E = {
     category: 'Critical',
     // Mandatory per an app change; 14 days from the run date.
     targetDateClosureDays: 14,
+  },
+
+  // SM07's ground: the checkpoint-dependency chain, replicated from the proven
+  // A-06c/BL09 reference data in rfi-dependency-data.js (PILING_ACTIVITY_CHAINS'
+  // "Piling - MMS" entry) onto S05b/BL07 so it can run as the smoke CI/EE/QI
+  // instead of the .env accounts — see the header comment on BL07 in workAreas
+  // above for why it needs its OWN area rather than reusing demapWorkArea.
+  //
+  // Shape matches runDependencyChainForActivity's `activityChain` param exactly
+  // (top-level fields shared by every checkpoint, plus a `checkpoints` array of
+  // {name, checklist}) — NOT profile.rfi's checkpointChain shape, which is a
+  // different consumer (rfi-smoke-walk.js) with different field names.
+  //
+  // CONFIRMED vs ASSUMED, same distinction as the nc block above:
+  //   * checkpoint[0] ("Pre Pour Inspection - Pile" / "Micro Pile Checklist") is
+  //     CONFIRMED on S05b — it's the exact combination profile.rfi already drives
+  //     through SM05, which has passed 9/9 on this band.
+  //   * checkpoint[1]/[2] are carried over from the A-06c/BL09 reference data and
+  //     NOT yet confirmed under S05b. Solar activities are confirmed present
+  //     under every BL{nn} area (app owner), but the per-checkpoint checklist
+  //     name has only been observed live on A-06c. Fails loudly at the checklist
+  //     dropdown on first run if either name doesn't exist here — see
+  //     fillPageOne/RFICreatePage.fillForm for that failure mode.
+  //
+  // Re-runnable indefinitely, same reasoning as profile.rfi: solar's ~490
+  // sections per (work area, checkpoint) mean checkpoint[0]'s "pick the first
+  // available" never runs dry, so this chain does not need its own tracker or
+  // work-area rotation — it mirrors spec 29's fixed-Work-Area model exactly.
+  dependencyChain: {
+    label: 'Piling - MMS (dependency check)',
+    workLocation: 'S05b',
+    workArea: 'BL07',
+    package: 'Civil',
+    subPackage: 'Piling (MMS, Inverter, LT Cable Hangers)',
+    activity: 'Piling - MMS',
+    subActivity: 'Piling - MMS',
+    checkpoints: [
+      { name: 'Pre Pour Inspection - Pile', checklist: 'Micro Pile Checklist' },
+      { name: 'Pre Pour Inspection - Pile Cap', checklist: 'Micro Pile Cap Checklist' },
+      { name: 'Post Pour Inspection', checklist: 'Post Pour Check' },
+    ],
+  },
+
+  // SM28's ground truth: ONE (activity, sub-activity, checkpoint) combination
+  // driven from BOTH sides — QI raises an NC on it, then CI tries to raise an
+  // RFI on it — to prove rule R2a (a non-approved NC blocks RFI create/resubmit
+  // for the same triple). See docs/smoke-e2e-framework.md R2a and
+  // docs/app-owner-decisions-and-conventions.md §3.2.
+  //
+  // WHY ITS OWN BLOCK rather than reusing profile.rfi + profile.nc: those two
+  // deliberately name DIFFERENT activities (`Piling - MMS` vs `Piling - Robotic
+  // Docking System`) precisely so the flows never block each other. R2a is keyed
+  // on the activity, so a test built from them would raise an NC on one activity
+  // and an RFI on another — a triple that has never matched, and it would "pass"
+  // by proving nothing. The whole point here is that both sides name the SAME
+  // activity, so it is stated once, explicitly.
+  //
+  // CONFIRMED vs ASSUMED, the usual convention:
+  //   * activity / subActivity / checkpoint / checklist are CONFIRMED on S05b —
+  //     they are exactly what profile.rfi drives and SM05 has passed 9/9 with.
+  //   * That `Piling - MMS` also appears in the NC form's Activity dropdown is
+  //     ASSUMED. Every NC this suite has ever created used `Piling - Robotic
+  //     Docking System`, so the MMS activity has never been selected there. Both
+  //     are Civil activities for the same vendor, so it is likely — and if it is
+  //     wrong this fails loudly at the Activity dropdown, which is a one-line fix
+  //     here rather than a mystery.
+  //   * otherSubActivity drives a REPORTED-ONLY probe of R2a's second half (the
+  //     same work section under a different activity should NOT be blocked). It
+  //     is not asserted, because whether the two activities even share a work
+  //     section inventory is unconfirmed.
+  ncBlock: {
+    workLocation: 'S05b',
+    workArea: 'BL06',
+    package: 'Civil',
+    subPackage: 'Piling (MMS, Inverter, LT Cable Hangers)',
+    activity: 'Piling - MMS',
+    subActivity: 'Piling - MMS',
+    checkpoint: 'Pre Pour Inspection - Pile',
+    checklist: 'Micro Pile Checklist',
+
+    // NC-side-only fields, same proven values as profile.nc.
+    vendorName: 'CHOUHAN',
+    ncQuantity: 2,
+    unit: 'EA',
+    defectType: 'Workmanship defect',
+    category: 'Critical',
+    targetDateClosureDays: 14,
+
+    // ONE work section, not profile.nc's two: the test has to name the exact
+    // section the block should apply to, and a second one only widens the
+    // blast radius on shared ground for nothing.
+    workSectionCount: 1,
+
+    // For the reported-only "different activity, same section" probe.
+    otherActivity: 'Piling - Robotic Docking System',
+    otherSubActivity: 'Piling - Robotic Docking System',
+  },
+
+  // ---------------------------------------------------------------------------
+  // FEATURE-DEPTH GROUND (SM10+) — app owner, 2026-09-04
+  // ---------------------------------------------------------------------------
+  // "add all, don't take reference of specs from specs folder, add all required
+  // specs in smoke itself ... nothing depends outside and all dependency are
+  // configured independently."
+  //
+  // The thirteen feature stages that used to run out of tests/specs/ are being
+  // replicated into tests/smoke/, and every one of them needed ground it does
+  // not own. Three collisions had to be resolved, and none of them were cosmetic:
+  //
+  //   1. A-06c. Hardcoded by 06, 07, 19, 25, 26, 27 and 28 — and A-06c is the app
+  //      owner's MANUAL testing ground, which workLocations above says smoke must
+  //      never touch. Every replica moves to S05b.
+  //
+  //   2. S05b/BL01-BL05. 13_wam_all_roles sweeps exactly that band, which overlaps
+  //      BL01 (02_rfi_ci), BL02 (the tracked 9-TC regression) AND the smoke flow
+  //      areas BL03/BL04/BL05. Because WAM's Contractor Incharge and Quality
+  //      Inspector rows are SINGLE-ASSIGNEE, a sweep there EVICTS whoever held the
+  //      row — so replicating it as-is would silently unmap the smoke flow users
+  //      from their own flow ground.
+  //
+  //   3. Destructive stages. 25/26/27/28 clear and re-point BL01. Pointed at any
+  //      shared row that is a timebomb for every other stage; pointed at ground
+  //      nothing else uses it is harmless, which is why wamMutate is its own area
+  //      rather than a reuse of demapWorkArea.
+  //
+  // Isolating the destructive stages onto their own area has a second payoff that
+  // is the whole reason "68 did not run" happened: it removes the need to ORDER
+  // the feature stages relative to each other, so they can be emitted as
+  // independent sibling leaves instead of one linear chain where a single failure
+  // skips everything downstream. See smokeChain() in playwright.config.js.
+  //
+  // BL08-BL14 ARE CONFIRMED PRESENT. App owner, 2026-09-04: "BL08–BL14 have
+  // never been touched — all blocks are present dont worry ... SO is mapped
+  // proerly in S05b whole work location so dont worry about SO mappping
+  // prerequisite."
+  //
+  // Two things that removes:
+  //   * the areas exist, so a stage pointed at one will find its row;
+  //   * the Service Order is mapped across the WHOLE of S05b, so the vendor
+  //     roles' SO gate (SM12, and the CI/CM rows in SM13/SM19/SM22) is
+  //     satisfied for every area here — there is no per-area SO-mapping
+  //     prerequisite to provision first. That matters because SO mapping moved
+  //     to DRS and there is no PULSE screen left to do it from: if it were
+  //     missing for an area, no work area would be assignable for a vendor role
+  //     and nothing in this suite could fix it.
+  //
+  // A MISSING AREA FAILS LOUDLY, deliberately. An earlier version of this
+  // comment claimed the names were "a preference, not an assumption" and
+  // described a resolveFeatureWorkAreas() that would fall back to the next
+  // unclaimed area — that function was never written, so the comment was simply
+  // wrong. It is not being written now either, because silent substitution is
+  // the wrong behaviour: the entire point of this block is that each stage owns
+  // ground nothing else touches, and an area quietly swapped for "the next
+  // free one" could land a mutating stage on a flow area. Failing at the Work
+  // Area row names the missing area and is a one-line fix here.
+  featureGround: {
+    // SM11 (WAM basics), SM12 (WAM CI + Service Order gate), SM13 (all roles).
+    // DELIBERATELY NOT pre-mapped by SM03: proving Admin can assign here IS the
+    // coverage, and a row SM03 already filled would only ever return
+    // changed=false and assert the no-change toast instead.
+    wamSweep: ['BL08', 'BL09'],
+
+    // SM19-SM22 (patch/update + demapping, both Admin and hierarchy tiers).
+    // Seeded by SM03 so there is a known baseline to mutate, and so "restore the
+    // SM01 user afterwards" has an unambiguous target — the app owner's explicit
+    // requirement: "after checking creation mapping demapping old SM01 users
+    // should be restored".
+    wamMutate: 'BL10',
+
+    // SM23 (single RFI create) and SM24 (bulk create on one area). Both consume
+    // work sections, which is free here: ~264-490 sections per area, versus the
+    // handful a run spends.
+    rfiCreate: 'BL11',
+
+    // SM25 (the 20_rfi_bulk_create_multi_location replica). That spec's name is
+    // misleading — all seven of its entries are ONE work location (A-06c) and
+    // seven different work AREAS, so no second work location is needed and
+    // workLocations above stays a single entry. Scaled 7 -> 3 areas: the
+    // behaviour under test is "one RFI per area in a single pass", which three
+    // proves as well as seven at under half the ground cost.
+    rfiBulkAreas: ['BL12', 'BL13', 'BL14'],
+
+    // SM26 (the 14_nc_create_qi replica) SHARES the NC flow area rather than
+    // taking its own. Safe for exactly one reason, and it does not generalise to
+    // RFI: an NC consumes nothing (duplicate NCs against identical details are
+    // legal), and BL05 is already NC-only, so a second NC there cannot strand
+    // anything. Putting it on an RFI area would be the opposite — a non-approved
+    // NC BLOCKS RFI create/resubmit for the same (checkpoint, work section).
+    // SM28 (the NC-blocks-RFI rule, R2a) — see the ncBlock data block below.
+    //
+    // BL06, and it MUST be an area no RFI/NC flow uses, because this stage
+    // deliberately leaves a NON-APPROVED NC behind: that is the precondition
+    // the rule is about, so it cannot be cleaned up without destroying what
+    // the next run needs to re-prove.
+    //
+    // BL06 is the right area rather than a new one, for three reasons:
+    //   * It is ALREADY PROVISIONED. It sits in profile.workAreas, so SM03
+    //     maps the flow users onto it every run and SM27 restores that — the
+    //     CI and QI can both see it without any new setup. A brand-new area
+    //     (BL15+) is not confirmed to exist; the app owner confirmed
+    //     BL08-BL14 only.
+    //   * It is ALREADY CLAIMED. resolveFlowWorkAreas() adds demapWorkArea to
+    //     its `claimed` set, so BL06 can never leak into the RFI/NC
+    //     fallthrough pool — exactly the isolation this stage needs, already
+    //     in place. (That leak is a real bug that happened to BL07 on
+    //     2026-09-04.)
+    //   * It is FREE. BL06 was the SO-demapping sacrificial area, and SO
+    //     mapping moved to DRS, so nothing raises an RFI or NC there any
+    //     more. SM04's hierarchy cascade also assigns onto BL06, but that is
+    //     WAM only — it creates no RFI/NC and cannot collide with this.
+    //
+    // NOT a collision with 20_rfi_bulk_create_multi_location.spec.js, which
+    // also names BL06: that spec's BL06 is under work location A-06c, not
+    // S05b, and they are different work areas that happen to share a label.
+    ncBlock: 'BL06',
+
+    // TEMPORARY-BL03 (2026-09-05) — was 'BL05', for the vendor bug described at
+    // the two other TEMPORARY-BL03 sites.
+    //
+    // The risk here is REAL BUT NARROW — narrower than the R2 note directly
+    // above implies, and narrower than an earlier version of this comment
+    // claimed. See rule R2a in docs/smoke-e2e-framework.md (app owner,
+    // 2026-09-05) for the precise scope, which is worth knowing before
+    // treating this as scary:
+    //
+    //   - The block is keyed on the FULL (activity/sub-activity, checkpoint,
+    //     work section) triple — NOT on the work area. An NC does not poison
+    //     BL03; it locks exactly one triple.
+    //   - NC creation takes the FIRST available work section, and on ground
+    //     the RFI flow has already run over, that section is one RFI has
+    //     already CONSUMED (R1) and could never reuse regardless. Blocking
+    //     something already unavailable costs nothing.
+    //   - A different work section, or a different activity, is unaffected.
+    //
+    // The one case that genuinely bites is an NC on a triple whose RFI has not
+    // been raised yet, or still needs resubmitting. The chain's ordering
+    // already avoids it: RFI flows run BEFORE NC flows, so the RFI work on
+    // this ground is finished and approved before any NC exists.
+    //
+    // Still reverted to BL05 once the vendor bug is fixed, because "narrow
+    // risk that the ordering happens to avoid" is a worse guarantee than
+    // "disjoint ground that cannot collide at all".
+    ncCreate: 'BL03',
   },
 };
 
@@ -637,6 +982,17 @@ function resolveFlowWorkAreas(profile, { flow, viewport }) {
   };
   collect(map);
   if (profile.demapWorkArea) claimed.add(profile.demapWorkArea);
+  // Same reasoning as demapWorkArea: SM07's dependency chain needs its OWN area
+  // never touched by anything else (see its workArea comment in SOLAR_E2E
+  // above) — without this line BL07 was neither `preferred` nor `claimed`, so
+  // it fell into `spare` and leaked into the RFI flow's fallthrough pool
+  // (found live 2026-09-04: resolveFlowWorkAreas(SOLAR_E2E, {flow:'rfi',
+  // viewport:'desktop'}) returned ['BL03','BL07'] instead of ['BL03']). A
+  // second RFI stage falling onto BL07 would compete with SM07 for the exact
+  // (checkpoint, Work Section) pairs its dependency assertions depend on.
+  if (profile.dependencyChain && profile.dependencyChain.workArea) {
+    claimed.add(profile.dependencyChain.workArea);
+  }
 
   const spare = all.filter((a) => !claimed.has(a) && !preferred.includes(a));
   const pool = [...preferred, ...spare];
@@ -650,6 +1006,89 @@ function resolveFlowWorkAreas(profile, { flow, viewport }) {
     );
   }
   return fallback;
+}
+
+// ---------------------------------------------------------------------------
+// FEATURE-DEPTH GROUND ACCESSORS (SM10+)
+// ---------------------------------------------------------------------------
+// These live here, next to resolveFlowWorkAreas, for the same reason it does:
+// this file owns the shape, so thirteen replica stages cannot each invent their
+// own reading of it and drift apart.
+
+// Fails loudly for a profile with no feature ground, naming what to do about it.
+// The SM10+ stages call this in beforeAll rather than test.skip()ing, so a wind
+// run reports a real failure instead of a quiet green — the same choice SM06
+// makes for `nc: null`.
+function requireFeatureGround(profile) {
+  if (!profile.featureGround) {
+    throw new Error(
+      `Profile "${profile.key}" has no featureGround, so the feature-depth (SM10+) ` +
+      `stages have nowhere to run. This is deliberate for the wind and regression ` +
+      `profiles — see featureGround in tests/config/projects.js. Run these stages ` +
+      `against a profile that declares one (currently: solar-e2e).`
+    );
+  }
+  return profile.featureGround;
+}
+
+// Every work area the feature stages touch, flattened and de-duplicated.
+//
+// NOT added to profile.workAreas, and that is load-bearing: resolveFlowWorkAreas
+// builds its fallthrough pool from workAreas minus a `claimed` set, so anything
+// listed there that it does not know to claim leaks into the RFI/NC fallthrough
+// pool. That is exactly the BL07 bug found live on 2026-09-04. Keeping feature
+// ground in its own block means it can never leak, without needing a matching
+// claim line for each new area.
+function featureWorkAreas(profile) {
+  const g = profile.featureGround;
+  if (!g) return [];
+  const out = [];
+  const add = (v) => {
+    if (!v) return;
+    (Array.isArray(v) ? v : [v]).filter(Boolean).forEach((a) => {
+      if (!out.includes(a)) out.push(a);
+    });
+  };
+  add(g.wamSweep);
+  add(g.wamMutate);
+  add(g.rfiCreate);
+  add(g.rfiBulkAreas);
+  add(g.ncCreate);
+  // BL06 for solar. Harmless here even though it is ALSO in
+  // profile.workAreas — smokeMappedWorkAreas() de-duplicates against the
+  // flow list, so it does not produce a second mapping pass. Listed so
+  // this function keeps answering its actual question truthfully: which
+  // work areas the feature tier touches.
+  add(g.ncBlock);
+  return out;
+}
+
+// The work areas SM03 assigns the flow users to: the flow areas plus the feature
+// areas that need flow-role ACCESS to be usable.
+//
+// App owner, 2026-09-04: "SM03 I have knowingly kept on top because user stored
+// in json of smoke (be it newly created/existing ones) will only get their
+// access if they are mapped." A created user with no WAM row cannot see a work
+// area at all, so any area an SM10+ stage raises an RFI on has to be mapped here
+// or that stage fails at the Work Area dropdown with nothing to explain why.
+//
+// TWO DELIBERATE EXCLUSIONS:
+//   * wamSweep — SM11/SM12/SM13 assigning there IS their coverage. Pre-filling
+//     the rows would leave assignUserIfNeeded() with nothing to change, so those
+//     stages would only ever assert the "No changes to save" path.
+//   * ncCreate — it shares BL05, which is already a flow area, so it is covered
+//     by profile.workAreas and adding it again would be a no-op.
+function smokeMappedWorkAreas(profile) {
+  const flow = (profile.workAreas || []).filter(Boolean).length
+    ? profile.workAreas.filter(Boolean)
+    : [profile.primaryWorkArea].filter(Boolean);
+  const g = profile.featureGround;
+  if (!g) return flow;
+
+  const sweep = new Set((g.wamSweep || []).filter(Boolean));
+  const extra = featureWorkAreas(profile)
+    .filter((a) => !sweep.has(a) && !flow.includes(a));
+  return [...flow, ...extra];
 }
 
 // Throws with a useful message rather than letting a null flow into a
@@ -668,6 +1107,7 @@ function requireField(profile, fieldPath) {
 
 module.exports = {
   PROFILES, getProfile, requireField, resolveFlowWorkAreas,
+  requireFeatureGround, featureWorkAreas, smokeMappedWorkAreas,
   SOLAR_REGRESSION, SOLAR_E2E, WIND_E2E,
   CLUSTER_CANDIDATES, SITE,
 };

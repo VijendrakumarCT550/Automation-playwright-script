@@ -1,10 +1,10 @@
 {
   "TC-01": {
-    "ncId": null,
-    "ncCode": null,
-    "currentStepIndex": 0,
-    "currentVersion": "V1",
-    "status": "failed",
+    "ncId": "567147f8-b2ff-41d8-a06f-395fd93da401",
+    "ncCode": "NC-S05b-BL02-CIV-0",
+    "currentStepIndex": 3,
+    "currentVersion": "v1",
+    "status": "done",
     "steps": [
       {
         "actor": "CI",
@@ -18,12 +18,11 @@
         "actor": "QI",
         "action": "approve"
       }
-    ],
-    "failureReason": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create NC\")').first() to be visible\u001b[22m\n"
+    ]
   },
   "TC-02": {
-    "ncId": "ddc78d64-63eb-4651-a45e-fcdb1b2c6a6f",
-    "ncCode": "NC-A-06c-BL04-CIV-103",
+    "ncId": "9e04f758-36d6-44a2-b2d8-789d25b45ac5",
+    "ncCode": "NC-S05b-BL02-CIV-1",
     "currentStepIndex": 5,
     "currentVersion": "v2",
     "status": "done",
@@ -51,8 +50,8 @@
     ]
   },
   "TC-03": {
-    "ncId": "5c937189-fe15-47ef-8b11-a0afd4b3f6ef",
-    "ncCode": "NC-A-06c-BL04-CIV-104",
+    "ncId": "4bf270c3-706c-4aa4-9e64-676f1f6a7a8a",
+    "ncCode": "NC-S05b-BL02-CIV-2",
     "currentStepIndex": 6,
     "currentVersion": "v2",
     "status": "done",
@@ -84,8 +83,8 @@
     ]
   },
   "TC-04": {
-    "ncId": "0e44f051-8e32-455a-85d4-c845af5df48d",
-    "ncCode": "NC-A-06c-BL04-CIV-105",
+    "ncId": "e729d2b2-c20c-4a3d-8958-972d37ed69bb",
+    "ncCode": "NC-S05b-BL02-CIV-3",
     "currentStepIndex": 8,
     "currentVersion": "v3",
     "status": "done",

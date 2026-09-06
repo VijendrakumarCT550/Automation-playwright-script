@@ -92,8 +92,31 @@ class BasePage {
       (await option.getAttribute('data-state').catch(() => null)) === 'checked' ||
       (await option.getAttribute('aria-selected').catch(() => null)) === 'true';
     if (alreadyChecked) {
-      await this.page.keyboard.press('Escape').catch(() => {});
-      await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      // MUST check the listbox is actually still open before pressing Escape —
+      // this used to press it unconditionally, which is the same
+      // Escape-bubbling defect already found and fixed locally in
+      // WAMPage.addAssigneeToRow (its `stillOpen` check), just never fixed HERE
+      // in the shared method every page object calls through.
+      //
+      // Confirmed live 2026-09-04 on UserManagementPage's Add User dialog:
+      // selectUserType('AGEL') hit this branch (AGEL was already the selected
+      // User Type), the listbox had ALREADY auto-closed on its own (Ark UI
+      // single-select comboboxes do this — same trait already documented for
+      // WAM's Project Manager row), so there was nothing open for Escape to
+      // consume and it bubbled up and closed the whole "Add User" dialog. The
+      // very next call (selectUserRole) then timed out waiting on a combobox
+      // inside a dialog that no longer existed, with a page snapshot showing a
+      // bare Users list and the PREVIOUS user's name still sitting in the
+      // search box.
+      //
+      // Only press Escape when there is genuinely something open to close —
+      // this can only ever turn an unsafe blind press into a safe no-op; the
+      // case this branch was originally written for (listbox still open, needs
+      // closing) is completely unaffected.
+      if (await listbox.isVisible({ timeout: 500 }).catch(() => false)) {
+        await this.page.keyboard.press('Escape').catch(() => {});
+        await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      }
       return;
     }
 
@@ -141,8 +164,13 @@ class BasePage {
           (await option.getAttribute('data-state').catch(() => null)) === 'checked' ||
           (await option.getAttribute('aria-selected').catch(() => null)) === 'true';
         if (alreadyChecked) {
-          await this.page.keyboard.press('Escape').catch(() => {});
-          await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+          // Same open-check as selectDropdownOption's fix, 2026-09-04, and for
+          // the identical reason: pressing Escape with nothing open bubbles into
+          // the parent dialog and closes it.
+          if (await listbox.isVisible({ timeout: 500 }).catch(() => false)) {
+            await this.page.keyboard.press('Escape').catch(() => {});
+            await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+          }
           return candidate;
         }
         await option.click();

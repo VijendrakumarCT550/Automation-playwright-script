@@ -324,6 +324,48 @@ async function loginAsFlowUser(page, email, password, { navigateToMyTasks = true
   return dashboard;
 }
 
+// Brings the page back to PULSE after a navigation legitimately left the
+// deployment — today that means only one thing: following PULSE's leftover
+// "SO Mapping" nav entry, which hands off to DRS (app owner, 2026-09-06 —
+// see isDrsUrl in tests/config/environments.js and SOMappingPage.DESTINATIONS).
+//
+// Two things have to be undone, and missing either one wedges whatever runs
+// next rather than failing where the hand-off happened:
+//
+//   1. A hand-off that opened a NEW TAB leaves that tab as the context's
+//      newest page. Nothing in this suite tracks tabs, so it is closed here.
+//      (Whether DRS opens in-tab or in a new tab is not confirmed for every
+//      role/viewport, so both are handled rather than assumed.)
+//   2. A hand-off that navigated THIS tab leaves `page` on the DRS origin,
+//      where every PULSE locator — the sidebar included — resolves to
+//      nothing. A direct URL navigation is used rather than
+//      DashboardPage.goToDashboard(), because that clicks PULSE nav which is
+//      exactly what is not there.
+//
+// Returns true when it actually had to do something, false when the page was
+// already on PULSE — so callers can log the hand-off as the notable event it
+// is instead of silently absorbing it.
+async function returnToPulse(page) {
+  const origin = new URL(process.env.BASE_URL).origin;
+  const context = page.context();
+  let acted = false;
+
+  // Close any OTHER tab that is no longer on PULSE. Never closes `page`
+  // itself — the caller still needs it — and never closes a PULSE tab.
+  for (const other of context.pages()) {
+    if (other === page || other.isClosed()) continue;
+    if (other.url().startsWith(origin)) continue;
+    await other.close().catch(() => {});
+    acted = true;
+  }
+
+  if (page.url().startsWith(origin)) return acted;
+
+  await page.goto(`${origin}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await page.waitForLoadState('networkidle').catch(() => {});
+  return true;
+}
+
 // Strips the position prefix the WIND RFI form puts on Activity and
 // Sub-Activity labels, so a label can be compared against the activity master
 // (tests/fixtures/wind-activity-checklist.json) or against a profile value.
@@ -402,6 +444,7 @@ module.exports = {
   loginAsFlowUser,
   loginFreshRoleSession,
   loginFreshUserSession,
+  returnToPulse,
   stripLabelPrefix,
   sameLabel,
 };

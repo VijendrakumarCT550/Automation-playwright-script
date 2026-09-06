@@ -73,6 +73,29 @@ class ReportsPage extends BasePage {
     return match ? parseInt(match[1], 10) : null;
   }
 
+  // CONFIRMED LIVE 2026-09-05 on SM18's CAD/SAD sweep: `waitForLoad`'s own
+  // regex (`Total Count\s*:\s*\d+`) is satisfied by a "Total Count: 0"
+  // PLACEHOLDER just as readily as the real number — the real total loads
+  // moments later. Reading `getTotalCount()` immediately after `waitForLoad`
+  // can catch that placeholder: both CAD and SAD read an "unfiltered" total
+  // of exactly 0 this way, then a MOMENTS-LATER read (after applying the
+  // Approved filter) came back with tens of thousands — proving the report
+  // genuinely had data the whole time, just not yet rendered at the moment
+  // of that first read. Same race class as DashboardPage's chart-fingerprint
+  // pre-paint issue. Polls for a non-zero reading instead of trusting the
+  // first one — this can only ever replace a premature 0 with the real
+  // number; a role that genuinely has zero matching rows just exhausts the
+  // timeout and returns 0 as before.
+  async waitForRealTotalCount({ timeout = 10000, intervalMs = 300 } = {}) {
+    const deadline = Date.now() + timeout;
+    let count = await this.getTotalCount();
+    while (count === 0 && Date.now() < deadline) {
+      await this.page.waitForTimeout(intervalMs);
+      count = await this.getTotalCount();
+    }
+    return count;
+  }
+
   // Any filter-panel field by its accessible name substring — for reports
   // whose exact field set isn't confirmed live (everything except the RFI
   // status report's rfiStatusField), so a spec can still probe "does this
@@ -128,10 +151,41 @@ class ReportsPage extends BasePage {
   // fire at all, no error, just a silent timeout).
   async downloadAndParse(labelForFilename = 'report') {
     await this.closeFilterIfOpen();
-    const [download] = await Promise.all([
-      this.page.waitForEvent('download', { timeout: 30000 }),
-      this.downloadButton.click(),
-    ]);
+
+    // The bare "Timeout 30000ms exceeded while waiting for event download"
+    // says nothing about WHY, and it has now cost real time twice. Seen live
+    // 2026-09-06 on a pulse-test full-chain run: Execution Lead and Quality
+    // Lead both failed here with exactly that message and nothing else —
+    // while the SAME two roles' dashboard charts came back completely empty,
+    // which points at a zero-row report rather than a broken Download button.
+    //
+    // That is a HYPOTHESIS, not a finding, so nothing here skips or softens
+    // the download: this only captures what was on screen at the moment it
+    // timed out — the Total Count, and any toast the app raised — and
+    // rethrows. A zero-row report and a genuinely broken button then look
+    // different in the log instead of identical, and the next run settles it
+    // without needing another investigation from scratch.
+    let download;
+    try {
+      [download] = await Promise.all([
+        this.page.waitForEvent('download', { timeout: 30000 }),
+        this.downloadButton.click(),
+      ]);
+    } catch (err) {
+      const total = await this.getTotalCount().catch(() => null);
+      const toast = await this.page
+        .locator('[data-scope="toast"], [role="alert"]').first()
+        .innerText({ timeout: 1000 }).catch(() => '');
+      err.message =
+        `${err.message}\n` +
+        `  [downloadAndParse context] label="${labelForFilename}" ` +
+        `totalCountOnScreen=${total === null ? 'unreadable' : total} ` +
+        `toast=${toast ? JSON.stringify(toast.trim()) : 'none'} url=${this.page.url()}\n` +
+        `  A totalCountOnScreen of 0 would mean there was nothing to export, which is a ` +
+        `data/scope condition for this role rather than a broken Download control — ` +
+        `see this method's comment.`;
+      throw err;
+    }
     const suggested = download.suggestedFilename();
     const safeLabel = labelForFilename.replace(/[^a-z0-9_-]/gi, '_');
     const savePath = path.join(__dirname, '..', '..', 'test-results', `${safeLabel}_${Date.now()}_${suggested}`);

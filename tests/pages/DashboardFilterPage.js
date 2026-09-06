@@ -75,7 +75,25 @@ class DashboardFilterPage extends BasePage {
     this.openDatePickerButtons = this.drawer.getByRole('button', { name: 'Open date picker' });
     this.fromDateTrigger = this.openDatePickerButtons.nth(0);
     this.toDateTrigger   = this.openDatePickerButtons.nth(1);
-    this.datePickerCalendar = page.locator('[data-scope="date-picker"][data-part="content"]');
+    // MUST be scoped to the OPEN one. Ark UI leaves a CLOSED date-picker's
+    // content node in the DOM (same trait documented throughout this suite for
+    // listboxes and dialogs — see WAMPage/BasePage), and the From/To date
+    // fields each render their OWN content node (distinct ids, e.g.
+    // "datepicker::rq::content" vs "datepicker::rv::content"). So the first
+    // date field's calendar stays in the DOM, hidden, after use — and the
+    // moment a SECOND date field opens its own calendar, this locator without
+    // [data-state="open"] matches BOTH and Playwright's strict mode throws:
+    //
+    //   strict mode violation: locator(...) resolved to 2 elements:
+    //     1) <div data-state="open" .../> (the one we want)
+    //     2) <div hidden data-state="closed" .../> (left over from before)
+    //
+    // Confirmed live 2026-09-05: every test in this file that opened a SECOND
+    // date field in the same session hit this — 10 of 28 tests, every one of
+    // them touching From or To after some earlier test already had.
+    this.datePickerCalendar = page.locator(
+      '[data-scope="date-picker"][data-part="content"][data-state="open"]'
+    );
 
     this.applyButton = this.drawer.getByRole('button', { name: 'Apply' });
     this.resetButton = this.drawer.getByRole('button', { name: 'Reset' });
@@ -149,20 +167,176 @@ class DashboardFilterPage extends BasePage {
     return (await field.innerText()).trim();
   }
 
+  // Work Location (and presumably every other multi-select filter field
+  // here) is an Ark UI "tags input" combobox: the `role="combobox"`
+  // `<input>` (what `workLocationField` resolves to) is ONLY EVER a search/
+  // typeahead box. CONFIRMED LIVE 2026-09-05 via a DOM dump
+  // (tests/specs/inspection/00_inspect_work_location_chip.spec.js, taken
+  // both before and immediately after selecting a real value): its `value`
+  // attribute is "" in BOTH states — a selection never touches the input at
+  // all. Each picked item instead renders as its own CHIP (a sibling `<div>`
+  // holding the label text plus a remove "x" icon), inside the SAME
+  // `[data-part="trigger"]` button that wraps the input. So neither
+  // `.textContent()` NOR `.inputValue()` on the input itself can ever answer
+  // "is X selected" — both were tried here in turn, in successive live
+  // reruns, and both always read empty regardless of the real selection
+  // state. The trigger button (an Ark UI-stable `data-part`, not a fragile
+  // atomic CSS class) is the right scope: its full text content includes
+  // whatever chips are currently picked.
+  selectedChipsContainer(field) {
+    return field.locator('xpath=ancestor::*[@data-scope="combobox" and @data-part="trigger"][1]');
+  }
+
+  // Selecting Work Location doesn't always durably commit before the
+  // cascade below it (Work Area) is acted on — confirmed live 2026-09-05,
+  // ~2h into a full smoke run under load: three tests that proceeded
+  // straight to Work Area right after selecting Work Location (previously
+  // just `networkidle` + a fixed 1000ms sleep) later found Work Location's
+  // own displayed selection missing. Polls for the selected chip to actually
+  // render instead of trusting a fixed delay — a strictly stronger
+  // precondition than the sleep it replaces: a fast commit is completely
+  // unaffected, a slow one now gets real time to land instead of the next
+  // step silently racing ahead of it. Throws a named error on timeout (same
+  // philosophy as navigateCalendarToMonth) rather than proceeding into a
+  // confusing downstream failure.
+  async confirmWorkLocationSelected(text, { timeout = 15000, intervalMs = 300 } = {}) {
+    const chips = this.selectedChipsContainer(this.workLocationField);
+    const deadline = Date.now() + timeout;
+    let lastSeen = '';
+    while (Date.now() < deadline) {
+      lastSeen = await chips.textContent().catch(() => '');
+      if (lastSeen && lastSeen.includes(text)) return;
+      await this.page.waitForTimeout(intervalMs);
+    }
+    throw new Error(
+      `DashboardFilterPage: Work Location never visibly showed "${text}" within ${timeout}ms of selecting it ` +
+      `(last seen: "${lastSeen}"). Either the selection is genuinely slow under load, or something is resetting it.`
+    );
+  }
+
   // From/To are readonly — set via the calendar popup, not typing. Opens
   // directly in day view; clicks whichever day cell is passed (default:
   // whatever's first currently rendered, i.e. "some valid date", since
   // exact date rarely matters for exercising the filter itself).
+  //
+  // `value` (an exact "YYYY-MM-DD") can name a date OUTSIDE the month the
+  // calendar opens on — see navigateCalendarToMonth below for how that gets
+  // reached at all.
   async selectDateField(trigger, { value } = {}) {
     await trigger.click();
     await this.datePickerCalendar.waitFor({ state: 'visible', timeout: 5000 });
 
+    if (value) {
+      // The calendar always OPENS on the current month, regardless of how far
+      // away `value` is — so reach its month first, THEN look for the day cell.
+      // Cheap when value is already in view (the day-view check below is what
+      // most callers hit): navigateCalendarToMonth no-ops immediately if
+      // day-view cells with this exact value are already visible.
+      await this.navigateCalendarToMonth(value);
+    }
+
+    // NOT `.first()` of every day cell when no exact value is asked for — the
+    // calendar's day GRID renders "outside range" placeholder cells for the
+    // tail of the previous month / head of the next one to fill the grid, and
+    // those carry `data-disabled` / `aria-disabled="true"` (confirmed live
+    // 2026-09-05: the literal first DOM match was 31 August, greyed out,
+    // `data-outside-range=""`). Clicking a disabled cell never succeeds —
+    // Playwright's actionability retry just spins on "element is not enabled"
+    // for the full 30s. Exclude disabled cells so this always lands on a real,
+    // clickable day in the CURRENT month.
     const cell = value
       ? this.datePickerCalendar.locator(`[data-part="table-cell-trigger"][data-value="${value}"]`)
-      : this.datePickerCalendar.locator('[data-part="table-cell-trigger"][data-view="day"]').first();
+      : this.datePickerCalendar
+          .locator('[data-part="table-cell-trigger"][data-view="day"]:not([data-disabled])')
+          .first();
     await cell.waitFor({ state: 'visible', timeout: 5000 });
     await cell.click();
     await this.datePickerCalendar.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  }
+
+  // Navigates the OPEN calendar to the month containing `value` ("YYYY-MM-DD"),
+  // via its year-view/month-view drill-down, so a day cell for `value` actually
+  // exists in the DOM afterward.
+  //
+  // WHY THIS EXISTS. Confirmed independently two ways on 2026-09-05 — by a
+  // live test failure AND by the app owner manually driving the same open
+  // calendar in a headed run — that this picker only ever renders ONE month's
+  // day-grid at a time, with no way to jump straight to an arbitrary day.
+  // Several SM16 tests carry hardcoded dates from the original spec
+  // (2001-01-01, 2020-01-01, 2026-12-31) that are nowhere near "today"'s
+  // month, and clicking a day cell that was never rendered just times out —
+  // which is what happened here before this existed.
+  //
+  // THE MECHANISM, now CONFIRMED LIVE 2026-09-05 (from a failure's own page
+  // snapshot, captured mid-navigation) — and it is NOT the two-step
+  // year-number-grid -> month-grid drill-down originally guessed here. There
+  // is no separate grid of bare year numbers at all. "Switch to year view"
+  // (the real accessible name, on the day view) lands directly on a grid of
+  // the current year's 12 MONTHS (cells are buttons named e.g. "January
+  // 2026", rendered text just "Jan") — Zag.js's "year view" name refers to
+  // "a whole year's worth of cells", not "a grid of years". That grid pages
+  // by YEAR via two buttons with their own real, confirmed accessible names:
+  // "Switch to previous year" / "Switch to next year" (the latter disabled
+  // once at the current year — consistent with the app owner's separately
+  // confirmed "From can't go past today" rule). So reaching an arbitrary
+  // year needs no month-view step at all: page year-by-year on this one grid
+  // until the exact target month+year button exists, then click it straight
+  // into day view.
+  async navigateCalendarToMonth(value) {
+    const [year, month] = value.split('-').map(Number);
+
+    // Fast path: the target day is already reachable without navigating at
+    // all (the common case — most callers ask for a date near "today").
+    const already = this.datePickerCalendar.locator(`[data-part="table-cell-trigger"][data-value="${value}"]`);
+    if (await already.isVisible({ timeout: 500 }).catch(() => false)) return;
+
+    const viewTrigger = this.datePickerCalendar.getByRole('button', { name: /switch to year view/i });
+    if (!(await viewTrigger.isVisible({ timeout: 2000 }).catch(() => false))) {
+      throw new Error(
+        `DashboardFilterPage: date ${value} is not in the calendar's current month, and no ` +
+        `"Switch to year view" control was found to navigate there. Either the accessible ` +
+        `name changed, or this picker has no way to jump directly to a distant date.`
+      );
+    }
+    await viewTrigger.click();
+
+    const MONTH_NAMES = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    // Full accessible name match ("January 2001"), not text-content
+    // filtering — the cell's rendered text is just the abbreviation ("Jan"),
+    // so a text filter can't tell one year's January from another's; the
+    // accessible name is the only place the year actually appears per cell.
+    const monthCell = this.datePickerCalendar
+      .getByRole('button', { name: `${MONTH_NAMES[month - 1]} ${year}`, exact: true });
+
+    let found = await monthCell.isVisible({ timeout: 3000 }).catch(() => false);
+    if (!found) {
+      const direction = year < new Date().getFullYear() ? 'previous' : 'next';
+      const pager = this.datePickerCalendar.getByRole('button', { name: new RegExp(`switch to ${direction} year`, 'i') });
+      for (let attempt = 0; attempt < 100 && !found; attempt++) {
+        if (!(await pager.isVisible({ timeout: 1000 }).catch(() => false))) break;
+        if (await pager.isDisabled().catch(() => false)) break;
+        await pager.click();
+        await this.page.waitForTimeout(150);
+        found = await monthCell.isVisible({ timeout: 500 }).catch(() => false);
+      }
+    }
+    if (!found) {
+      throw new Error(
+        `DashboardFilterPage: paged the year-grid toward ${year} looking for a ` +
+        `"${MONTH_NAMES[month - 1]} ${year}" button, but it never appeared. Either that year is ` +
+        `unreachable this way (blocked by a max/min-date restriction, e.g. the "From" field's ` +
+        `today-or-earlier rule), or the pager/cell accessible names differ from what's assumed here.`
+      );
+    }
+    await monthCell.click();
+
+    // Should now be back on day view, scoped to the target year/month.
+    await this.datePickerCalendar
+      .locator(`[data-part="table-cell-trigger"][data-value="${value}"]`)
+      .waitFor({ state: 'visible', timeout: 3000 });
   }
 
   // User-specified: the table's actual data refresh after Apply/Reset

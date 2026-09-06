@@ -145,6 +145,100 @@ class ReassignPage extends BasePage {
     return cell;
   }
 
+  // Reads the id (column 1) of every currently rendered data row, in order.
+  //
+  // Used to CHOOSE a row on the caller's own terms instead of blindly taking
+  // the first one. That distinction caused a real failure on 2026-09-04: this
+  // grid is Admin's GLOBAL "Pending with others" queue, so it holds every
+  // unapproved RFI on the deployment — including rows belonging to DRS's own
+  // automation (ids like `RFI-E2E-WL-A-15-...`, confirmed by the app owner) and
+  // to the regression tier. "First available pending row" therefore meant
+  // "whatever anyone else happened to create most recently", and a smoke run
+  // reassigned a row it did not own.
+  //
+  // Only rows currently rendered are returned — the grid virtualises
+  // vertically — which is fine for picking a row to act on, and is NOT a
+  // reliable way to prove a given id is absent.
+  async listRowIds(limit = 40) {
+    const rows = this.grid.locator('.rdg-row[role="row"]');
+    const count = Math.min(await rows.count(), limit);
+    const ids = [];
+    for (let i = 0; i < count; i++) {
+      const id = await this.getRowId(rows.nth(i)).catch(() => null);
+      if (id) ids.push(id.trim());
+    }
+    return ids;
+  }
+
+  // Resolves a column's aria-colindex by its HEADER TEXT, scrolling as needed.
+  //
+  // WHY THIS EXISTS — a real failure, 2026-09-04. 11_reassign_rfi_nc.spec.js
+  // hardcodes `aria-colindex` 5/6/7 for Contractor Incharge / Execution
+  // Engineer / Quality Inspector, from a one-off DOM dump of the headers. A
+  // smoke run then failed with:
+  //
+  //     Expected: "CICeenUser67"   Received: "BL05"
+  //     locator: ...[aria-colindex="5"]
+  //
+  // Column 5 was the WORK AREA column, not Contractor Incharge. The cell was
+  // found and read cleanly; the index simply meant something different than it
+  // did when the dump was taken. A hardcoded index is a snapshot of a layout
+  // that the app is free to change, and when it does the failure looks like a
+  // wrong VALUE rather than a wrong COLUMN — which sends you looking at the
+  // reassignment logic instead of at the locator.
+  //
+  // Reading the header row instead makes the mapping self-correcting: the test
+  // asks for "the Contractor Incharge column" and gets whichever index that is
+  // today.
+  //
+  // Returns the numeric index, or null when no header matches — callers decide
+  // whether that is a skip or a failure, since a column can legitimately be
+  // absent from one list and present in another.
+  async resolveColumnIndexByHeader(candidates) {
+    const wanted = [].concat(candidates).filter(Boolean).map((c) => c.toLowerCase().trim());
+    const headerCells = () => this.grid.locator('[role="columnheader"]');
+
+    await this.scrollGridToStart();
+
+    const seen = new Map();
+    // Same incremental-scroll shape as scrollUntilColumnVisible, and for the
+    // same reason: react-data-grid only keeps columns near the current scroll
+    // offset rendered, so the full header set is never in the DOM at once and
+    // has to be accumulated across scroll positions.
+    for (let i = 0; i < 25; i++) {
+      const count = await headerCells().count();
+      for (let h = 0; h < count; h++) {
+        const cell = headerCells().nth(h);
+        const [text, idx] = await Promise.all([
+          cell.innerText().catch(() => ''),
+          cell.getAttribute('aria-colindex').catch(() => null),
+        ]);
+        const label = (text || '').replace(/\s+/g, ' ').trim();
+        if (label && idx) seen.set(label.toLowerCase(), Number(idx));
+      }
+
+      for (const w of wanted) {
+        for (const [label, idx] of seen) {
+          if (label === w || label.includes(w)) return idx;
+        }
+      }
+
+      const atEnd = await this.grid.evaluate((el) => {
+        const before = el.scrollLeft;
+        el.scrollLeft += el.clientWidth * 0.6;
+        return el.scrollLeft === before;
+      });
+      await this.page.waitForTimeout(300);
+      if (atEnd) break;
+    }
+
+    console.log(
+      `    ReassignPage: no column header matched ${JSON.stringify(candidates)}. ` +
+      `Headers seen: ${JSON.stringify([...seen.entries()])}`
+    );
+    return null;
+  }
+
   // Polls scroll+check together rather than trusting scrollGridToEnd's
   // "scrollWidth stopped growing" heuristic alone before looking for the
   // button once — that heuristic can report done a render-cycle too early

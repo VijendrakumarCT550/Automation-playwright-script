@@ -132,8 +132,21 @@ class NCCreatePage extends BasePage {
     await pick(this.activityDropdown,     data.activity);
     await pick(this.subActivityDropdown,  data.subActivity);
 
+    // `pickedWorkSections` is RETURNED (see the end of this method) so a
+    // caller can find out WHICH sections the NC actually landed on. Added
+    // 2026-09-06 for SM28, which has to raise an RFI against the exact same
+    // work section afterwards to prove the NC blocked it. Purely additive:
+    // every pre-existing caller ignores the return value.
+    //
+    // `preferred` pins specific sections when the caller already knows which
+    // one it wants; without it selectMultiAware takes the first available,
+    // which is the long-standing behaviour and stays the default.
+    let pickedWorkSections = [];
     if (data.workSectionCount) {
-      await this.selectMultiAware(this.workSectionDropdown, { count: data.workSectionCount });
+      pickedWorkSections = await this.selectMultiAware(this.workSectionDropdown, {
+        count: data.workSectionCount,
+        preferred: data.preferredWorkSections || [],
+      });
     }
 
     if (data.ncQuantity != null) {
@@ -173,11 +186,29 @@ class NCCreatePage extends BasePage {
     if (data.capturePhoto !== false) {
       await this.capturePhoto();
     }
+
+    return pickedWorkSections;
   }
 
   async clickSubmit() {
     await this.submitButton.waitFor({ state: 'visible' });
     await this.submitButton.click();
+  }
+
+  // The form's own "Draft" button — the EXPLICIT save path, as opposed to
+  // the app autosaving because the user navigated away mid-fill. Added
+  // 2026-09-05 for 32_nc_draft_autosave.spec.js; `saveDraftButton` had been
+  // declared in this constructor since the page object was written but
+  // nothing ever clicked it.
+  //
+  // Deliberately does NOT assert where it lands: whether clicking Draft
+  // navigates away by itself or leaves the form open is unconfirmed for NC
+  // (it is unconfirmed for RFI too — see RFICreatePage.clickSaveDraft, which
+  // this mirrors). Callers reset their own navigation afterwards.
+  async clickSaveDraft() {
+    await this.saveDraftButton.waitFor({ state: 'visible' });
+    await this.saveDraftButton.click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   // Confirmed live: clicking Submit shows an "Are you sure you want to

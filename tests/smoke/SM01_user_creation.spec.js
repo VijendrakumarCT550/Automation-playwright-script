@@ -29,7 +29,24 @@ const UserManagementPage = require('../pages/UserManagementPage');
 // nextBatchNumber() several times and scatter one logical batch across
 // several numbers (confirmed live there: a 6-worker split produced batch
 // numbers 32-37 instead of one).
-test.describe.configure({ mode: 'serial' });
+//
+// NOT test.describe.configure({ mode: 'serial' }) despite that history — fixed
+// 2026-09-05. `serial` mode also means "if one test fails, skip every test
+// after it in this file" (documented Playwright behaviour), which is a much
+// worse trade here than it first looks: found live when a single EE-creation
+// failure (an unrelated dialog-close bug, since fixed) skipped QI, EL, QL, PM,
+// PAD, SAD and CAD creation too — 137 tests lost downstream in that run, all
+// because ONE role's create hit a transient issue.
+//
+// The multi-worker risk above is real but is ALREADY prevented a different
+// way: every npm script and run-smoke.js hardcode `--workers=1` for the WHOLE
+// run, which is the established, documented, enforced convention this entire
+// suite depends on regardless of serial/default mode (SM04's genuine cascade
+// dependency relies on the exact same guarantee). With only one worker ever in
+// play, nextBatchNumber() cannot be called twice for one file's beforeAll no
+// matter which mode this describe uses — so removing `serial` costs nothing on
+// the batch-uniqueness front and stops one role's failure from silently
+// erasing the other nine.
 
 // Order matters only for readability — each user is independent. Vendor roles
 // first so a failure in the vendor-category/vendor cascade (the part with the
@@ -69,6 +86,47 @@ const roleOrderFor = (profile) =>
 // would have recreated ALL TEN — replacing a CI/EE/QI that were already WAM'd
 // and had eighteen RFIs in flight against them. Growing the role list must add
 // users, not rebuild the world.
+// WHICH USERS THIS RUN USES — app owner's explicit choice, 2026-09-04:
+// "every run of smoke creates new users and run full extensive run and get
+// report of that (can you give any way we can control whether new users should
+// be created/reused if possible please do)".
+//
+// So a full smoke run creates a FRESH batch by default: the point of the tier is
+// to prove the whole sequence (create -> map -> flow) end to end, and reusing
+// users silently skips the creation half of that. The trade-off is that a run
+// costs ~10 user creations up front, and that is deliberate.
+//
+// `reuse` exists for ITERATION. Playwright re-runs a project's dependencies on
+// every invocation, so re-running one stage (`--project=smoke-solar-nc-mobile`)
+// would otherwise create a brand-new batch and re-map it every single time —
+// minutes of setup to retry a one-minute assertion.
+//
+//   SMOKE_USERS=new     (default) create a fresh batch of every declared role
+//   SMOKE_USERS=reuse             reuse recorded users, create only the missing
+//
+// SMOKE_RECREATE_USERS=1 is kept as an alias for `new` — it predates this switch
+// and is still what smoke-users.js names in its own error messages.
+//
+// NOTE the interaction with SM03, which the app owner called out directly: a
+// created user has NO access until it is WAM'd, which is why SM03 sits
+// immediately after this stage in the chain rather than later. A fresh batch
+// here therefore always costs a re-map there too; both stages are idempotent, so
+// `reuse` collapses that whole prefix to a few seconds of no-ops.
+const USER_MODES = ['new', 'reuse'];
+
+function resolveUserMode() {
+  if (process.env.SMOKE_RECREATE_USERS === '1') return 'new';
+  const raw = (process.env.SMOKE_USERS || '').trim().toLowerCase();
+  if (!raw) return 'new';
+  if (!USER_MODES.includes(raw)) {
+    throw new Error(
+      `SMOKE_USERS="${process.env.SMOKE_USERS}" is not a valid mode. ` +
+      `Use one of: ${USER_MODES.join(', ')} (default: new).`
+    );
+  }
+  return raw;
+}
+
 function existingUsersFor(profile) {
   const recorded = loadLastCreatedUsers();
   const found = {};
@@ -123,16 +181,19 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
       `${ungenerated.join(', ')}. Add them to ROLE_ORDER in this file.`
     ).toEqual([]);
 
-    const forceAll = process.env.SMOKE_RECREATE_USERS === '1';
-    const { found, missing } = forceAll
+    const mode = resolveUserMode();
+    const { found, missing } = mode === 'new'
       ? { found: {}, missing: declared }
       : existingUsersFor(profile);
     toCreate = new Set(missing);
 
     console.log(
       `\n=== Smoke user creation: profile "${profile.key}" ` +
-      `(${profile.projectType} @ ${profile.workLocations.join(', ')}) ===` +
-      (forceAll ? '\n    SMOKE_RECREATE_USERS=1 — recreating every role' : '')
+      `(${profile.projectType} @ ${profile.workLocations.join(', ')}) ===\n` +
+      `    SMOKE_USERS=${mode} — ` +
+      (mode === 'new'
+        ? 'creating a fresh batch of every declared role (the default)'
+        : 'reusing recorded users, creating only what is missing')
     );
     const reusedKeys = Object.keys(found);
     if (reusedKeys.length) {
@@ -141,7 +202,7 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
     }
     if (!toCreate.size) {
       console.log('    nothing to create — every declared role already exists on this deployment.');
-      console.log('    (set SMOKE_RECREATE_USERS=1 to force a new batch)\n');
+      console.log('    (omit SMOKE_USERS, or set SMOKE_USERS=new, to force a fresh batch)\n');
       return;
     }
     console.log(`    creating ${toCreate.size}: ${[...toCreate].join(', ')}\n`);
@@ -194,6 +255,32 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
       // fills only the fields a given role renders (it is a clean prefix of
       // Cluster/Sites/Project type/Work Locations, and which prefix varies by
       // role) — so only check a field when the role actually showed it.
+      // CLUSTER AND SITE FIRST, because they scope everything below them and
+      // because selectMultiAware FALLS BACK SILENTLY: when none of the preferred
+      // candidates match an option, it clicks the FIRST option instead. Found
+      // live 2026-09-04 — a wind run asking for cluster "Gujarat" / site "Mandvi"
+      // came back with "Rajasthan" / "Baiya", and the only symptom was an empty
+      // Work Locations list three fields later, which reads like a data problem
+      // at the wrong field entirely.
+      //
+      // Asserted in cascade order so the FIRST wrong field is the one that
+      // fails, rather than its downstream consequence.
+      if (picked.cluster) {
+        expect(
+          picked.cluster.join(','),
+          `${role}: cluster should be one of ${JSON.stringify(profile.cluster)} but the ` +
+          `dropdown gave "${picked.cluster.join(',')}" — that is selectMultiAware's ` +
+          `first-option fallback, i.e. none of those candidates were offered`
+        ).toMatch(new RegExp(`(${[].concat(profile.cluster).join('|')})`, 'i'));
+      }
+      if (picked.sites) {
+        expect(
+          picked.sites.join(','),
+          `${role}: site should be "${profile.site}" but the dropdown gave ` +
+          `"${picked.sites.join(',')}" — check the cluster selected above it first, ` +
+          `since Sites is scoped to the chosen Cluster`
+        ).toContain(profile.site);
+      }
       if (picked.projectType) {
         expect(
           picked.projectType.join(','),

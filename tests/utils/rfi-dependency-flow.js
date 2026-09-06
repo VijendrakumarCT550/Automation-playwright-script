@@ -40,12 +40,22 @@ async function withRetry(action) {
 // didn't recover from this. Only retries on the specific tagged error
 // (selectWorkSection()'s `err.workSectionNotFound`); anything else
 // rethrows immediately.
-async function withCIRetryOnMissingWorkSection(page, action) {
+// The login is injectable so the SMOKE tier can drive these same chains as its
+// OWN created users rather than the .env CI/EE/QI accounts. It defaults to
+// loginAsRole, so 29_rfi_activity_dependency and 30_..._scarce_work_section are
+// unaffected -- this is purely additive.
+//
+// Why smoke needs it (app owner, 2026-09-04: "dont use cic, EE and QI from env,
+// use last created users"): on pulse-qa the .env CI takes 7.9 MINUTES to log in
+// and the .env EE HANGS at a 100% PWA spinner past the 10-minute test timeout,
+// because those accounts carry months of accumulated offline data. Freshly
+// created users log in in seconds.
+async function withCIRetryOnMissingWorkSection(page, action, { loginAs = loginAsRole } = {}) {
   try {
     return await action();
   } catch (err) {
     if (!err.workSectionNotFound) throw err;
-    await loginAsRole(page, 'CI');
+    await loginAs(page, 'CI');
     return await action();
   }
 }
@@ -212,8 +222,8 @@ async function getVisibleCodeFor(page, rfiId) {
   return await new RFIChecklistPage(page).getVisibleCode();
 }
 
-async function approveAsRole(page, role, rfiCode) {
-  await loginAsRole(page, role);
+async function approveAsRole(page, role, rfiCode, { loginAs = loginAsRole } = {}) {
+  await loginAs(page, role);
   await openFromPendingWithMe(page, rfiCode);
   const review = new RFIReviewPage(page);
   await review.expandAllChecklist();
@@ -254,20 +264,20 @@ async function approveAsRole(page, role, rfiCode) {
 // is deliberately delayed until AFTER checkpoint[1]'s blocked attempt is
 // captured — approving it immediately would make it impossible to ever
 // again observe checkpoint[1] as blocked.
-async function runDependencyChainForActivity(page, activityChain) {
+async function runDependencyChainForActivity(page, activityChain, { loginAs = loginAsRole } = {}) {
   const { checkpoints, ...baseData } = activityChain;
   if (checkpoints.length < 2) {
     throw new Error(`Need at least 2 checkpoints to exercise a dependency chain, got ${checkpoints.length}`);
   }
 
-  await loginAsRole(page, 'CI');
+  await loginAs(page, 'CI');
 
   // --- checkpoint[1] blocked: checkpoint[0] doesn't exist at all yet ---
   // Deliberately throwaway ('__random__') — this exact Work Section is
   // sacrificed for checkpoint[1] the moment it's selected here (see the
   // header comment above) and must NEVER be reused for anything real.
   const firstAttempt = await withRetry(() =>
-    withCIRetryOnMissingWorkSection(page, () => attemptCheckpoint(page, baseData, checkpoints[1], '__random__'))
+    withCIRetryOnMissingWorkSection(page, () => attemptCheckpoint(page, baseData, checkpoints[1], '__random__'), { loginAs })
   );
   expect(
     firstAttempt.proceeded,
@@ -292,12 +302,12 @@ async function runDependencyChainForActivity(page, activityChain) {
   for (let i = 1; i < checkpoints.length; i++) {
     // Approve checkpoints[i-1] (cp0 the first time through, then whatever
     // the previous iteration created) — this is what unblocks checkpoints[i].
-    await withRetry(() => approveAsRole(page, 'EE', priorCode));
-    await withRetry(() => approveAsRole(page, 'QI', priorCode));
+    await withRetry(() => approveAsRole(page, 'EE', priorCode, { loginAs }));
+    await withRetry(() => approveAsRole(page, 'QI', priorCode, { loginAs }));
 
-    await loginAsRole(page, 'CI');
+    await loginAs(page, 'CI');
     const created = await withRetry(() =>
-      withCIRetryOnMissingWorkSection(page, () => createAndSubmitCheckpoint(page, baseData, checkpoints[i], workSection))
+      withCIRetryOnMissingWorkSection(page, () => createAndSubmitCheckpoint(page, baseData, checkpoints[i], workSection), { loginAs })
     );
     priorCode = await getVisibleCodeFor(page, created.rfiId);
     console.log(`Created ${priorCode} for "${checkpoints[i].name}" (dependency on "${checkpoints[i - 1].name}" satisfied)`);
@@ -309,7 +319,7 @@ async function runDependencyChainForActivity(page, activityChain) {
       // "created". Throwaway Work Section again — never `workSection`,
       // for the same reason as checkpoint[1]'s first attempt above.
       const nextAttempt = await withRetry(() =>
-        withCIRetryOnMissingWorkSection(page, () => attemptCheckpoint(page, baseData, checkpoints[i + 1], '__random__'))
+        withCIRetryOnMissingWorkSection(page, () => attemptCheckpoint(page, baseData, checkpoints[i + 1], '__random__'), { loginAs })
       );
       expect(
         nextAttempt.proceeded,
@@ -321,8 +331,8 @@ async function runDependencyChainForActivity(page, activityChain) {
   }
 
   // Approve the final checkpoint in scope to close out the chain cleanly.
-  await withRetry(() => approveAsRole(page, 'EE', priorCode));
-  await withRetry(() => approveAsRole(page, 'QI', priorCode));
+  await withRetry(() => approveAsRole(page, 'EE', priorCode, { loginAs }));
+  await withRetry(() => approveAsRole(page, 'QI', priorCode, { loginAs }));
 }
 
 // For activities whose Work Section granularity is at the whole WORK AREA
@@ -345,7 +355,7 @@ async function runDependencyChainForActivity(page, activityChain) {
 // needed — there's only ever one option, so the plain "pick first
 // available" default (no label passed) always resolves it
 // deterministically.
-async function runDependencyChainForScarceWorkSectionActivity(page, activityChain) {
+async function runDependencyChainForScarceWorkSectionActivity(page, activityChain, { loginAs = loginAsRole } = {}) {
   const { checkpoints, throwawayWorkArea, realWorkArea, ...rest } = activityChain;
   if (checkpoints.length < 2) {
     throw new Error(`Need at least 2 checkpoints to exercise a dependency chain, got ${checkpoints.length}`);
@@ -353,7 +363,7 @@ async function runDependencyChainForScarceWorkSectionActivity(page, activityChai
   const throwawayData = { ...rest, workArea: throwawayWorkArea };
   const realData = { ...rest, workArea: realWorkArea };
 
-  await loginAsRole(page, 'CI');
+  await loginAs(page, 'CI');
 
   // --- checkpoint[1] blocked: checkpoint[0] doesn't exist at all yet ---
   const firstAttempt = await withRetry(() => attemptCheckpoint(page, throwawayData, checkpoints[1], null));
@@ -371,10 +381,10 @@ async function runDependencyChainForScarceWorkSectionActivity(page, activityChai
   console.log(`Created ${priorCode} for "${checkpoints[0].name}" (Work Area: ${realWorkArea} — shared by the rest of this chain)`);
 
   for (let i = 1; i < checkpoints.length; i++) {
-    await withRetry(() => approveAsRole(page, 'EE', priorCode));
-    await withRetry(() => approveAsRole(page, 'QI', priorCode));
+    await withRetry(() => approveAsRole(page, 'EE', priorCode, { loginAs }));
+    await withRetry(() => approveAsRole(page, 'QI', priorCode, { loginAs }));
 
-    await loginAsRole(page, 'CI');
+    await loginAs(page, 'CI');
     const created = await withRetry(() => createAndSubmitCheckpoint(page, realData, checkpoints[i], null));
     priorCode = await getVisibleCodeFor(page, created.rfiId);
     console.log(`Created ${priorCode} for "${checkpoints[i].name}" (dependency on "${checkpoints[i - 1].name}" satisfied)`);
@@ -390,8 +400,8 @@ async function runDependencyChainForScarceWorkSectionActivity(page, activityChai
     }
   }
 
-  await withRetry(() => approveAsRole(page, 'EE', priorCode));
-  await withRetry(() => approveAsRole(page, 'QI', priorCode));
+  await withRetry(() => approveAsRole(page, 'EE', priorCode, { loginAs }));
+  await withRetry(() => approveAsRole(page, 'QI', priorCode, { loginAs }));
 }
 
 module.exports = {

@@ -255,6 +255,88 @@ class NCListPage extends BasePage {
     await eyeButton.click();
     await this.page.waitForLoadState('networkidle');
   }
+
+  // ---------------------------------------------------------------------
+  // DRAFT ROWS — located by STATUS, because a draft has no code yet.
+  //
+  // Every lookup above finds a row by its NC code in column 1. A drafted NC
+  // has no code at all (only a real submission gets one — the same trait
+  // already documented for drafted RFIs in RFIListPage.openDraftRow), so
+  // those are structurally unusable for it and this status-based pair
+  // exists alongside them.
+  //
+  // Deliberately duplicated from RFIListPage rather than shared or imported:
+  // the app owner's standing rule is that NC files stay 100% separate from
+  // RFI ones, so NC's list page owns its own copy. The scroll-and-poll
+  // technique itself is the same proven one used by scrollToRowByCode
+  // directly above.
+  // ---------------------------------------------------------------------
+  getRowByStatus(statusText) {
+    return this.grid.locator('.rdg-row[role="row"]').filter({ hasText: statusText });
+  }
+
+  async scrollToRowByStatus(statusText) {
+    const row = this.getRowByStatus(statusText);
+    for (let i = 0; i < 30; i++) {
+      if (await row.count() > 0) break;
+      const atEnd = await this.grid.evaluate(el => {
+        const before = el.scrollTop;
+        el.scrollTop = el.scrollHeight;
+        return el.scrollTop === before;
+      });
+      await this.page.waitForTimeout(400);
+      if (atEnd) break;
+    }
+    return row;
+  }
+
+  // Opens the "In-Draft" NC row via its Actions-column eye icon. Mirrors
+  // openRowByCode's horizontal scroll-and-poll (the Actions column is far
+  // right and virtualizes in only once scrolled to), just anchored on the
+  // status text instead of a code.
+  //
+  // NOT LIVE-VERIFIED for NC. Drafted-RFI rows are confirmed to carry a
+  // working eye icon (app owner, 2026-08-19); whether a drafted NC row
+  // renders the same Actions affordance has not been observed. Throws a
+  // specific, named error rather than a bare timeout if it does not, so a
+  // live run says which assumption broke instead of just "element not
+  // visible".
+  async openDraftRow() {
+    const row = await this.scrollToRowByStatus('In-Draft');
+    if (await row.count() === 0) {
+      throw new Error(
+        'NC_DRAFT_ROW_NOT_FOUND: no row with status "In-Draft" appeared in the NC grid after ' +
+        'scrolling to the bottom. Either the NC create form does not autosave a draft on ' +
+        'navigate-away (unlike the RFI form, which is confirmed to), or a drafted NC surfaces ' +
+        'with different status text than "In-Draft".'
+      );
+    }
+    await row.first().waitFor({ state: 'visible', timeout: 15000 });
+    const rowIndex = await row.first().getAttribute('aria-rowindex');
+
+    const eyeButton = this.getRowByAriaIndex(rowIndex).locator('[role="gridcell"]').last()
+      .locator('button:has(svg.lucide-eye)').first();
+    for (let i = 0; i < 20; i++) {
+      if (await eyeButton.isVisible({ timeout: 500 }).catch(() => false)) break;
+      const atEnd = await this.grid.evaluate(el => {
+        const before = el.scrollLeft;
+        el.scrollLeft = el.scrollWidth;
+        return el.scrollLeft === before;
+      });
+      await this.page.waitForTimeout(400);
+      if (atEnd) break;
+    }
+    if (!(await eyeButton.isVisible({ timeout: 2000 }).catch(() => false))) {
+      throw new Error(
+        'NC_DRAFT_ROW_NO_EYE_ICON: found the "In-Draft" NC row, but its Actions column never ' +
+        'rendered an eye icon even after scrolling the grid fully right. A drafted NC row may ' +
+        'not be resumable from the grid the way a drafted RFI row is — try resuming via the ' +
+        '"Create NC" button instead (the app re-opens an existing local draft on that path).'
+      );
+    }
+    await eyeButton.click();
+    await this.page.waitForLoadState('networkidle');
+  }
 }
 
 module.exports = NCListPage;

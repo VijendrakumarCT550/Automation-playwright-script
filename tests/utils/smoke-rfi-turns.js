@@ -61,12 +61,20 @@ function makeRfiContext({ profile, tracker, pool, viewport, log = console.log })
   // activity master's rows are 1:1 with (Sub-Activity, Checkpoint) pairs and the
   // form's Checkpoint dropdown is scoped by the selected Sub-Activity), so it
   // cannot be one flat constant.
+  // Sub-package and activity come from the CHECKPOINT ENTRY when it carries them,
+  // falling back to the profile's single values.
+  //
+  // That is what lets one chain span SEVERAL activities. Consumption is per
+  // (activity/checkpoint, work section), so varying the activity on the same work
+  // area re-exposes that area's section — which is the difference between wind
+  // needing one work area per TC and needing one area per FIVE TCs. Solar's chain
+  // carries neither field, so it still resolves to the profile exactly as before.
   const baseDataFor = (cp, workArea) => ({
     workLocation: rfi.workLocation,
     workArea,
     package: rfi.package,
-    subPackage: rfi.subPackage,
-    activity: rfi.activity,
+    subPackage: cp.subPackage || rfi.subPackage,
+    activity: cp.activity || rfi.activity,
     subActivity: cp.subActivity,
     rfiQuantity: rfi.rfiQuantity,
     unit: rfi.unit,

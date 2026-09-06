@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
-const { loginAsUser } = require('../utils/helpers');
+const { loginAsUser, returnToPulse } = require('../utils/helpers');
+const { isDrsUrl } = require('../config/environments');
 const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
 
 // Online hierarchy roles below Admin (Admin itself is already covered by
@@ -120,6 +121,26 @@ test.describe('Hierarchy roles (CAD/SAD/PAD/PM/EL/QL/CM) — dashboard load + le
 
         for (const name of names) {
           await dashboard.navigateTo(name);
+
+          // EXPECTED, NOT A FAILURE: a menu item may hand off to DRS.
+          //
+          // App owner, 2026-09-06: following "SO Mapping" may land on the SO
+          // Mapping screen, on the DRS LOGIN page, or on the DRS dashboard when
+          // DRS already has an admin session — all three are correct. SO
+          // Mapping moved out of PULSE to DRS on 2026-09-04, and PULSE's
+          // sidebar entry is a live hand-off rather than a dead link.
+          //
+          // Must be checked BEFORE the /login assertion below: DRS's own login
+          // URL ends in "/login", so the hand-off would otherwise be reported
+          // as this role's PULSE session bouncing, which it is not. It also has
+          // to come before anything else touches the page — on the DRS origin
+          // no PULSE locator resolves, so the error-banner probe and
+          // goToDashboard() would both misbehave. Same fix as SM17's.
+          if (isDrsUrl(page.url())) {
+            console.log(`${prefix}: "${name}" handed off to DRS (${page.url()}) — expected, not a bug`);
+            await returnToPulse(page);
+            continue;
+          }
 
           await expect(page, `${prefix}: "${name}" bounced to /login`).not.toHaveURL(/\/login/i);
           const errorBanner = page.locator('text=/something went wrong|page not found|404/i').first();

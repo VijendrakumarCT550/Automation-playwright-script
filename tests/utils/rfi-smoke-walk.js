@@ -205,17 +205,30 @@ async function walkAndCreateRfi(page, {
         log('      -> duplicate and only one section per area; trying the next checkpoint');
         return { kind: 'next-checkpoint' };
       }
+      // A DEPENDENCY BLOCK CONDEMNS ONE ACTIVITY, NOT THE WHOLE AREA.
+      //
+      // Within an activity's own chain it is still transitive — checkpoint N
+      // blocked means N+1..end are blocked too, and each attempt would spend a
+      // pair for nothing. But it says NOTHING about a different activity: the
+      // chain can now span several, and their checkpoints are independent of each
+      // other. An earlier version returned 'abandon-area' here, which with a
+      // multi-activity chain would throw away every remaining activity on this
+      // area because one of them was blocked.
       if (/is either pending or rejected/i.test(toast)) {
         log(
-          `      -> this area has an UNFINISHED RFI on the previous checkpoint ` +
-          `(pending or rejected). Everything after it is blocked, so abandoning ` +
-          `"${workArea}". Finish that RFI (EE+QI approve) to unblock this area.`
+          `      -> "${cp.activity || 'this activity'}" has an UNFINISHED RFI on an ` +
+          `earlier checkpoint in "${workArea}" (pending or rejected), so the rest of ` +
+          `THAT activity is blocked here. Other activities on this area are ` +
+          `unaffected. Finish that RFI (EE+QI approve) to unblock the activity.`
         );
-        return { kind: 'abandon-area' };
+        return { kind: 'block-activity', activity: cp.activity };
       }
       if (/Missing an RFI for Dependent Inspection Point/i.test(toast)) {
-        log(`      -> dependency not built in "${workArea}"; abandoning this area`);
-        return { kind: 'abandon-area' };
+        log(
+          `      -> "${cp.activity || 'this activity'}" has no predecessor RFI in ` +
+          `"${workArea}"; skipping the rest of that activity here`
+        );
+        return { kind: 'block-activity', activity: cp.activity };
       }
       // Unrecognised: treat like a dependency block (abandon rather than burn
       // the rest), but say so loudly so a new message shape gets noticed.
@@ -303,9 +316,22 @@ async function walkAndCreateRfi(page, {
     log(`\n  ===== work area "${workArea}" (work section "${workSection}") =====`);
 
     let abandonArea = false;
+    // Activities whose chain is dependency-blocked ON THIS AREA. Scoped per area,
+    // because the same activity can be blocked on one area and free on another.
+    const blockedActivities = new Set();
 
     for (const cp of chain) {
-      log(`  --- attempting ${cp.code} [${cp.subActivity}] "${cp.checkpoint}" ---`);
+      if (cp.activity && blockedActivities.has(cp.activity)) {
+        log(`  --- skipping ${cp.code}: "${cp.activity}" is dependency-blocked on ${workArea} ---`);
+        continue;
+      }
+      // cp.activity is only present on multi-activity chains; a single-activity
+      // profile carries it once on profile.rfi instead, so it is omitted here
+      // rather than printed as "undefined".
+      log(
+        `  --- attempting ${cp.code} ` +
+        `[${cp.activity ? cp.activity + ' / ' : ''}${cp.subActivity}] "${cp.checkpoint}" ---`
+      );
 
       // Sections known or discovered to be taken for this (area, checkpoint).
       // Seeded from what the caller already used (see seedExclude), then grown
@@ -337,6 +363,12 @@ async function walkAndCreateRfi(page, {
         break;
       }
 
+      // Condemn just this activity on this area and carry on with the others.
+      if (verdict && verdict.kind === 'block-activity') {
+        if (verdict.activity) blockedActivities.add(verdict.activity);
+        else { abandonArea = true; break; }   // single-activity chain: same thing
+        continue;
+      }
       if (verdict && verdict.kind === 'abandon-area') { abandonArea = true; break; }
     }
 

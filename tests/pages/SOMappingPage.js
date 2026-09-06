@@ -1,4 +1,5 @@
 const { BasePage } = require('./BasePage');
+const { isDrsUrl } = require('../config/environments');
 
 // Covers the Admin "SO Mapping" section (/so-mapping), reached from the
 // dashboard sidebar. Fields (top to bottom): Cluster, Site, Project Type,
@@ -18,6 +19,18 @@ class SOMappingPage extends BasePage {
     // empty-state hint (unique to the page content) to confirm real load.
     this.emptyStateHint = page.locator('text=Select a package and Work Area to see activities.');
 
+    // CONFIRMED LIVE 2026-09-05 (tests/specs/inspection/00_inspect_so_mapping_admin_nav.spec.js,
+    // run twice — once at the default 1280x720 viewport, once at a
+    // deliberately wide 1920x1080): PULSE's own /so-mapping route shows this
+    // notice UNCONDITIONALLY, at either viewport. It is not a responsive
+    // breakpoint gate (the "Desktop Mode" name is misleading) — it is a
+    // permanent migration notice. This matches playwright.config.js's own
+    // 2026-09-04 record that "SO mapping was removed from PULSE and now
+    // lives in DRS" — CAD/SAD/PAD's sidebar still lists "SO Mapping" (a
+    // leftover from before that removal), but the destination route no
+    // longer has the real screen behind it, for any viewport.
+    this.desktopGateHeading = page.locator('text=Desktop Mode Required');
+
     this.clusterDropdown      = page.getByRole('combobox', { name: /Cluster/i }).first();
     this.siteDropdown         = page.getByRole('combobox', { name: /^Site/i }).first();
     this.projectTypeDropdown  = page.getByRole('combobox', { name: /Project Type/i }).first();
@@ -28,13 +41,37 @@ class SOMappingPage extends BasePage {
     this.saveButton = page.getByRole('button', { name: 'Save' });
   }
 
+  // `dashboard` is kept only for call-site/signature compatibility — every
+  // existing caller passes it — even though it's no longer used internally.
   async goto(dashboard) {
-    await dashboard.navSOMapping.click();
-    await this.waitForLoad();
+    // NOT dashboard.navSOMapping.click() — confirmed live (same recon spec
+    // as above) that clicking the sidebar link never navigates away from
+    // /dashboard at all, for CAD, at either viewport. A direct URL
+    // navigation reliably reaches /so-mapping regardless, so this always
+    // navigates directly instead of depending on a proven-broken click.
+    await this.navigate(`${process.env.BASE_URL}/so-mapping`);
+    await this.page.waitForLoadState('networkidle');
   }
 
+  // Races the real content against the "moved to DRS" notice — whichever
+  // actually appears is what happened; callers should check
+  // isDesktopGateShown() afterward rather than assuming this always means
+  // the real mapping screen loaded.
   async waitForLoad() {
-    await this.emptyStateHint.waitFor({ state: 'visible', timeout: 3000 });
+    await Promise.race([
+      this.emptyStateHint.waitFor({ state: 'visible', timeout: 8000 }),
+      this.desktopGateHeading.waitFor({ state: 'visible', timeout: 8000 }),
+    ]).catch(() => {});
+  }
+
+  async isDesktopGateShown() {
+    return this.desktopGateHeading.isVisible({ timeout: 500 }).catch(() => false);
+  }
+
+  // True when following SO Mapping has handed off to DRS — i.e. the page is no
+  // longer on PULSE at all. See SOMappingPage.DESTINATIONS below.
+  async hasHandedOffToDrs() {
+    return isDrsUrl(this.page.url());
   }
 
   // Work Area is a multi-select combobox: it stays open between option
@@ -288,5 +325,49 @@ class SOMappingPage extends BasePage {
     await this.page.waitForLoadState('networkidle');
   }
 }
+
+// ---------------------------------------------------------------------------
+// WHERE "SO MAPPING" LEGITIMATELY ENDS UP — all four outcomes are EXPECTED
+// ---------------------------------------------------------------------------
+// App owner, 2026-09-06: landing on the SO Mapping screen, on the DRS login
+// page, OR on the DRS dashboard (when DRS is already logged in with an admin
+// credential) are ALL correct behaviour. None of them is a defect, and no test
+// may report one as a failure. See isDrsUrl() in tests/config/environments.js
+// for the full reasoning, and docs/app-owner-decisions-and-conventions.md §3.9.
+//
+// Attached as statics rather than switching to named module exports, so every
+// existing `require('../pages/SOMappingPage')` call site keeps working
+// unchanged.
+SOMappingPage.DESTINATIONS = {
+  PULSE_SCREEN: 'pulse-so-mapping',        // the real mapping screen (older deployments)
+  PULSE_NOTICE: 'pulse-migration-notice',  // PULSE's "Desktop Mode Required" / moved-to-DRS notice
+  DRS_LOGIN:    'drs-login',               // handed off to DRS, no DRS session yet
+  DRS_APP:      'drs-app',                 // handed off to DRS, already authenticated
+  UNKNOWN:      'unknown',                 // on PULSE, but neither marker rendered
+};
+
+// Classifies where the page actually is, WITHOUT asserting anything. Callers
+// decide what to do with the answer; every value above except UNKNOWN is a
+// legitimate outcome.
+//
+// Deliberately reads the URL FIRST: once the browser has left the PULSE origin
+// there is no point probing for PULSE-side markers, and doing so would spend
+// two locator timeouts on a page that can never show them.
+SOMappingPage.classifyDestination = async function classifyDestination(page) {
+  const url = page.url();
+
+  if (isDrsUrl(url)) {
+    return /\/login\b/i.test(url)
+      ? SOMappingPage.DESTINATIONS.DRS_LOGIN
+      : SOMappingPage.DESTINATIONS.DRS_APP;
+  }
+
+  const so = new SOMappingPage(page);
+  if (await so.isDesktopGateShown()) return SOMappingPage.DESTINATIONS.PULSE_NOTICE;
+  if (await so.emptyStateHint.isVisible({ timeout: 1000 }).catch(() => false)) {
+    return SOMappingPage.DESTINATIONS.PULSE_SCREEN;
+  }
+  return SOMappingPage.DESTINATIONS.UNKNOWN;
+};
 
 module.exports = SOMappingPage;
