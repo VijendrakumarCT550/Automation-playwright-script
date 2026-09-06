@@ -2490,3 +2490,81 @@ All four unsafe-layout checks were re-broken deliberately after the restructure
 and all four still fire: splitting the NC viewports across lanes (BL05),
 moving `nc-block` away from `wam-hierarchy` (BL06), putting `restore` in a lane,
 and leaving a stage unassigned.
+
+### 2026-09-06: negative authorisation (G-18) — verified, and it measured the app's real shape
+
+`tests/specs/33_negative_authorisation.spec.js`, **7 passed, 2.7 min on pulse-qa.**
+
+#### How PULSE answers an unauthorised direct URL — never observed before now
+
+**It redirects to `/dashboard`.** Every forbidden route, every role:
+
+```
+CAD -> /configuration : redirected -> /dashboard
+CI  -> /admin-ui      : redirected -> /dashboard
+```
+
+#### Routes are DISCOVERED, and that was not optional
+
+The URL paths for WAM / Users / Configuration / Admin RFI UI are recorded nowhere
+in this repo — every page object reaches those screens by CLICKING the nav item,
+so only `/dashboard`, `/my-tasks` and `/so-mapping` existed as literals. Admin
+walks its own menu and records name → URL. Guessing would have produced a test
+that "passed" by navigating to a 404. The real paths turned out to be `/wam`,
+`/users/list`, `/configuration`, `/admin-ui` — `/users/list` in particular would
+have been guessed wrong.
+
+#### THE RESULT THAT MATTERS: route-level permission is BINARY
+
+| Role | Menu items | Forbidden |
+|---|---|---|
+| Admin | 8 | — |
+| CAD | 6 (adds SO Mapping) | 2 |
+| PM, EL, QL, CM, **CI** | **5 — identical** | 2 |
+
+Only `Configuration` and `Admin RFI UI` are ever forbidden, and they are
+forbidden for every non-Admin role alike — **including CI**, the lowest role in
+the hierarchy, whose menu still carries **WAM and Users**.
+
+So **PULSE scopes roles INSIDE screens, not by withholding routes.** PM and CM
+both reach `/wam`; what differs is which rows and which Role options they get
+(the online-role sweep already shows CM's WAM offering only "Contractor
+Incharge"). That is the ceiling on what any route-level negative test can prove,
+and it is now measured rather than assumed.
+
+**Open question for the app owner:** should a Contractor Incharge have WAM and
+Users in its menu at all? Reported, not asserted — whether that is correct is a
+product decision, and asserting either way would be inventing a requirement.
+
+**Consequence:** the remaining negative coverage is ACTION-level, recorded as new
+gap **G-27** — PM must not be offered Cluster Admin in WAM's Role dropdown, CM
+must not assign above Contractor Incharge, Add User must be inactive for
+PM/EL/QL/CM. `WAMPage.getAvailableRoleOptions` already exists and spec 18 asserts
+the positive direction per tier, so the negative form is a small addition.
+
+#### Two defects of my own, both found by running it
+
+1. **A non-route recorded as a route.** "SO Mapping" does not navigate at all
+   (SOMappingPage's own comment says so — the feature moved to DRS) and "Reports"
+   is a collapsible parent that expands in place. Both left the URL on
+   `/dashboard`, so both were recorded as pointing there. PM's menu lacks SO
+   Mapping, so it became a *forbidden route pointing at /dashboard* — and PM of
+   course reaches its own dashboard, which the classifier read as **REACHED**.
+   The spec reported an authorisation gap that does not exist. Fixed with the
+   honest rule: **an entry that does not move the page is not a route.**
+2. **`serial` hid four roles.** PM's false failure skipped EL, QL, CM and the
+   summary — exactly the trap spec 31's header warns about. Route discovery moved
+   to `beforeAll`, and each role's check is now independent.
+
+#### The "is this measuring anything" guard earned its place
+
+The spec ends with a check that the forbidden sets actually DIFFER by tier. It
+fired on the first clean run, which is how the binary-permission shape was found
+at all — without it the honest report would have been "six roles verified",
+quietly overstating the coverage. CI was then added specifically to test the
+hypothesis that a lower tier would show a gradient; **it did not**, and that
+negative result is the finding.
+
+CI needs `loginAsFlowUser` rather than `loginAsUser` — it is a PWA account and
+only `waitForLoad` waits for the install spinner. The wrong helper returns before
+the app has installed and every menu read comes back empty.

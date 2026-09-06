@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
-const { loginAsUser, adminFreshLogin, returnToPulse } = require('../utils/helpers');
-const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
+const { loginAsUser, loginAsFlowUser, adminFreshLogin, returnToPulse } = require('../utils/helpers');
+const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { getProfile } = require('../config/projects');
 const { isDrsUrl } = require('../config/environments');
 const DashboardPage = require('../pages/DashboardPage');
 
@@ -77,27 +78,50 @@ const DashboardPage = require('../pages/DashboardPage');
 // data is a plausible way to deny access, and calling it a defect before it has
 // ever been observed live would be guessing. It is printed loudly so the first
 // real run settles it, and then this can tighten.
-test.describe.configure({ mode: 'serial' });
+// NOT serial, and deliberately. The first run had this as a serial describe and
+// PM's (false) failure SKIPPED EL, QL, CM and the summary — four roles' worth of
+// evidence lost to one bad assertion, which is exactly the trap spec 31's header
+// warns about. Route discovery is a beforeAll instead, so every role is checked
+// independently and one role's failure costs only that role.
 
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
-// Bare prefixes from 12_user_management's batch — the same ones spec 31 and
-// 18_wam_hierarchy resolve. CAD first, deliberately, as the control.
-const ROLES = ['CAD', 'PM', 'EL', 'QL', 'CM'];
+// CAD first, deliberately, as the control (see the header).
+//
+// CI ADDED 2026-09-06 after the first clean run exposed a real ceiling. With only
+// the hierarchy tiers, EVERY role came back with the SAME two forbidden screens
+// (Configuration, Admin RFI UI) — so the spec was measuring one binary boundary,
+// Admin vs everyone else, and the "forbidden sets actually differ by tier" guard
+// correctly warned that it was not measuring a gradient at all.
+//
+// CI is the most restricted role in the product and the one where a privilege
+// bug would matter most, so it is the single highest-value addition. It costs a
+// PWA login, but a freshly created smoke CI logs in in about a minute — nothing
+// like the 7.9 min the .env CI takes.
+const ROLES = ['CAD', 'PM', 'EL', 'QL', 'CM', 'CI'];
+
+// USERS COME FROM THE SMOKE CHAIN, not from 12_user_management's bare-prefix
+// batch, and that is a deliberate correction rather than a convenience.
+//
+// The bare CAD/PM/EL/QL/CM entries in last-created-users.json carry NO baseUrl
+// at all — they predate the environment guard smoke-users.js added after a run
+// on 2026-09-03 silently reused users from a deployment they did not exist on.
+// Checked 2026-09-06: they are from batch 67 against an unrecorded deployment,
+// and this chain now runs on pulse-qa, where they almost certainly do not exist.
+// resolveSmokeUsers() applies that guard, so a stale entry fails immediately
+// with a message naming the problem instead of as an inscrutable login failure.
+//
+// It also makes promoting this file to SM29 close to a copy, since every SM*
+// stage resolves its users exactly this way.
+const PROFILE_KEY = process.env.RECON_PROFILE || 'solar-e2e';
 
 // Never treated as forbidden even when a role's menu lacks them: every role
 // legitimately lands on one of these, so a redirect TO them is how a denial
 // looks, not something to test for.
 const ALWAYS_ALLOWED = ['Dashboard', 'My Tasks'];
 
-function requireUser(prefix) {
-  const user = loadLastCreatedUsers()[prefix];
-  expect(
-    user,
-    `No last-created user recorded for prefix "${prefix}" in ` +
-    'tests/fixtures/last-created-users.json — run 12_user_management.spec.js first.'
-  ).toBeTruthy();
-  return user;
+function requireUser(roleKey) {
+  return resolveSmokeUsers(getProfile(PROFILE_KEY), [roleKey])[roleKey];
 }
 
 // Reads the visible left-hand menu. Same discover-don't-hardcode technique
@@ -120,8 +144,7 @@ const adminRoutes = new Map();
 const summary = [];
 
 test.describe('Negative authorisation — a role cannot reach screens its own menu does not offer', () => {
-  test('Admin walks the full menu and records where each item lives', async ({ browser }) => {
-    test.setTimeout(10 * 60 * 1000);
+  test.beforeAll(async ({ browser }) => {
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
     const { context, page, dashboard } = await adminFreshLogin(browser);
@@ -132,6 +155,7 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
       console.log(`\nAdmin menu (${names.length}): ${names.join(', ')}`);
 
       for (const name of names) {
+        const before = page.url();
         await dashboard.navigateTo(name);
 
         // SO Mapping hands off to DRS and legitimately leaves the PULSE origin
@@ -144,8 +168,33 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
           continue;
         }
 
-        adminRoutes.set(name, page.url());
-        console.log(`  "${name}" -> ${page.url()}`);
+        // ONLY RECORD AN ITEM THAT ACTUALLY WENT SOMEWHERE.
+        //
+        // Found live on the first run, 2026-09-06, and it produced a false
+        // failure rather than a silent one. Not every menu entry is a link:
+        //
+        //   * "SO Mapping" does not navigate at all — SOMappingPage's own
+        //     comment records this ("clicking the sidebar link never navigates
+        //     away from /dashboard"), since the feature moved to DRS;
+        //   * "Reports" is a COLLAPSIBLE PARENT that expands sub-items in place
+        //     (its children are /reports/rfi-status and friends).
+        //
+        // Both left page.url() on /dashboard, so both were recorded as
+        // `-> /dashboard`. PM's menu has no "SO Mapping", so it became a
+        // FORBIDDEN route pointing at /dashboard — and PM of course reaches its
+        // own dashboard, which the classifier read as REACHED. The spec
+        // reported an authorisation gap that does not exist.
+        //
+        // The rule that fixes it is the honest one: an entry that did not move
+        // the page is not a route, so there is nothing to test for it.
+        const landedAt = page.url();
+        const wentSomewhere = landedAt.replace(/[?#].*$/, '') !== before.replace(/[?#].*$/, '');
+        if (!wentSomewhere) {
+          console.log(`  "${name}" -> did not navigate (stayed on ${landedAt}) — not a route, skipped`);
+          continue;
+        }
+        adminRoutes.set(name, landedAt);
+        console.log(`  "${name}" -> ${landedAt}`);
         if (name !== 'Dashboard') await dashboard.goToDashboard();
       }
 
@@ -153,6 +202,7 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
         adminRoutes.size,
         'Admin should have opened at least one recordable PULSE route'
       ).toBeGreaterThan(0);
+      console.log(`Admin routes recorded (${adminRoutes.size}): ${[...adminRoutes.keys()].join(', ')}`);
     } finally {
       await context.close();
     }
@@ -160,7 +210,8 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
 
   for (const prefix of ROLES) {
     test(`${prefix} cannot reach the screens its own menu does not offer`, async ({ browser }) => {
-      test.setTimeout(12 * 60 * 1000);
+      // Generous for CI, which pays the PWA install cost the online roles do not.
+      test.setTimeout(15 * 60 * 1000);
       expect(adminRoutes.size, 'Admin route discovery must have run first').toBeGreaterThan(0);
 
       const user = requireUser(prefix);
@@ -171,7 +222,15 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
       const page = await context.newPage();
 
       try {
-        const dashboard = await loginAsUser(page, user.email, PASSWORD);
+        // CI/EE/QI are the offline/PWA accounts and need waitForLoad (the PWA
+        // install spinner), which loginAsUser deliberately does NOT wait for —
+        // its own header records that only CIC/EE/QI show that spinner. Using
+        // the wrong one here would return before the app finished installing and
+        // every menu read would come back empty.
+        const isPwaRole = ['CI', 'EE', 'QI'].includes(prefix);
+        const dashboard = isPwaRole
+          ? await loginAsFlowUser(page, user.email, PASSWORD, { navigateToMyTasks: false })
+          : await loginAsUser(page, user.email, PASSWORD);
         await expect(page, `${prefix}: still on /login after login`).not.toHaveURL(/\/login/i);
         await dashboard.goToDashboard();
 
@@ -248,17 +307,36 @@ test.describe('Negative authorisation — a role cannot reach screens its own me
       console.log(`  ${s.prefix.padEnd(4)} menu=${s.menu}  forbidden=${s.forbidden}`);
     }
 
-    // Reported, not asserted, on purpose: if every tier turns out to have the
-    // same menu, that is a finding about the APP (the menu is not tier-scoped)
-    // and it belongs in front of the app owner — not a failure of this spec,
-    // which would then just be noise on top of the real result above.
+    // MEASURED 2026-09-06 on pulse-qa, across CAD/PM/EL/QL/CM/CI:
+    //
+    //   Admin                    8 menu items
+    //   CAD                      6  (adds SO Mapping)
+    //   PM, EL, QL, CM and CI    5  — IDENTICAL, every one of them
+    //
+    // So route-level permission in PULSE is effectively BINARY: Admin vs
+    // everyone else. Only `Configuration` and `Admin RFI UI` are ever forbidden,
+    // and they are forbidden for all six roles alike — including CI, the lowest
+    // role in the hierarchy, whose menu still carries WAM and Users.
+    //
+    // That is a real result, not a null one, and it sets the ceiling on what
+    // this file can ever prove: PULSE scopes roles INSIDE screens (which WAM
+    // rows, which Role options, whether Add User is active) rather than by
+    // withholding routes. Route-level denial is therefore fully covered by the
+    // six checks above, and everything else worth testing negatively is
+    // in-screen — e.g. "PM's WAM Role dropdown must not offer Cluster Admin",
+    // for which WAMPage.getAvailableRoleOptions already exists and spec 18
+    // asserts the positive direction per tier.
+    //
+    // Still REPORTED rather than asserted: whether CI *should* have WAM and
+    // Users in its menu is the app owner's call, not this spec's, and asserting
+    // either way would be inventing a requirement.
     const distinct = new Set(summary.map((s) => s.forbidden));
     if (summary.length > 1 && distinct.size === 1) {
       console.log(
-        `  WARNING: every role has the same number of forbidden screens (${[...distinct][0]}). ` +
-        `Either the menu is not tier-scoped on this deployment, or these roles genuinely ` +
-        `share one permission set — worth confirming with the app owner before trusting ` +
-        `the per-role results above.`
+        `  FINDING: all ${summary.length} roles forbid exactly the same ${[...distinct][0]} screen(s). ` +
+        `Route-level permission is Admin-vs-rest on this deployment; role scoping happens ` +
+        `INSIDE screens instead. Worth confirming with the app owner that CI in particular ` +
+        `is meant to have WAM and Users in its menu at all.`
       );
     }
     expect(summary.length, 'at least one role should have been checked').toBeGreaterThan(0);

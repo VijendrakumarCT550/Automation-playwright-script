@@ -3,7 +3,7 @@
 Compiled 2026-09-06 off the repository itself (`tests/`, `tests/config/`,
 `playwright.config.js`, `docs/`) rather than off a run.
 
-**Last updated 2026-09-06: G-04 CLOSED AND VERIFIED LIVE, G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
+**Last updated 2026-09-06: G-04 CLOSED AND VERIFIED LIVE · G-18 route level CLOSED AND VERIFIED LIVE (new G-27 records what it could not reach) · G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
 rule R2a. See docs/smoke-e2e-framework.md's 2026-09-06 entry.
 
 The full illustrated version — execution topology, the RFI/NC state machines,
@@ -84,7 +84,8 @@ them unprompted.**
 | ID | Gap | Severity |
 |---|---|---|
 | G-17 | **No API-layer testing whatsoever.** Zero uses of Playwright's `request` fixture across 29,500 lines. Everything is UI, which is most of why a full chain is 6–8 hours and why server-side truths can only be inferred from a rendered screen. | high |
-| G-18 | **No negative authorisation tests.** The suite proves each role *can* reach what it should; nothing proves a role is *denied* what it should not. On an app where role scoping is the product logic, this is the largest structural blind spot. | high |
+| ~~G-18~~ | ~~**No negative authorisation tests.**~~ **ROUTE LEVEL CLOSED 2026-09-06, VERIFIED LIVE** — `tests/specs/33_negative_authorisation.spec.js` (7 tests, 2.7 min on pulse-qa). Admin walks the menu and records name→URL (routes are recorded nowhere in the repo — every page object reaches them by clicking); each role is then denied every screen its own menu omits. **The app enforces by redirecting to /dashboard.** **What it also measured:** route-level permission is BINARY — Admin (8 items) vs CAD (6) vs PM/EL/QL/CM/**CI** (5, identical). Only Configuration and Admin RFI UI are ever forbidden. PULSE scopes roles INSIDE screens, not by withholding routes, so the remaining negative coverage is action-level (e.g. "PM's WAM Role dropdown must not offer Cluster Admin") — tracked as G-27. Open question for the app owner: should CI have WAM and Users in its menu at all? | route level closed |
+| G-27 | **Action-level authorisation is untested.** G-18 proved route-level denial and found it is only Admin-vs-rest — PULSE scopes roles *within* screens. Nothing asserts that a tier is denied an in-screen action: PM must not be offered Cluster Admin in WAM's Role dropdown, CM must not be able to assign above Contractor Incharge, Add User must be inactive for PM/EL/QL/CM. `WAMPage.getAvailableRoleOptions` exists and spec 18 asserts the positive direction per tier, so the negative form is a small addition. | high |
 | G-19 | **Mobile stops at the two flows.** SM05/SM06 run at Pixel 7; none of the 18 feature stages do — so mobile WAM, dashboard filter, Add User and reassign are unverified, on an app whose desktop nav is replaced by an unlabeled hamburger. | medium |
 | G-20 | **No CI pipeline.** JUnit/JSON reporters are wired and working; there is no workflow file to consume them. Every run is hand-launched. | medium |
 | G-21 | **No run history.** `smoke-reports/` is gitignored and overwritten each run, so flake frequency, stage-duration drift and pass-rate trend are invisible. | low |

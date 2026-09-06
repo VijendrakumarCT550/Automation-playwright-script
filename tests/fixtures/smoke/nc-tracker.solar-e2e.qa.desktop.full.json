@@ -1,0 +1,130 @@
+{
+  "TC-01": {
+    "ncId": "bc0d4b33-6d81-4175-8058-bcced120a4e9",
+    "ncCode": "NC-S05b-BL05-CIV-80",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL05"
+  },
+  "TC-02": {
+    "ncId": "3f41ce2f-ff32-43e1-92d5-05fbc17cb2e4",
+    "ncCode": "NC-S05b-BL05-CIV-81",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL05"
+  },
+  "TC-03": {
+    "ncId": "dd918386-a70f-4c1b-82ff-4ab64c779b9b",
+    "ncCode": "NC-S05b-BL05-CIV-82",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL05"
+  },
+  "TC-04": {
+    "ncId": "7ae02d3b-b171-4227-8595-c3ede017e79d",
+    "ncCode": "NC-S05b-BL05-CIV-83",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "workArea": "BL05"
+  }
+}
