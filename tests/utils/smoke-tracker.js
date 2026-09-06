@@ -13,6 +13,7 @@ const { SEED_TRACKER: RFI_SEED } = require('./tracker-utils');
 // cannot read or write the regression's tracker. It does mean the 4-TC matrix has
 // exactly one definition rather than a copy that could drift.
 const { SEED_TRACKER: NC_SEED } = require('./nc-tracker-utils');
+const { resolveEnvironment } = require('../config/environments');
 
 // SMOKE-CHAIN TRACKER STATE — isolated per (flow x profile x viewport x TC set).
 //
@@ -27,7 +28,61 @@ const { SEED_TRACKER: NC_SEED } = require('./nc-tracker-utils');
 // mobile run resume the desktop run's half-finished TCs against the wrong area.
 // The TC set is in the key too, so a "quick" run cannot leave a 1-TC tracker that
 // a later "full" run mistakes for finished.
+//
+// ---------------------------------------------------------------------------
+// AND THE ENVIRONMENT — added 2026-09-06, and it is the same bug as the users file
+// ---------------------------------------------------------------------------
+// A tracker stores LIVE SERVER STATE: real rfiId/ncId UUIDs and visible codes,
+// which exist on exactly one deployment. Before this, the filename had no
+// environment dimension, so pointing the suite at another deployment silently
+// reused the previous one's ids.
+//
+// Found the moment the app owner moved this work from pulse-test to pulse-qa on
+// 2026-09-06: the desktop tracker on disk held
+// `rfiId 4c788644-...` / `RFI-S05b-BL03-CIV-149`, created on pulse-test. On qa
+// those resolve to nothing, and the failure would NOT have looked like a
+// stale-state problem — a resumed TC hunts for an RFI that is not there and
+// surfaces as RFI_NOT_VISIBLE_TO_ACTOR, which section 11 of
+// docs/smoke-e2e-framework.md already records as reading exactly like an app
+// bug. Alternatively every TC reads `done` and the run is refused, which looks
+// like a clean pass.
+//
+// This is precisely the failure smoke-users.js's baseUrl guard was written for
+// ("THE FILE HAS NO ENVIRONMENT DIMENSION"), one layer down. Keying the FILENAME
+// rather than guarding the contents is the better fix here: both deployments'
+// state can coexist, so switching environments and switching back does not
+// destroy either, and there is no reset step to remember.
+//
+// Legacy files without the env segment are ignored (seedIfMissing then starts a
+// fresh one). listLegacyTrackerFiles() below exists so a caller can say so out
+// loud rather than letting state appear to vanish.
 const SMOKE_FIXTURES = path.join(__dirname, '..', 'fixtures', 'smoke');
+
+// 'qa' | 'test' | 'dev' | 'custom' — whatever the run is actually pointed at.
+function envKey() {
+  try {
+    return resolveEnvironment().key;
+  } catch (e) {
+    // resolveEnvironment throws when neither PULSE_ENV nor BASE_URL is set. A
+    // tracker filename is not the right place to surface that — the run will
+    // fail with a far clearer message the moment it tries to navigate.
+    return 'unknown';
+  }
+}
+
+// Tracker files from before the env segment existed. Reported, never deleted:
+// they are the record of a real run against some deployment, and which one is
+// no longer knowable from the name, so removing them is not this code's call.
+function listLegacyTrackerFiles() {
+  const fs = require('fs');
+  if (!fs.existsSync(SMOKE_FIXTURES)) return [];
+  const known = new Set(['qa', 'test', 'dev', 'custom', 'unknown']);
+  return fs.readdirSync(SMOKE_FIXTURES).filter((f) => {
+    const parts = f.replace(/\.json$/, '').split('.');
+    // <flow>-tracker.<profile>.<env>.<viewport>.<set>  = 5 parts once keyed.
+    return parts.length === 4 && !known.has(parts[2]);
+  });
+}
 
 // SMOKE_TC_SET=quick|full (default full).
 //
@@ -52,6 +107,24 @@ function resolveTcSet(raw = process.env.SMOKE_TC_SET) {
 
 // Deep-cloned so a caller can never mutate the imported regression seed — that
 // object is shared with tracker-utils.resetTracker().
+// Says so out loud in the ONE case where someone would reasonably think their
+// state disappeared: env-keyed file does not exist yet, but pre-env-keying files
+// do. Silent on every other run.
+function warnAboutLegacyTrackersOnce(newFilePath) {
+  const fs = require('fs');
+  if (fs.existsSync(newFilePath)) return;
+  const legacy = listLegacyTrackerFiles();
+  if (!legacy.length) return;
+  const lines = [
+    `[tracker] starting FRESH state at ${path.basename(newFilePath)}.`,
+    '[tracker] tracker filenames now include the environment (added 2026-09-06) because a',
+    '[tracker] tracker holds live rfiId/ncId values that exist on ONE deployment only.',
+    '[tracker] these pre-existing files predate that and are being IGNORED, not lost:',
+    ...legacy.map((f) => `[tracker]   ${f}`),
+  ];
+  console.log(lines.join('\n'));
+}
+
 function rfiSeedFor(set) {
   const full = JSON.parse(JSON.stringify(RFI_SEED));
   if (set !== 'quick') return full;
@@ -60,7 +133,8 @@ function rfiSeedFor(set) {
 
 function createSmokeRfiTracker({ profileKey, viewport, set }) {
   const tcSet = resolveTcSet(set);
-  const file = 'rfi-tracker.' + profileKey + '.' + viewport + '.' + tcSet + '.json';
+  const file = 'rfi-tracker.' + profileKey + '.' + envKey() + '.' + viewport + '.' + tcSet + '.json';
+  warnAboutLegacyTrackersOnce(path.join(SMOKE_FIXTURES, file));
   const tracker = createFlowTracker({
     trackerPath: path.join(SMOKE_FIXTURES, file),
     seed: rfiSeedFor(tcSet),
@@ -85,7 +159,8 @@ function ncSeedFor(set) {
 
 function createSmokeNcTracker({ profileKey, viewport, set }) {
   const tcSet = resolveTcSet(set);
-  const file = 'nc-tracker.' + profileKey + '.' + viewport + '.' + tcSet + '.json';
+  const file = 'nc-tracker.' + profileKey + '.' + envKey() + '.' + viewport + '.' + tcSet + '.json';
+  warnAboutLegacyTrackersOnce(path.join(SMOKE_FIXTURES, file));
   const tracker = createFlowTracker({
     trackerPath: path.join(SMOKE_FIXTURES, file),
     seed: ncSeedFor(tcSet),
@@ -256,6 +331,8 @@ function printRunSummary(tracker, roundsRun, {
 }
 
 module.exports = {
+  envKey,
+  listLegacyTrackerFiles,
   SMOKE_FIXTURES, TC_SETS, resolveTcSet, prepareRun, printRunSummary,
   rfiSeedFor, createSmokeRfiTracker,
   ncSeedFor, createSmokeNcTracker,

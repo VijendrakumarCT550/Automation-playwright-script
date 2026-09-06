@@ -2199,3 +2199,108 @@ an error page. The row count is reported.
 
 That is the lane the estimate put at ~30 min, so the ~50 min projection for the
 full laned run is if anything conservative.
+
+### 2026-09-06: BL03 is the ONLY NC-capable work area on S05b — measured
+
+SM28's first live run failed at the NC create form:
+
+```
+locator.waitFor: Timeout 5000ms exceeded
+waiting for [role=option] filter({ hasText: 'CHOUHAN' })
+```
+
+The config records this as a **BL05-specific** bug (app owner, 2026-09-05:
+"vendor name is not populating for BL05 while creating NC ... for BL03 vendor is
+populating"). It is not BL05-specific. A read-only probe
+(`tests/specs/inspection/00_inspect_nc_vendor_by_work_area.spec.js`, QI, nine
+areas, 20s polled per area to separate EMPTY from SLOW) measured:
+
+| Work area | Vendor options |
+|---|---|
+| **BL03** | **1 — `M S CHOUHAN INFRAVENTURES PVT LTD`** |
+| BL04, BL05, BL06, BL07, BL08, BL10, BL11, BL12 | **0** |
+
+BL03 was included as a control and did show the vendor, so the probe is sound.
+
+**This is an app-side constraint, and probably an app bug.** The app owner's own
+statement is that the Service Order is mapped across the WHOLE of S05b — which
+is what the vendor dropdown is gated on — so eight of nine areas returning an
+empty vendor list contradicts the mapping. Worth raising: it is not a
+test-harness problem and nothing in this suite can work around it.
+
+**What it costs the design.** Rule R2's whole point is that NC ground must be
+DISJOINT from RFI ground, because a non-approved NC blocks RFI on the same
+triple. With BL03 the only NC-capable area, that separation is currently
+impossible on S05b:
+
+* `flowWorkAreas.nc` (both viewports), `featureGround.ncCreate` and any NC stage
+  must all sit on BL03;
+* BL03 is also the RFI desktop flow area.
+
+So the three TEMPORARY-BL03 markers in `tests/config/projects.js` are not a
+one-day workaround that can be moved to a spare area — **BL03 is the only option
+until the vendor bug is fixed**, and reverting to BL05 is not currently possible.
+
+**And it blocks SM28's ground choice specifically.** SM28 deliberately leaves a
+non-approved NC behind, so it needs ground no flow stage uses. BL06 was chosen
+for exactly that reason and cannot host an NC at all. The remaining options all
+have real costs and the choice is the app owner's, since it trades against flow
+ground — see the open question below.
+
+### 2026-09-06: trackers are now keyed by ENVIRONMENT too — found by switching to qa
+
+Moving this work from pulse-test to pulse-qa (app owner, 2026-09-06) exposed a
+latent bug that had been sitting in the tracker layer since it was built.
+
+Tracker filenames were keyed by **flow × profile × viewport × TC set** — and not
+by deployment:
+
+```
+rfi-tracker.solar-e2e.desktop.full.json
+```
+
+But a tracker stores **live server state**: real `rfiId`/`ncId` UUIDs and visible
+codes, which exist on exactly one deployment. The file on disk at the moment of
+the switch held `rfiId 4c788644-…` / `RFI-S05b-BL03-CIV-149`, created on
+pulse-test.
+
+**Neither failure mode would have looked like stale state.** Run SM05 on qa
+against that file and either:
+
+* every TC reads `done`, the run is refused, and it looks like a clean pass; or
+* a TC resumes and hunts for an RFI that is not there, surfacing as
+  `RFI_NOT_VISIBLE_TO_ACTOR` — which §11 of this document already records as
+  reading exactly like an app bug (it cost real time once already).
+
+This is the same failure `smoke-users.js`'s `baseUrl` guard was written for
+("THE FILE HAS NO ENVIRONMENT DIMENSION… a completely clean-looking run that had
+created nothing"), one layer down. It was fixed for users and missed for
+trackers.
+
+**Fixed by keying the FILENAME, not by guarding the contents:**
+
+```
+rfi-tracker.solar-e2e.qa.desktop.full.json
+```
+
+Both deployments' state can then coexist, so switching environments and
+switching back destroys neither, and there is no reset step to remember — which
+matters because the reset step is exactly what gets forgotten (a forgotten
+tracker reset was most of run 3's 22 failures on 2026-09-05).
+
+The four pre-env-keying files are **detected and reported**, never deleted:
+
+```
+[tracker] starting FRESH state at rfi-tracker.solar-e2e.qa.desktop.full.json.
+[tracker] tracker filenames now include the environment (added 2026-09-06) because a
+[tracker] tracker holds live rfiId/ncId values that exist on ONE deployment only.
+[tracker] these pre-existing files predate that and are being IGNORED, not lost:
+[tracker]   rfi-tracker.solar-e2e.desktop.full.json
+[tracker]   ...
+```
+
+They are the record of a real run against *some* deployment, and which one is no
+longer knowable from the name, so deleting them is not the code's call.
+
+**qa prefix, measured 2026-09-06:** `SM01` + `SM03` = **14 passed, 3.8 min**
+(10 users at ~14 s each, 4 WAM assignments at ~19 s each).
