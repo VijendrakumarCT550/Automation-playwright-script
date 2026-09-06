@@ -1962,3 +1962,131 @@ ASSUMED and will fail loudly at the Activity dropdown if wrong: that
 has created used `Piling - Robotic Docking System`, so the MMS activity has
 never been selected there — both are Civil activities for the same vendor, so it
 is likely, and it is a one-line fix in `profile.ncBlock` if not.
+
+### 2026-09-06: parallel lanes — cutting the ~2 h chain without losing one report
+
+Branch `parallel-lanes-and-gaps`. Rollback point is `smoke-suite-next` @ `3536b81`
+on GitHub.
+
+The chain is ~2 h at `--workers=1`, and every gap closed from
+`docs/automation-coverage-and-gaps.md` adds to it. The app owner's question was
+the right one: parallelism is easy, **consolidating the report is the worry.**
+
+#### The consolidation worry turns out to be unfounded — but only for one topology
+
+`--workers=N` is the wrong lever, and this is the crux. Playwright hands test
+files to whichever worker is free, so you cannot say WHICH stages run together.
+That would let `SM19` and `SM22` (both mutating `BL10`) overlap, or run `SM14`
+before the stages that create the pending items it needs. This suite's safety has
+never come from the worker count — it comes from which stages may overlap, and
+that has to be **declared**.
+
+So a lane is **one `playwright test` process with an explicit `--project` list
+and `--workers=1` inside it**. Lanes run concurrently; order within a lane is
+exactly what it is today. Each writes a `blob` report, and at the end they merge
+into the same `html` + `json` + `junit` artifacts the serial `:artifacts` scripts
+produce. That is Playwright's own sharded-report mechanism — nothing invented.
+
+**Verified live 2026-09-06**, two lanes (one passing, one deliberately failing)
+merged into a single report reading `tests="4" failures="1"` with both spec files
+present, plus `merged.json`, `merged.xml` and an HTML report.
+
+Three mechanics were established empirically, and each would have been a silent
+bug:
+
+| Mechanic | What was found |
+|---|---|
+| `PLAYWRIGHT_BLOB_OUTPUT_DIR` | Does control blob location. Set per lane, so two lanes cannot race on one filename. |
+| `merge-reports` **does not recurse** | Pointed at a parent of per-lane subdirectories it reports "No report files found". The zips must be collected into one flat directory first. |
+| **Every lane needs its own `--output`** | Playwright CLEARS `outputDir` (`test-results/`) at the start of every run. Five concurrent lanes on the default would wipe each other's in-flight screenshots and traces, last-starter wins, silently. |
+
+#### The rule that makes lanes safe, and why it is enforced rather than documented
+
+App owner, 2026-09-06: *"admin/any other users can hold as many session as much
+we want, there is no restriction as of now."* That removes identity from the
+problem entirely — two lanes may both drive Admin, or both drive the smoke CI.
+
+What remains is **ground**. Two stages may sit in different lanes only if they
+touch no work area in common and neither consumes the other's output. That is not
+left to a comment: `tests/config/lanes.js` declares each stage's ground
+**symbolically** (`featureGround.wamMutate`, `{flow:'rfi',viewport:'desktop'}`,
+`dependencyChain`, `global`), resolves it against the live profile, and
+`assertLanesAreDisjoint()` **throws** rather than warns. A lane run with
+overlapping ground produces failures that look like app bugs, which costs far
+more than refusing to start.
+
+Symbolic rather than literal matters: `ncCreate` resolves to `BL03` today only
+because of the TEMPORARY-BL03 vendor bug. When it reverts to `BL05` the validator
+recomputes on its own and the lanes become **more** separable with no edit.
+
+Four checks, all confirmed to fire (each was deliberately broken and caught):
+
+1. two lanes touching the same work area;
+2. a `global` stage (one that asserts across every mapped area) inside a lane
+   instead of the epilogue;
+3. **user-creating stages split across lanes** — app owner: *"Keep every
+   user-creating stage in one lane, this seems important."*
+   `user-creation-counter.json` and `last-created-users.json` are
+   read-modify-**write**, so two lanes creating users concurrently lose entries —
+   and a lost entry does not fail where it happens, it fails later in whatever
+   stage tries to log in as the user that vanished;
+4. a stage that exists but was assigned to no lane, which would be silently
+   skipped — against the whole "in one run nothing should be escaped" premise.
+
+#### The layout
+
+```
+prefix (serial)   users -> wam
+   |
+   +-- flow-desktop  draft-autosave, rfi-desktop, nc-desktop,        BL03 BL05 BL07  ~42m
+   |                 data-integrity, dependency, nc-create
+   +-- flow-mobile   rfi-mobile, nc-mobile                           BL03 BL04 BL05  ~31m
+   +-- wam           users-batch, wam-basics/ci/all-roles,           BL06 BL08-BL10  ~40m
+   |                 wam-hierarchy, nc-block, wam-patch(+hier),
+   |                 wam-demap(+hier)
+   +-- creation      rfi-create, rfi-bulk, rfi-bulk-multi            BL11-BL14       ~15m
+   +-- readonly      dashboard-admin/filter, hier-dashboard,         (no ground)     ~30m
+   |                 online-roles
+   |
+epilogue (serial) reassign -> restore
+```
+
+`reassign` is in the epilogue because it **consumes** what the creation stages
+produce — it can only reassign something still pending, and those stages are now
+spread across three lanes. Waiting for all of them is the only way it is fed by
+design rather than by luck (it failed exactly that way on 2026-09-05).
+`restore` is there because it re-asserts the mapping across every area, so it
+must not overlap anything that mutates. It runs **even if a lane failed** — the
+run where a lane died mid-mutation is the one that needs it most.
+
+Expected wall clock **~50 min against ~120**, bounded by `flow-desktop`.
+
+**The one thing blocking ~45 min or better:** `flow-desktop` and `flow-mobile`
+both touch `BL03`, because `nc-mobile` resolves there under TEMPORARY-BL03. NC
+consumes nothing and duplicate NCs are legal, so the overlap is benign — but
+"benign in principle" is not something to build a parallel run on, so it is
+recorded as a **named exception** in `KNOWN_GROUND_OVERLAPS` rather than passing
+silently. Reverting NC to `BL05` deletes the exception and frees the split.
+
+#### Commands
+
+| Script | What |
+|---|---|
+| `npm run smoke:lanes:plan` | Print the lane plan and the ground each lane touches. Runs nothing. |
+| `npm run smoke:lanes` | The full laned run + merged report. |
+| `npm run smoke:lanes:qa` / `:test` | Same, pinned to an environment. |
+| `node tests/utils/run-smoke-lanes.js solar --lane wam` | One lane on its own. |
+
+**`npm run smoke:full` is untouched** and remains the known-good serial path.
+Lanes are additive until a full laned run has been proven live.
+
+Wind degrades correctly without special-casing: it has 8 stages and no feature
+tier, so three lanes come back empty and are dropped rather than spawned.
+
+#### Still to do
+
+Nothing here has run against the app yet — a full solar chain run of the app
+owner's was in flight throughout (started 13:53, still going at 17:10, ~3h20m),
+and the one-run-at-a-time rule holds. First laned run should be
+`npm run smoke:lanes:plan`, then a single lane (`--lane readonly` is the safest —
+no ground at all), then the whole thing.
