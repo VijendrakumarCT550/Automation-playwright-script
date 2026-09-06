@@ -2304,3 +2304,116 @@ longer knowable from the name, so deleting them is not the code's call.
 
 **qa prefix, measured 2026-09-06:** `SM01` + `SM03` = **14 passed, 3.8 min**
 (10 users at ~14 s each, 4 WAM assignments at ~19 s each).
+
+### 2026-09-06 (correction): the vendor gap is pulse-test DATA, not an app bug
+
+The entry above concluded "an app-side constraint, and probably an app bug". **That
+was wrong**, and the app owner's instinct to switch environments is what settled
+it. The identical probe on **pulse-qa**:
+
+| Work area | pulse-test | pulse-qa |
+|---|---|---|
+| BL03 | 1 vendor | 1 vendor |
+| BL04, BL05, BL06, BL07, BL10, BL11, BL12 | **0** | **1 vendor each** |
+| BL08 | 0 | 0 — *and explained, see below* |
+
+So the vendor dropdown works correctly on qa across the whole band. The gap is
+**pulse-test's own SO/vendor data**, not app behaviour, and there is nothing to
+report to the developers. Do not raise it as a defect.
+
+**BL08 on qa is not a failure either.** The probe error there is
+`locator.waitFor: Timeout 5000ms` on the **Work Area** dropdown, not the vendor
+one — BL08 never appears in the QI's list at all. That is correct and
+deliberate: `featureGround.wamSweep` (BL08/BL09) is **not** pre-mapped by SM03,
+because proving Admin can assign there IS SM11/12/13's coverage. A user with no
+WAM row on an area cannot see it. The probe found the right answer for the wrong
+field, which is worth stating so it is not re-investigated.
+
+**Consequences.**
+
+* **SM28 keeps `BL06`.** Its ground choice was right; only the deployment was
+  wrong. No config change needed.
+* **Rule R2's disjoint-ground premise holds on qa** — NC does not have to share
+  BL03 with the RFI flow.
+* **TEMPORARY-BL03 is now environment-specific**, and this is the one thing left
+  open. `flowWorkAreas.nc` and `featureGround.ncCreate` point at BL03 solely
+  because of the pulse-test data gap. On qa they could revert to BL05, which
+  would make `flow-desktop` and `flow-mobile` fully disjoint and let
+  `KNOWN_GROUND_OVERLAPS` be deleted — worth ~10 minutes off a laned run.
+  **Not changed here**: `tests/config/projects.js` has no environment dimension
+  for ground, so reverting would fix qa and break pulse-test. Needs either a
+  decision to run only on qa, or per-environment ground in the profile.
+
+**Method note worth keeping.** The probe was written to separate EMPTY from SLOW
+(20 s polled per area) and to carry a control (BL03). Both earned their place:
+the control is what made the pulse-test result trustworthy, and the empty/slow
+split is what stopped "no vendor in 5 s" being read as "no vendor".
+
+### 2026-09-06: SM28 GREEN on qa — rule R2a proven live, and the app's own message overstates it
+
+`smoke-solar-nc-block` on pulse-qa: **5 passed, 3.6 min.** Gap **G-04 is closed**,
+verified rather than claimed.
+
+The run, in order:
+
+```
+work section summary: total=264 selected=0 pending=264
+candidate work section: "R01-T01"            <- proved RFI-available, then released
+NC 9966d1e0-... created on "R01-T01" and left non-approved
+CONFIRMED blocked (proceed-refused)
+CONFIRMED scoped: "R01-T01" is blocked, "R01-T02" is not
+```
+
+#### The app's real wording, captured for the first time
+
+> **Validation Error**
+> **"NC Has been raised for atleast one workSection, on the given Activity for Contractor."**
+
+This repo had never recorded it — `clickProceedAndCheckOutcome`'s comment says
+the wording "isn't hardcoded anywhere in this repo yet", which is why the stage
+records the text instead of asserting on it.
+
+#### The message is MISLEADING, and the control arm is what proves it
+
+Read literally, *"NC has been raised for **at least one** workSection, on the
+given **Activity**"* says: one NC anywhere on an activity blocks that activity.
+Anyone hitting this in the app would reasonably conclude their whole activity is
+locked.
+
+**It is not.** The control arm raised an RFI on `R01-T02` — same activity, same
+checkpoint, different work section — and it **succeeded**. So the enforcement is
+per work section; only the message is activity-wide. That gap between wording and
+behaviour is exactly what the control arm existed to expose, and it is worth
+knowing before someone debugs a "blocked activity" that is not blocked.
+
+#### What is now PROVEN, and what is still ASSUMED
+
+**Proven live:**
+
+* an unapproved NC on (activity A, work section S) **blocks** RFI create for
+  (activity A, checkpoint C, section S);
+* the same activity and checkpoint on a **different** section is **not** blocked
+  — so the block is keyed on the section, not the work area and not the activity.
+
+**Still assumed — and the message now casts doubt on one of them.** R2a is
+documented as keyed on the triple *(activity/sub-activity, inspection
+checkpoint, work section)*, but the app's message mentions **Activity**,
+**workSection** and **Contractor** — and **no checkpoint at all**:
+
+1. **Is the checkpoint really part of the key?** SM28 uses one checkpoint
+   throughout, so a *different* checkpoint on the blocked section was never
+   attempted. If the checkpoint is not in the key, R2a's own wording is wrong.
+2. **Is a different ACTIVITY on the blocked section unaffected?** SM28's probe
+   for this returned INCONCLUSIVE (`locator.waitFor: Timeout 500ms`) — it never
+   reached the comparison. Left as a probe on purpose; it asserts nothing.
+3. **"for Contractor"** suggests the block is also scoped per contractor, which
+   nothing here tests.
+
+Both are cheap follow-ups on the same stage and neither blocks anything today.
+They are recorded rather than guessed.
+
+#### Ground
+
+BL06 was the right choice all along — only pulse-test's vendor data was wrong.
+Each run spends exactly one work section (the control arm's RFI) out of 264, and
+the NC arm spends nothing, so this is re-runnable indefinitely.
