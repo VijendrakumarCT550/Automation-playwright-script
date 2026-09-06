@@ -258,7 +258,21 @@ async function runOnlineRoleRegressionSuite(browser, { prefix, roleName, addUser
       expect(rfiFingerprintAgain, `${prefix}: ${label} chart should render the SAME RFI data again after switching back from NC`)
         .toBe(rfiFingerprint);
 
-      logFinding(prefix, 'Dashboard', `${label}: confirmed the chart's rendered content actually changes between RFI and NC (not just the tab's own color)`);
+      // MUST reflect which branch actually ran. Found live 2026-09-06 on the
+      // first laned run: this line printed unconditionally, so Contractor
+      // Manager's log carried BOTH "INCONCLUSIVE — the chart drew NO data on
+      // either RFI or NC" and "confirmed the chart's rendered content actually
+      // changes between RFI and NC" for the same chart, two lines apart. A log
+      // that contradicts itself is worse than no log — it is the thing someone
+      // reads when deciding whether a result can be trusted.
+      logFinding(
+        prefix, 'Dashboard',
+        bothSidesEmpty
+          ? `${label}: RFI/NC comparison SKIPPED (no data either side); the toggle itself and the switch back to RFI were still exercised`
+          : knownEmptyNCForRole
+            ? `${label}: RFI/NC comparison waived for this role (app-owner-confirmed scope limitation); the toggle and the switch back to RFI were still exercised`
+            : `${label}: confirmed the chart's rendered content actually changes between RFI and NC (not just the tab's own color)`
+      );
     }
     logFinding(prefix, 'Dashboard', 'all 4 widgets + both chart RFI/NC toggles confirmed working');
 
@@ -384,7 +398,46 @@ async function runOnlineRoleRegressionSuite(browser, { prefix, roleName, addUser
         const rows = await so.listActivityRows().catch(() => []);
         const mapped = rows.filter(r => r.currentServiceOrder && r.currentServiceOrder.trim().length > 0);
         logFinding(prefix, 'SO Mapping', `${mapped.length}/${rows.length} activity rows already show a mapped Service Order`);
-        expect(rows.length, `${prefix}: SO Mapping should render at least one activity row for BL01/Civil`).toBeGreaterThan(0);
+
+        // WAS: expect(rows.length).toBeGreaterThan(0).
+        //
+        // Dropped 2026-09-06 with live evidence, not on a hunch. Plot Admin
+        // reached this line on the first laned run and read 0/0 rows. Two
+        // things make that assertion wrong rather than merely unlucky:
+        //
+        //   1. SO MAPPING IS NOT A PULSE FEATURE ANY MORE. It moved to DRS on
+        //      2026-09-04; PULSE's /so-mapping is vestigial, and following the
+        //      menu entry now legitimately hands off to DRS
+        //      (app-owner-decisions-and-conventions.md 3.9). Asserting that a
+        //      removed screen renders activity rows is asserting on a vestige.
+        //      Note the app is not even consistent about it: some roles get the
+        //      "moved to DRS" notice, Plot Admin gets a real-but-empty screen.
+        //   2. THE CASCADE IS HARDCODED TO A-06c/BL01, which is the REGRESSION
+        //      tier's ground and the app owner's manual-testing location. A
+        //      hierarchy role whose jurisdiction does not include A-06c will
+        //      correctly see nothing there (Plot Admin's scoping to its own
+        //      work locations is confirmed live) — so 0 rows is the CORRECT
+        //      answer for such a role, not a defect.
+        //
+        // WHY THIS ONLY SURFACED NOW: Plot Admin used to fail earlier in the
+        // test, on the TAT chart comparison, and never reached this line. Once
+        // that stopped being a false failure the test got further and exposed
+        // this. It is a previously-MASKED problem, not a new one.
+        //
+        // What is still worth checking is that the screen did not ERROR, which
+        // is asserted below. The row count is reported instead.
+        if (!rows.length) {
+          logFinding(
+            prefix, 'SO Mapping',
+            'the real screen rendered but returned ZERO activity rows for A-06c/BL01 — expected ' +
+            'for a role whose jurisdiction excludes A-06c, and unremarkable either way now that ' +
+            'SO mapping lives in DRS and PULSE\'s screen is vestigial. Reported, not asserted.'
+          );
+        }
+        await expect(
+          page.locator('text=/something went wrong|page not found|404/i').first(),
+          `${prefix}: SO Mapping rendered an error page`
+        ).toBeHidden();
       }
     } else {
       logFinding(prefix, 'SO Mapping', 'nav item not present for this role — skipped');
@@ -479,11 +532,24 @@ async function runOnlineRoleRegressionSuite(browser, { prefix, roleName, addUser
     }
 
     const downloaded = await reports.downloadAndParse(`${prefix}_rfi_status`);
-    logFinding(prefix, 'Reports', `downloaded "${downloaded.suggested}" -> ${downloaded.rowCount} rows (table showed Total Count=${totalAfter}), headers: ${downloaded.headers.join(', ')}`);
+    logFinding(
+      prefix, 'Reports',
+      downloaded.emptyReport
+        // CONFIRMED live 2026-09-06 for Execution Lead and Quality Lead:
+        // Total Count 0, no download event, no toast. See downloadAndParse.
+        ? `report is EMPTY for this role's scope (Total Count=${totalAfter}) — the app raises no ` +
+          `download at all in that case, so there is no file to parse. The row-count assertion ` +
+          `below still runs against 0, so it is not being skipped.`
+        : `downloaded "${downloaded.suggested}" -> ${downloaded.rowCount} rows (table showed Total Count=${totalAfter}), headers: ${downloaded.headers.join(', ')}`
+    );
     expect(downloaded.rowCount, `${prefix}: downloaded file's row count should match the filtered Total Count, not the unfiltered total`)
       .toBe(totalAfter);
 
-    if (statusFieldVisible) {
+    // `emptyReport` short-circuits this, otherwise a role with nothing to export
+    // would log "WARNING — could not find a status-like column", which reads as
+    // a broken report rather than an empty one. There are no rows to check the
+    // filter against, and the rowCount assertion above already covered it.
+    if (statusFieldVisible && !downloaded.emptyReport) {
       const statusHeader = downloaded.headers.find(h => /status/i.test(h));
       if (statusHeader) {
         const offStatusRows = downloaded.rows.filter(r => !/approved/i.test(String(r[statusHeader])));

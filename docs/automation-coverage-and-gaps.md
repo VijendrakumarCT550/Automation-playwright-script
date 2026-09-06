@@ -3,7 +3,7 @@
 Compiled 2026-09-06 off the repository itself (`tests/`, `tests/config/`,
 `playwright.config.js`, `docs/`) rather than off a run.
 
-**Last updated 2026-09-06: G-04 CLOSED** — `SM28_nc_blocks_rfi.spec.js` now asserts
+**Last updated 2026-09-06: G-04 CLOSED, G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
 rule R2a. See docs/smoke-e2e-framework.md's 2026-09-06 entry.
 
 The full illustrated version — execution topology, the RFI/NC state machines,
@@ -59,7 +59,7 @@ them unprompted.**
 
 | ID | Gap | Severity |
 |---|---|---|
-| G-03 | **The checkpoint-dependency block is never proven.** SM07 and specs 29/30 walk the chain *forward*. Nothing asserts that creating an RFI for checkpoint N+1 before N is EE+QI approved is *refused* — a regression removing the block entirely would pass the whole suite. | high |
+| ~~G-03~~ | ~~**The checkpoint-dependency block is never proven.**~~ **WITHDRAWN 2026-09-06 — this was my error, not a gap.** `runDependencyChainForActivity` and `runDependencyChainForScarceWorkSectionActivity` (`tests/utils/rfi-dependency-flow.js`) each assert the block twice: `expect(firstAttempt.proceeded).toBe(false)` before checkpoint[0] exists, and `expect(nextAttempt.proceeded).toBe(false)` when checkpoint[i] exists but is **not yet approved** — which specifically proves the app checks *approved*, not merely *created*. `createAndSubmitCheckpoint` throws if a now-unblocked checkpoint is still refused, so the positive control is there too. Run by SM07, spec 29 and spec 30. A regression removing the block would fail immediately. I reported this as uncovered after reading only the spec files and the driver's headline comment, without reading the driver body. | not a gap |
 | ~~G-04~~ | ~~**The NC-blocks-RFI rule (R2a) is designed around, never tested.**~~ **CLOSED 2026-09-06** — `tests/smoke/SM28_nc_blocks_rfi.spec.js` (project `smoke-solar-nc-block`, 5 tests, ground `featureGround.ncBlock` = BL06). Asserts the block AND the control arm (a different work section, same activity and checkpoint, must still succeed); R2a's "different activity, same section" half is a reported-only probe, since neither the shared section inventory nor that activity's own dependency state is confirmed. **Not yet run live.** | closed |
 | G-05 | **Cross-activity dependency (Table / Inverter / Block).** Min-Unit-of-RFI scoping is fully documented in `rfi-business-logic.md` §6b and entirely unautomated. Never tried live. | high |
 | G-06 | **Quantity / UOM.** `rfiQuantity`, `unit`, `subContractor` are `null` in every profile, so UOM-mandatory-when-quantity-entered and the app-filtered UOM dropdown have never been exercised. | medium |
@@ -109,7 +109,7 @@ code so the suite cannot report it as a failure.
 
 ## 3. Recommended order of work
 
-1. **Assert the remaining blocks** (G-03, G-05) — G-04 is done, and SM28 is the working template for both. Each is a short
+1. **Assert the remaining block** (G-05 only) — G-04 is done and G-03 was never a gap. Each is a short
    spec on sacrificial ground: create the prerequisite state, attempt the blocked
    action, assert the refusal, then assert the adjacent non-blocked case still
    succeeds — that second half is what distinguishes a real rule from a broken

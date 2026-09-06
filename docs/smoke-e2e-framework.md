@@ -2090,3 +2090,112 @@ owner's was in flight throughout (started 13:53, still going at 17:10, ~3h20m),
 and the one-run-at-a-time rule holds. First laned run should be
 `npm run smoke:lanes:plan`, then a single lane (`--lane readonly` is the safest —
 no ground at all), then the whole thing.
+
+### 2026-09-06 (later): first laned run — 18 min, and four things it settled
+
+`npm run smoke:lanes -- --lane readonly` on pulse-test (SM15/16/17/18, 43 tests).
+**40 passed, 3 failed, 18.0 min** — against 30 estimated, and against 7 SM18
+failures in that morning's serial run.
+
+#### 1. The lane mechanism works, after one real bug
+
+The very first attempt died instantly:
+
+```
+EPERM: operation not permitted, mkdir 'C:\Users\Vijendra'
+```
+
+`spawn` needs `shell: true` for `npx` on Windows (without it: ENOENT — the same
+reason `run-smoke.js` sets it). But **with a shell, Node concatenates the argv
+array instead of passing it through, so nothing is escaped** — Node even warns
+about this (DEP0190). This repo lives at
+`C:\Users\Vijendra Kumar\Downloads\Automation playwright script`, so the
+absolute `--output` path split at the first space.
+
+Fixed two ways, because either alone is a single point of failure: paths passed
+as argv are now **repo-relative** (cwd is ROOT, so there is no space to split
+on), **and** anything still containing a space is quoted. Env vars were never
+affected — `spawn` passes `env` as an object, which the shell never re-parses,
+which is why `PLAYWRIGHT_BLOB_OUTPUT_DIR` worked from the start.
+
+**Second lesson, cheaper but just as real:** the first launch was piped through
+`tail`, so the reported exit code was `tail`'s (0) and hid a failing run. Do not
+pipe a run whose exit code matters.
+
+#### 2. The TAT chart fix is confirmed — 5 failures became 0
+
+CAD, SAD, PM and CM now pass; the log shows the intended path taken:
+
+```
+[CM] Dashboard: TAT Summary: INCONCLUSIVE — the chart drew NO data on either
+     RFI or NC (fingerprint "202x136::") ...
+```
+
+**One defect in that change, found by reading its own output:** the
+"confirmed the chart's rendered content actually changes" line printed
+*unconditionally* after the if/else, so CM's log carried both that and
+INCONCLUSIVE for the same chart, two lines apart. A log that contradicts itself
+is worse than no log — it is exactly what someone reads when deciding whether a
+result can be trusted. The summary line now reflects which branch actually ran.
+
+#### 3. The Reports download: hypothesis CONFIRMED, so it is now a real fix
+
+The morning's diagnostic-only change did its job in one run. Both failures came
+back with:
+
+```
+[downloadAndParse context] label="EL_rfi_status" totalCountOnScreen=0 toast=none
+```
+
+So the app raises **no download event and no message** when there is nothing to
+export. That is a data/scope condition for a role whose WAM scope covers no
+RFIs — not a defect, and not worth a 30-second timeout.
+
+`downloadAndParse` now returns `{ rowCount: 0, rows: [], headers: [],
+emptyReport: true }` when Total Count reads 0, instead of waiting. Note it
+returns an explicit empty result rather than skipping: the caller asserts
+`rowCount === totalCount`, and `0 === 0` keeps that assertion **real** for this
+case rather than bypassing it. The caller also suppresses its
+"could not find a status-like column" warning for an empty report, which would
+otherwise read as a broken report rather than an empty one.
+
+This is the payoff for not "fixing" it on the hypothesis that morning: the fix
+is now backed by an observation instead of a guess.
+
+#### 4. Plot Admin: a previously-MASKED failure, not a new one
+
+```
+[PAD] SO Mapping: 0/0 activity rows
+Error: PAD: SO Mapping should render at least one activity row for BL01/Civil
+```
+
+PAD used to fail earlier in the same test, on the TAT chart, and **never reached
+this line**. Once that stopped being a false failure the test got further and
+exposed this. Worth stating plainly: fixing a false failure will surface
+whatever it was hiding, and that looks like a regression when it is the opposite.
+
+The assertion itself is wrong now, for two independent reasons:
+
+* **SO Mapping is not a PULSE feature any more.** It moved to DRS on 2026-09-04;
+  `/so-mapping` is vestigial and the menu entry hands off (§3.9). Asserting that
+  a removed screen renders activity rows is asserting on a vestige. The app is
+  not even consistent about it — some roles get the "moved to DRS" notice, Plot
+  Admin gets a real-but-empty screen.
+* **The cascade is hardcoded to `A-06c`/`BL01`**, the regression tier's ground
+  and the app owner's manual-testing location. A hierarchy role whose
+  jurisdiction excludes `A-06c` correctly sees nothing there — Plot Admin's
+  scoping to its own work locations is confirmed live — so 0 rows is the RIGHT
+  answer for such a role.
+
+Replaced with the check that still means something: the screen must not render
+an error page. The row count is reported.
+
+#### Timing, measured
+
+| | |
+|---|---|
+| `readonly` lane, 43 tests | **18.0 min** |
+| of which SM16 dashboard-filter alone | 8.9 min |
+
+That is the lane the estimate put at ~30 min, so the ~50 min projection for the
+full laned run is if anything conservative.

@@ -165,6 +165,31 @@ class ReportsPage extends BasePage {
     // rethrows. A zero-row report and a genuinely broken button then look
     // different in the log instead of identical, and the next run settles it
     // without needing another investigation from scratch.
+    // CONFIRMED 2026-09-06, not assumed. The diagnostic below was added on the
+    // hypothesis that Execution Lead's and Quality Lead's download timeouts were
+    // an EMPTY report rather than a broken control. The first laned run settled
+    // it — both failed with exactly:
+    //
+    //   totalCountOnScreen=0 toast=none url=.../reports/rfi-status
+    //
+    // So: the app raises no download event, and no message, when there is
+    // nothing to export. That is a data/scope condition for a role whose WAM
+    // scope covers no RFIs — not a defect, and not something a 30-second
+    // timeout should be spent on.
+    //
+    // Returning an explicit empty result rather than skipping quietly: callers
+    // assert `rowCount === totalCount`, and 0 === 0 keeps that assertion REAL
+    // for this case instead of bypassing it. `emptyReport` is set so a caller
+    // that wants to treat it differently can, and so the log says plainly why
+    // no file was parsed.
+    const preCount = await this.getTotalCount().catch(() => null);
+    if (preCount === 0) {
+      return {
+        suggested: null, savePath: null, rowCount: 0, rows: [], headers: [],
+        emptyReport: true,
+      };
+    }
+
     let download;
     try {
       [download] = await Promise.all([

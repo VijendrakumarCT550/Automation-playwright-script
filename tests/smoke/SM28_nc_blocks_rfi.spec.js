@@ -250,12 +250,21 @@ test.describe('Smoke stage SM28 - a non-approved NC blocks RFI on the same tripl
       picked,
       `NC creation selected no work section at all (expected "${blockedWorkSection}")`
     ).toBeTruthy();
+    // EXACT match, deliberately, not `.includes()`.
+    //
+    // preferredWorkSections resolves through Playwright's `hasText`, which is a
+    // SUBSTRING match — so asking for "R01-T2" can legitimately land on
+    // "R01-T20". A substring assertion here would then agree with itself and
+    // the whole stage would silently measure the wrong section: the NC on one,
+    // the blocked-RFI attempt on another, and a guaranteed "not blocked"
+    // result read as a rule violation.
     expect(
-      picked.some((s) => s.includes(blockedWorkSection)),
+      picked.map((s) => s.trim()),
       `The NC had to land on the SAME work section CI just proved free ("${blockedWorkSection}") ` +
       `for rule R2a to be testable, but it selected ${JSON.stringify(picked)} instead. ` +
-      `Nothing below would be measuring the rule.`
-    ).toBe(true);
+      `(preferredWorkSections matches by substring, so a near-miss like R01-T2 vs R01-T20 lands ` +
+      `here rather than passing quietly.) Nothing below would be measuring the rule.`
+    ).toContain(blockedWorkSection.trim());
 
     await ncCreate.submitNC();
     const match = page.url().match(/nc\/([a-f0-9-]+)$/i);

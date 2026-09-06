@@ -135,12 +135,33 @@ function describePlan() {
   console.log('');
 }
 
+// ARGUMENTS MUST BE QUOTED, and this is not theoretical — it broke the very
+// first laned run (2026-09-06).
+//
+// spawn() needs `shell: true` on Windows for `npx` to resolve at all (without
+// it the spawn fails with ENOENT — same reason run-smoke.js sets it). But with
+// a shell, Node CONCATENATES the argv array instead of passing it through, so
+// nothing is escaped — Node even warns about it (DEP0190). This repo lives at
+// "C:\Users\Vijendra Kumar\Downloads\Automation playwright script", so an
+// absolute --output path split at the first space and Playwright died with
+//
+//     EPERM: operation not permitted, mkdir 'C:\Users\Vijendra'
+//
+// Two defences, because either alone is a single point of failure:
+//   1. paths passed as argv are REPO-RELATIVE (cwd is ROOT), so in the normal
+//      case there is no space to split on at all;
+//   2. anything that still contains a space is quoted here.
+// The env vars are unaffected — spawn passes `env` as an object, so the shell
+// never re-parses them, which is why PLAYWRIGHT_BLOB_OUTPUT_DIR was fine.
+const quoteArg = (a) => (/[\s]/.test(a) && !/^".*"$/.test(a) ? `"${a}"` : a);
+
 // One `playwright test` invocation. `label` names the phase/lane and decides
 // both its blob directory and its output directory.
 function runPhase(label, ids) {
   const projects = toProjects(ids);
   const blobDir = path.join(BLOB_ROOT, label);
-  const outDir = path.join(OUT_ROOT, `lane-${label}`);
+  // Relative to ROOT, which is the spawn cwd — see quoteArg above.
+  const outDir = path.join(path.relative(ROOT, OUT_ROOT), `lane-${label}`);
 
   const args = [
     'playwright', 'test',
@@ -149,7 +170,7 @@ function runPhase(label, ids) {
     ...projects.flatMap((p) => ['--project', p]),
     '--reporter=blob',
     ...passthrough,
-  ];
+  ].map(quoteArg);
 
   console.log(`[lanes] start ${label}: ${projects.length} project(s)`);
 
@@ -217,11 +238,12 @@ function collectBlobs() {
 
 function mergeReports() {
   return new Promise((resolve) => {
+    // Repo-relative + quoted, same reason as runPhase — see quoteArg.
     const args = [
       'playwright', 'merge-reports',
       '--reporter=list,html,json,junit',
-      FLAT_DIR,
-    ];
+      path.relative(ROOT, FLAT_DIR),
+    ].map(quoteArg);
     console.log(`\n[lanes] merging into one report: npx ${args.join(' ')}\n`);
     const child = spawn('npx', args, {
       cwd: ROOT,
