@@ -524,19 +524,33 @@ const SOLAR_E2E = {
   //   that ground permanently.
   flowWorkAreas: {
     rfi: { desktop: ['BL03'], mobile: ['BL04'] },
-    // TEMPORARY-BL03 (2026-09-05) — was ['BL05'] for both viewports.
-    // App owner: "vendor name is not populating for BL05 while creating NC ...
-    // for BL03 vendor is populating ... BL03 for NC flow is temporary for just
-    // today run". Revert to BL05 once the vendor bug on BL05 is fixed:
-    // `grep -rn TEMPORARY-BL03 tests/config/projects.js` finds all three sites.
+    // REVERTED TO BL05, 2026-09-06 (app owner: "if anything is pending and will
+    // be fixed if we change work Area to BL05 then do").
     //
-    // BL03 is the RFI desktop flow area, so rule R2 applies — but see R2a in
-    // docs/smoke-e2e-framework.md for its real (much narrower) scope, and the
-    // fuller note at ncCreate below. Short version: the block is per
-    // (activity, checkpoint, work section) triple, not per work area, and the
-    // RFI flows run before the NC flows, so the RFI work here is already done
-    // and approved by the time any NC exists.
-    nc:  { desktop: ['BL03'], mobile: ['BL03'] },
+    // These pointed at BL03 from 2026-09-05 because Vendor Name would not
+    // populate on BL05 during NC create. That was measured on 2026-09-06 and it
+    // is pulse-test DATA, not app behaviour: the same probe
+    // (tests/specs/inspection/00_inspect_nc_vendor_by_work_area.spec.js) returns
+    // a vendor on BL03-BL07 and BL10-BL12 on pulse-qa, and on BL03 only on
+    // pulse-test. The chain runs on qa, so the workaround has served its purpose.
+    //
+    // WHY REVERTING MATTERS rather than being cosmetic: BL03 is the RFI desktop
+    // flow area, and rule R2 exists precisely so NC ground is DISJOINT from RFI
+    // ground — a non-approved NC blocks RFI create/resubmit on the same triple
+    // (now proven live by SM28). Sharing BL03 meant relying on R2a's narrowness
+    // and on flow ordering to avoid a collision. BL05 removes the possibility
+    // instead of managing it.
+    //
+    // Both viewports still SHARE BL05, deliberately and unchanged: NC consumes
+    // no work sections and duplicate NCs against identical details are legal, so
+    // a second area would buy nothing. What matters is that BL05 is disjoint
+    // from the RFI areas.
+    //
+    // NOTE FOR pulse-test: this is now qa-specific. tests/config/projects.js has
+    // no environment dimension for ground, so a pulse-test run needs BL03 back
+    // (or a per-environment ground layer) — see the 2026-09-06 correction entry
+    // in docs/smoke-e2e-framework.md.
+    nc:  { desktop: ['BL05'], mobile: ['BL05'] },
   },
 
   // Sacrificial ground for the SO demapping stage (SM08), which removes mappings
@@ -674,10 +688,10 @@ const SOLAR_E2E = {
   // flowWorkAreas above for why that separation is a hard requirement.
   nc: {
     workLocation: 'S05b',
-    // TEMPORARY-BL03 (2026-09-05) — was 'BL05'. Vendor Name does not populate
-    // on BL05 during NC create (app bug, app-owner confirmed); it does on
-    // BL03. Revert to 'BL05' when that is fixed.
-    workArea: 'BL03',
+    // REVERTED TO BL05, 2026-09-06 — see the fuller note at flowWorkAreas.nc
+    // above. The BL05 vendor gap was measured to be pulse-test data, not app
+    // behaviour; BL05 populates its vendor correctly on pulse-qa.
+    workArea: 'BL05',
     vendorName: 'CHOUHAN',
     package: 'Civil',
     activity: 'Piling - Robotic Docking System',
@@ -905,8 +919,7 @@ const SOLAR_E2E = {
     // S05b, and they are different work areas that happen to share a label.
     ncBlock: 'BL06',
 
-    // TEMPORARY-BL03 (2026-09-05) — was 'BL05', for the vendor bug described at
-    // the two other TEMPORARY-BL03 sites.
+    // REVERTED TO BL05, 2026-09-06 — see flowWorkAreas.nc above.
     //
     // The risk here is REAL BUT NARROW — narrower than the R2 note directly
     // above implies, and narrower than an earlier version of this comment
@@ -931,7 +944,7 @@ const SOLAR_E2E = {
     // Still reverted to BL05 once the vendor bug is fixed, because "narrow
     // risk that the ordering happens to avoid" is a worse guarantee than
     // "disjoint ground that cannot collide at all".
-    ncCreate: 'BL03',
+    ncCreate: 'BL05',
   },
 };
 

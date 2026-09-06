@@ -2417,3 +2417,76 @@ They are recorded rather than guessed.
 BL06 was the right choice all along — only pulse-test's vendor data was wrong.
 Each run spends exactly one work section (the control arm's RFI) out of 264, and
 the NC arm spends nothing, so this is re-runnable indefinitely.
+
+### 2026-09-06: NC ground back to BL05 — and the last lane overlap is gone
+
+App owner: *"if anything is pending and will be fixed if we change work Area to
+BL05 then do and proceed."* All three TEMPORARY-BL03 sites in
+`tests/config/projects.js` are reverted; **no TEMPORARY-BL03 markers remain.**
+
+| | before | after |
+|---|---|---|
+| `flowWorkAreas.nc` | `{desktop:[BL03], mobile:[BL03]}` | `{desktop:[BL05], mobile:[BL05]}` |
+| `nc.workArea` | BL03 | BL05 |
+| `featureGround.ncCreate` | BL03 | BL05 |
+
+**Why this is not cosmetic.** BL03 is the RFI desktop flow area, and rule R2
+exists precisely so NC ground is disjoint from RFI ground — a non-approved NC
+blocks RFI create/resubmit on the same triple, which SM28 has now **proven live**.
+Sharing BL03 meant relying on R2a's narrowness *and* on flow ordering to avoid a
+collision. BL05 removes the possibility instead of managing it. Resolved pools:
+
+```
+rfi desktop BL03    rfi mobile BL04    nc (both viewports) BL05
+```
+
+Note BL05 also disappears from the RFI fallthrough pool now that NC claims it —
+`resolveFlowWorkAreas(rfi, desktop)` used to return `BL03, BL05`.
+
+#### The lane layout is now fully disjoint, and the exception list is empty
+
+Reverting alone would only have MOVED the `flow-desktop` / `flow-mobile` overlap
+from BL03 to BL05, since NC deliberately shares one area across both viewports.
+Grouping every NC stage into one lane removes it instead:
+
+```
+prefix (serial)   users -> wam
+   +-- flow-desktop  draft-autosave, rfi-desktop, data-integrity,     BL03 BL07   ~30m
+   |                 dependency
+   +-- flow-mobile   rfi-mobile                                       BL04        ~22m
+   +-- nc            nc-desktop, nc-mobile, nc-create                 BL05        ~21m
+   +-- wam-sweep     users-batch, wam-basics, wam-ci, wam-all-roles   BL08 BL09   ~25m
+   +-- wam-mutate    wam-hierarchy, nc-block, wam-patch(+hier),       BL06 BL10   ~30m
+   |                 wam-demap(+hier)
+   +-- creation      rfi-create, rfi-bulk, rfi-bulk-multi             BL11-BL14   ~15m
+   +-- readonly      dashboard-admin/filter, hier-dashboard,          (none)      18m measured
+   |                 online-roles
+epilogue (serial) reassign -> restore
+```
+
+`KNOWN_GROUND_OVERLAPS` is now **`[]`** — kept as an empty list rather than
+deleted, so a future deliberate-and-safe overlap is recorded *with its reason*
+instead of by loosening the check.
+
+`wam` was split into `wam-sweep` (BL08/BL09) and `wam-mutate` (BL06/BL10) because
+the two touch disjoint ground and together were the bottleneck of the whole run.
+**Order inside `wam-mutate` is load-bearing:** `wam-hierarchy` (SM04) is the
+cascade that gives the hierarchy tiers their assignments, and
+`wam-patch-hier` / `wam-demap-hier` then log in AS those tiers — moving SM04
+elsewhere would turn that into a cross-lane race.
+
+Projected wall clock **~42 min** against ~120 serial, bounded by `wam-mutate`.
+
+#### The symbolic ground declaration paid for itself
+
+`STAGE_GROUND` names ground as `featureGround.ncCreate`, `{flow:'nc',
+viewport:'mobile'}` and so on rather than as literal area names. When NC moved
+from BL03 to BL05, the validator recomputed every lane's ground on its own and
+**not one line of that table needed editing**. A table of literal names would
+have had to be found and updated by hand, and the failure mode for missing one is
+a parallel run on shared ground.
+
+All four unsafe-layout checks were re-broken deliberately after the restructure
+and all four still fire: splitting the NC viewports across lanes (BL05),
+moving `nc-block` away from `wam-hierarchy` (BL06), putting `restore` in a lane,
+and leaving a stage unassigned.

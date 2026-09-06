@@ -58,9 +58,11 @@ const { requireFeatureGround, resolveFlowWorkAreas } = require('./projects');
 // GROUND EACH STAGE MUTATES, declared SYMBOLICALLY
 // ---------------------------------------------------------------------------
 // Symbolic, not literal work-area names, so this can never drift from
-// tests/config/projects.js. `ncCreate` currently resolves to BL03 because of the
-// TEMPORARY-BL03 vendor bug; when that is reverted to BL05 the validator
-// recomputes on its own and the lanes become MORE separable with no edit here.
+// tests/config/projects.js — and that paid off immediately. When NC ground moved
+// from BL03 back to BL05 on 2026-09-06, the validator recomputed every lane's
+// ground on its own and NOT ONE LINE of this table needed editing. A table of
+// literal area names would have had to be found and updated by hand, and the
+// failure mode for missing one is a parallel run on shared ground.
 //
 // A stage with `ground: []` touches no work area (dashboards, menu sweeps,
 // read-only role sweeps) and can therefore sit in any lane.
@@ -135,32 +137,48 @@ const LAYOUT = {
   prefix: ['users', 'wam'],
 
   lanes: {
-    // BL03 + BL07. The heavyweight lane and the one that decides wall clock.
-    // ~17 (rfi) + ~9 (nc) + ~6 + ~4 + ~3 + ~3  =  ~42 min
-    'flow-desktop': [
-      'draft-autosave', 'rfi-desktop', 'nc-desktop', 'data-integrity',
-      'dependency', 'nc-create',
-    ],
+    // BL03 + BL07. RFI-only now that NC has its own area again.
+    // ~6 + ~17 + ~4 + ~3  =  ~30 min
+    'flow-desktop': ['draft-autosave', 'rfi-desktop', 'data-integrity', 'dependency'],
 
-    // BL04, plus BL03 for nc-mobile — see NOTE below, this is why it is not
-    // yet its own lane's worth of saving.
-    // ~22 (rfi) + ~9 (nc)  =  ~31 min
-    'flow-mobile': ['rfi-mobile', 'nc-mobile'],
+    // BL04.  ~22 min
+    'flow-mobile': ['rfi-mobile'],
 
-    // BL06 + BL08/BL09 + BL10. All Admin-driven, all on their own ground.
-    // ~40 min
-    'wam': [
-      'users-batch', 'wam-basics', 'wam-ci', 'wam-all-roles',
+    // BL05 — ALL the NC stages together, and that grouping is the point.
+    //
+    // NC deliberately shares ONE area across both viewports (it consumes no
+    // work sections and duplicate NCs against identical details are legal), so
+    // splitting nc-desktop and nc-mobile across two lanes would put two lanes on
+    // BL05 and require a standing overlap exception. Keeping them in one lane
+    // makes every lane genuinely disjoint instead, so KNOWN_GROUND_OVERLAPS
+    // could be deleted outright rather than kept as a permanent caveat.
+    // ~9 + ~9 + ~3  =  ~21 min
+    'nc': ['nc-desktop', 'nc-mobile', 'nc-create'],
+
+    // BL08 + BL09 (featureGround.wamSweep), deliberately NOT pre-mapped by SM03
+    // — proving Admin can assign there IS this lane's coverage.
+    // ~25 min
+    'wam-sweep': ['users-batch', 'wam-basics', 'wam-ci', 'wam-all-roles'],
+
+    // BL06 + BL10. Split from wam-sweep because the two touch disjoint ground
+    // and together they were the bottleneck of the whole run.
+    //
+    // ORDER WITHIN THIS LANE IS LOAD-BEARING: wam-hierarchy (SM04) is the
+    // cascade that gives the hierarchy tiers their assignments, and
+    // wam-patch-hier / wam-demap-hier then log in AS those tiers. They must stay
+    // in this lane, in this order — moving SM04 elsewhere would make that a
+    // cross-lane race.
+    // ~30 min
+    'wam-mutate': [
       'wam-hierarchy', 'nc-block',
       'wam-patch', 'wam-patch-hier', 'wam-demap', 'wam-demap-hier',
     ],
 
-    // BL11 + BL12-BL14.
-    // ~15 min
+    // BL11 + BL12-BL14.  ~15 min
     'creation': ['rfi-create', 'rfi-bulk', 'rfi-bulk-multi'],
 
     // No ground whatsoever, so this lane can never conflict with anything.
-    // ~30 min
+    // MEASURED 2026-09-06: 18.0 min for 43 tests.
     'readonly': ['dashboard-admin', 'dashboard-filter', 'hier-dashboard', 'online-roles'],
   },
 
@@ -176,31 +194,21 @@ const LAYOUT = {
   epilogue: ['reassign', 'restore'],
 };
 
-// NOTE — THE ONE THING BLOCKING A ~45-MINUTE RUN.
+// NO KNOWN OVERLAPS. Every lane's ground is disjoint from every other lane's,
+// so no exception list is needed and assertLanesAreDisjoint() has nothing to
+// excuse.
 //
-// `flow-desktop` and `flow-mobile` both touch BL03, because `nc-mobile`
-// currently resolves there: flowWorkAreas.nc is { desktop: [BL03],
-// mobile: [BL03] } under the TEMPORARY-BL03 workaround for the vendor-name bug
-// on BL05 (three marked sites in tests/config/projects.js).
+// This was NOT true until 2026-09-06. flowWorkAreas.nc pointed at BL03 (the RFI
+// desktop flow area) because Vendor Name would not populate on BL05 during NC
+// create — measured that day to be pulse-test DATA rather than app behaviour,
+// and reverted to BL05 for the qa chain. Grouping every NC stage into one lane
+// then removed the last overlap, since NC shares one area across both viewports
+// by design.
 //
-// NC consumes no work sections and duplicate NCs against identical details are
-// legal, so the overlap is benign in principle — but "benign in principle" is
-// not something to build a parallel run on, so assertLanesAreDisjoint() is
-// allowed to treat it as a KNOWN, NAMED exception rather than silently passing
-// it. Revert ncCreate/flowWorkAreas.nc to BL05 when the vendor bug is fixed and
-// this exception can be deleted outright.
-const KNOWN_GROUND_OVERLAPS = [
-  {
-    lanes: ['flow-desktop', 'flow-mobile'],
-    reason:
-      'nc-desktop and nc-mobile both resolve to BL03 under the TEMPORARY-BL03 ' +
-      'workaround (vendor name does not populate on BL05 during NC create). NC ' +
-      'consumes no work sections and duplicate NCs against identical details are ' +
-      'legal, so both viewports sharing one area is the pre-existing, deliberate ' +
-      'design — see flowWorkAreas.nc in tests/config/projects.js. Delete this ' +
-      'exception when NC reverts to BL05.',
-  },
-];
+// Kept as an empty list rather than deleted: the validator still consults it, and
+// a future deliberate-and-safe overlap should be recorded here WITH ITS REASON
+// rather than by loosening the check.
+const KNOWN_GROUND_OVERLAPS = [];
 
 // Resolves one symbolic ground token to the actual work areas it means.
 function resolveGroundToken(profile, token) {
