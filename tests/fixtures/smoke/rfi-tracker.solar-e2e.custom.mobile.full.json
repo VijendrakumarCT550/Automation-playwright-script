@@ -1,7 +1,7 @@
 {
   "TC-01": {
-    "rfiId": "4c788644-d8f3-4469-adfd-4f6cbf06cc7f",
-    "rfiCode": "RFI-S05b-BL03-CIV-149",
+    "rfiId": "2e1e1bfa-a26a-43cb-aae4-895ba3258916",
+    "rfiCode": "RFI-S05b-BL04-CIV-68",
     "currentStepIndex": 2,
     "currentVersion": "V1",
     "status": "done",
@@ -15,9 +15,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T30",
-    "clickedWorkSection": "R01-T30",
+    "workArea": "BL04",
+    "workSection": "R01-T10",
+    "clickedWorkSection": "R01-T10",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -26,8 +26,8 @@
     "observationCount": 16
   },
   "TC-02": {
-    "rfiId": "64aded54-2ae5-4cd1-a23c-f501729180c7",
-    "rfiCode": "RFI-S05b-BL03-CIV-150",
+    "rfiId": "e38c3c40-c63a-443f-875c-f13712fdbf19",
+    "rfiCode": "RFI-S05b-BL04-CIV-69",
     "currentStepIndex": 4,
     "currentVersion": "V1",
     "status": "done",
@@ -50,9 +50,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T31",
-    "clickedWorkSection": "R01-T31",
+    "workArea": "BL04",
+    "workSection": "R01-T11",
+    "clickedWorkSection": "R01-T11",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -61,8 +61,8 @@
     "observationCount": 16
   },
   "TC-03": {
-    "rfiId": "ba50c20f-22c7-49a8-9ded-552a9ad879a4",
-    "rfiCode": "RFI-S05b-BL03-CIV-151",
+    "rfiId": "e2ad4dbc-ebdd-43be-ba58-10b797edaf4c",
+    "rfiCode": "RFI-S05b-BL04-CIV-70",
     "currentStepIndex": 4,
     "currentVersion": "V1",
     "status": "done",
@@ -85,9 +85,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T33",
-    "clickedWorkSection": "R01-T33",
+    "workArea": "BL04",
+    "workSection": "R01-T12",
+    "clickedWorkSection": "R01-T12",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -96,8 +96,8 @@
     "observationCount": 16
   },
   "TC-04": {
-    "rfiId": "90272f63-76a6-4bde-b052-ed3d622613e4",
-    "rfiCode": "RFI-S05b-BL03-CIV-152",
+    "rfiId": "3db323f9-40e6-44fc-9e2f-3252c6dbb273",
+    "rfiCode": "RFI-S05b-BL04-CIV-71",
     "currentStepIndex": 5,
     "currentVersion": "V1",
     "status": "done",
@@ -124,9 +124,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T35",
-    "clickedWorkSection": "R01-T35",
+    "workArea": "BL04",
+    "workSection": "R01-T13",
+    "clickedWorkSection": "R01-T13",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -135,8 +135,8 @@
     "observationCount": 16
   },
   "TC-05": {
-    "rfiId": "9690cf37-8a8f-4ec8-bf33-e0fd356af9ae",
-    "rfiCode": "RFI-S05b-BL03-CIV-153",
+    "rfiId": "9db4bc70-bb7f-4987-844e-35e50a9f58f3",
+    "rfiCode": "RFI-S05b-BL04-CIV-72",
     "currentStepIndex": 5,
     "currentVersion": "V1",
     "status": "done",
@@ -163,9 +163,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T36",
-    "clickedWorkSection": "R01-T36",
+    "workArea": "BL04",
+    "workSection": "R01-T14",
+    "clickedWorkSection": "R01-T14",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -174,8 +174,8 @@
     "observationCount": 16
   },
   "TC-06": {
-    "rfiId": "0657c6c4-4b78-48b4-b4d5-e941ed978ada",
-    "rfiCode": "RFI-S05b-BL03-CIV-154",
+    "rfiId": "9dbc0d1f-6305-4347-aeeb-d2fcd84ba0d5",
+    "rfiCode": "RFI-S05b-BL04-CIV-73",
     "currentStepIndex": 7,
     "currentVersion": "V1",
     "status": "done",
@@ -211,9 +211,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T37",
-    "clickedWorkSection": "R01-T37",
+    "workArea": "BL04",
+    "workSection": "R01-T15",
+    "clickedWorkSection": "R01-T15",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -222,8 +222,8 @@
     "observationCount": 16
   },
   "TC-07": {
-    "rfiId": "b5261d76-d76c-46f5-950d-9c5d3e2b23a8",
-    "rfiCode": "RFI-S05b-BL03-CIV-155",
+    "rfiId": "a294928d-8547-4252-9841-c685edf15843",
+    "rfiCode": "RFI-S05b-BL04-CIV-74",
     "currentStepIndex": 7,
     "currentVersion": "V1",
     "status": "done",
@@ -259,9 +259,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T38",
-    "clickedWorkSection": "R01-T38",
+    "workArea": "BL04",
+    "workSection": "R01-T16",
+    "clickedWorkSection": "R01-T16",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -270,8 +270,8 @@
     "observationCount": 16
   },
   "TC-08": {
-    "rfiId": "ff6fbdb1-851e-4131-81c6-7187bdda4956",
-    "rfiCode": "RFI-S05b-BL03-CIV-156",
+    "rfiId": "8528e550-42cc-4adc-a734-f44a5f92cfe3",
+    "rfiCode": "RFI-S05b-BL04-CIV-75",
     "currentStepIndex": 7,
     "currentVersion": "V1",
     "status": "done",
@@ -307,9 +307,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T39",
-    "clickedWorkSection": "R01-T39",
+    "workArea": "BL04",
+    "workSection": "R01-T17",
+    "clickedWorkSection": "R01-T17",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",
@@ -318,8 +318,8 @@
     "observationCount": 16
   },
   "TC-09": {
-    "rfiId": "7e14b1ab-ac33-485c-81af-b9c8e3298d09",
-    "rfiCode": "RFI-S05b-BL03-CIV-157",
+    "rfiId": "9bfbb420-8732-4cdf-8060-728530197e16",
+    "rfiCode": "RFI-S05b-BL04-CIV-76",
     "currentStepIndex": 7,
     "currentVersion": "V1",
     "status": "done",
@@ -355,9 +355,9 @@
         "action": "approve"
       }
     ],
-    "workArea": "BL03",
-    "workSection": "R01-T40",
-    "clickedWorkSection": "R01-T40",
+    "workArea": "BL04",
+    "workSection": "R01-T18",
+    "clickedWorkSection": "R01-T18",
     "workSectionVerified": true,
     "checkpointCode": "A.1.1.1",
     "subActivity": "Piling - MMS",

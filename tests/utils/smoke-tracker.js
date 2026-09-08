@@ -58,29 +58,66 @@ const { resolveEnvironment } = require('../config/environments');
 // loud rather than letting state appear to vanish.
 const SMOKE_FIXTURES = path.join(__dirname, '..', 'fixtures', 'smoke');
 
-// 'qa' | 'test' | 'dev' | 'custom' — whatever the run is actually pointed at.
+// 'qa' | 'test' | 'dev' | 'uat' | <host-derived> — whatever the run targets.
+//
+// THE HOST-DERIVED CASE IS NOT COSMETIC, and it was found the hard way on
+// 2026-09-08. resolveEnvironment() returns the literal key `custom` for ANY
+// deployment that has no entry in ENVIRONMENTS — so a full chain run against
+// pulse-uat (unnamed at the time) wrote `rfi-tracker.solar-e2e.custom.*.json`.
+//
+// That reintroduces the exact bug this whole key exists to prevent: `custom` is
+// shared by every unnamed deployment, so pointing the suite at a second unknown
+// host would silently resume the first one's rfiId/ncId values. Naming pulse-uat
+// in ENVIRONMENTS fixes today; deriving the key from the HOSTNAME fixes the
+// class, so the next unnamed deployment cannot collide either.
+//
+// The first label of the hostname is enough to be readable and unique here
+// ('pulse-uat.cfapps...' -> 'pulse-uat'), and it is sanitised because it lands
+// in a filename.
 function envKey() {
+  let env;
   try {
-    return resolveEnvironment().key;
+    env = resolveEnvironment();
   } catch (e) {
     // resolveEnvironment throws when neither PULSE_ENV nor BASE_URL is set. A
     // tracker filename is not the right place to surface that — the run will
     // fail with a far clearer message the moment it tries to navigate.
     return 'unknown';
   }
+
+  if (env.key !== 'custom') return env.key;
+
+  try {
+    const host = new URL(env.baseUrl).hostname.split('.')[0].toLowerCase();
+    const safe = host.replace(/[^a-z0-9-]/g, '');
+    return safe ? `host-${safe}` : 'custom';
+  } catch (e) {
+    return 'custom';
+  }
 }
 
 // Tracker files from before the env segment existed. Reported, never deleted:
 // they are the record of a real run against some deployment, and which one is
 // no longer knowable from the name, so removing them is not this code's call.
+// Two kinds of file are reported here, and both are AMBIGUOUS about which
+// deployment they describe — which is the only reason to single them out. A
+// tracker for a *named* environment other than the current one is perfectly
+// fine and is deliberately left alone, so both deployments' state can coexist.
+//
+//   1. no env segment at all  — pre-2026-09-06, before the key existed;
+//   2. env segment `custom`   — written between 2026-09-06 and 2026-09-08, when
+//      any unnamed deployment shared that one literal key. Which host it was is
+//      not knowable from the name, which is precisely why envKey() now derives
+//      a per-host key instead.
 function listLegacyTrackerFiles() {
   const fs = require('fs');
   if (!fs.existsSync(SMOKE_FIXTURES)) return [];
-  const known = new Set(['qa', 'test', 'dev', 'custom', 'unknown']);
   return fs.readdirSync(SMOKE_FIXTURES).filter((f) => {
+    if (!f.endsWith('.json')) return false;
     const parts = f.replace(/\.json$/, '').split('.');
     // <flow>-tracker.<profile>.<env>.<viewport>.<set>  = 5 parts once keyed.
-    return parts.length === 4 && !known.has(parts[2]);
+    if (parts.length === 4) return true;               // (1) no env segment
+    return parts.length === 5 && parts[2] === 'custom'; // (2) ambiguous key
   });
 }
 

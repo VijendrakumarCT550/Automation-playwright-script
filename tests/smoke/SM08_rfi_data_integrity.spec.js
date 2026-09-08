@@ -206,7 +206,12 @@ test('RFI data integrity: resubmit after reject reaches EE and QI review screens
   const newRfiId = await ciResubmitWithEditedObservations(page, rfiCode, 'Resubmitted - verified OK (smoke)');
 
   const newRfiCode = await getVisibleCodeFor(page, newRfiId);
-  const version = await new RFIReviewPage(page).getVersionBadge().catch(() => null);
+  // `expected: 'v2'` polls toward the bump rather than reading once — see
+  // BasePage.getVersionBadge. It still RETURNS what it found, so an app that
+  // genuinely never bumps still fails the assertion below.
+  const version = await new RFIReviewPage(page)
+    .getVersionBadge({ expected: 'v2' })
+    .catch(() => null);
   console.log(`Resubmitted as ${newRfiCode} (${newRfiId}), version ${version}`);
   expect(version, 'version should bump on resubmit').toBe('v2');
 

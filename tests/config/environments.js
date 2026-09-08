@@ -41,6 +41,18 @@ const ENVIRONMENTS = {
     baseUrl: 'https://pulse-test.cfapps.ap11.hana.ondemand.com',
     description: 'pulse-test — where the solar regression suite has been running',
   },
+  // Added 2026-09-08, for exactly the reason the qa entry above was added.
+  // The full chain had already been run against this host with `.env`'s BASE_URL
+  // pointing at it and no PULSE_ENV set, so resolveEnvironment() fell through to
+  // the unnamed branch and reported the deployment as "custom" — and every smoke
+  // tracker that run wrote was keyed `.custom.` (see envKey() in
+  // tests/utils/smoke-tracker.js). Naming it makes the key `uat` and makes
+  // PULSE_ENV=uat usable instead of hand-editing BASE_URL.
+  uat: {
+    key: 'uat',
+    baseUrl: 'https://pulse-uat.cfapps.ap11.hana.ondemand.com',
+    description: 'pulse-uat — full-chain runs from 2026-09-08',
+  },
 };
 
 function resolveEnvironment() {

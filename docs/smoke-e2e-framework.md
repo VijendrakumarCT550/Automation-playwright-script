@@ -2568,3 +2568,127 @@ negative result is the finding.
 CI needs `loginAsFlowUser` rather than `loginAsUser` — it is a PWA account and
 only `waitForLoad` waits for the install spinner. The wrong helper returns before
 the app has installed and every menu read comes back empty.
+
+### 2026-09-08: first full chain on pulse-uat — 148/153, and five failures worth separating
+
+A full serial `smoke:full:artifacts` run (`run-smoke.js`, not lanes) against a
+**new deployment, `pulse-uat`**: **148 passed, 5 failed, 0 skipped, 126.8 min.**
+That includes SM28, which passed — R2a holds on uat too.
+
+126.8 min is a clean measurement of the serial baseline the lane work exists to
+cut, on the same machine and the same chain.
+
+#### First: `pulse-uat` had no entry in ENVIRONMENTS, so every tracker was keyed `custom`
+
+`.env`'s `BASE_URL` pointed at pulse-uat with no `PULSE_ENV` set, so
+`resolveEnvironment()` fell through to its unnamed branch and reported the
+deployment as `custom`. Every tracker that run wrote was named
+`rfi-tracker.solar-e2e.custom.*.json`.
+
+**That reintroduced the exact bug the environment key was added for two days
+earlier.** `custom` is shared by *every* unnamed deployment, so pointing the
+suite at a second unknown host would silently resume the first one's
+`rfiId`/`ncId` values — the failure mode §11 records as reading like an app bug.
+
+Fixed at both levels, because only doing the first would leave the class open:
+
+* **`uat` is now a named environment**, so the key is `uat` and `PULSE_ENV=uat`
+  works instead of hand-editing `BASE_URL`. Same reasoning as the qa entry.
+* **`envKey()` now derives the key from the HOSTNAME** when the environment is
+  unnamed: `pulse-sandbox.cfapps…` → `host-pulse-sandbox`. The next unnamed
+  deployment cannot collide either.
+* `listLegacyTrackerFiles()` now also flags `.custom.` files, not just
+  pre-key ones. Both kinds are ambiguous about which deployment they describe,
+  which is the only reason to single them out — a tracker for a *named* other
+  environment is fine and is deliberately left alone.
+
+#### The five failures, and they are not one story
+
+| # | Stage | Cause | Action |
+|---|---|---|---|
+| 1 | SM08 data-integrity | `version should bump on resubmit` — got `v1`, wanted `v2` | fixed (test) |
+| 2 | SM10 users-batch | Contractor **Incharge** (VENDOR): no success toast | fixed (test) |
+| 3 | SM10 users-batch | Contractor **Manager** (VENDOR): no success toast | fixed (test) |
+| 4 | SM16 dashboard-filter | Work Location never showed `S05b` | **not investigated** |
+| 5 | SM14 reassign | "Reassign User" dialog never opened, NC half | fixed (test) |
+
+**#4 is deliberately not investigated.** SM16 sits on a known,
+already-reported backend issue and the standing instruction is to report a
+failure there factually rather than chase it. Recorded, not diagnosed.
+
+#### 2 and 3: the submit was still in flight
+
+Both VENDOR roles reported `Received string: ""` for the toast, and the failure
+snapshot said why in one line:
+
+```
+button "Loading... Submit" [disabled]
+```
+
+`UserManagementPage.submit()` polled for a toast for a flat 40 × 300 ms = **12
+seconds** and then returned whatever it had. That is a guess about how long the
+app takes, not a wait for the app.
+
+It now races the toast against the dialog closing and against the button leaving
+its disabled state — the app's own "in flight" signal, still matchable because
+`getByRole`'s `name` is a substring match, so `submitButton` resolves even while
+it reads "Loading... Submit". Two consequences worth stating:
+
+* a slow submit is now **waited for** instead of failed;
+* `""` now means *"the submit finished and produced no toast"*, which is a real
+  finding, rather than *"12 seconds elapsed"*, which is not.
+
+Both roles being VENDOR is a **red herring** — the vendor cascade is simply the
+slowest path through that dialog, so it is where a too-short wait surfaces first.
+SM01 created its own VENDOR users on the same deployment an hour earlier without
+trouble.
+
+#### 5: the click never reached the button
+
+```
+waiting for ...filter({ hasText: 'Reassign User' }) to be visible
+23 x locator resolved to hidden <div ... data-state="closed">
+```
+
+Read carefully, that says the reassign button was **found and clicked** (the
+scroll loop raised nothing) and the dialog element exists in the DOM but never
+left `data-state="closed"`. So the click did not land.
+
+A lingering toast intercepting a click is a known failure mode here — one of the
+four bugs fixed during the NC UI-navigation work, and
+`BasePage.dismissToastIfPresent()` exists for it. SM14's RFI half runs
+immediately before the NC half and ends with a success toast, which makes the NC
+half the likeliest place for it to bite. `openReassign` now dismisses toasts
+before clicking and retries the open once, then throws — a dialog that will not
+open for any other reason still fails, and says so.
+
+#### 1: a single read of a value that had not settled
+
+`getVersionBadge()` read once, with no retry, via
+`locator('text=/^v\d+$/i').first()`. Two test-side causes were plausible and a
+single read excluded neither: the badge had not re-rendered, or `.first()`
+resolved to the **parent** RFI's own `v1` badge while the child's was still
+mounting. The comment on `getVisibleCode()` immediately below it describes that
+precise hazard for breadcrumbs — *"a position-based pick can resolve against a
+temporarily-last-but-not-final element while the DOM is still settling"* — and it
+applies just as well to a badge picked by position. It is also the same race
+already fixed for the resubmit CODE assertion (§11: *"reads once with no retry.
+Now polls 3x"*).
+
+`getVersionBadge({ expected: 'v2' })` now polls toward the expected value and
+**returns what it actually found either way**. That is what stops this masking a
+real defect: if the app genuinely never bumps the version, it returns `v1` after
+the timeout and SM08's assertion still fails. All it removes is failing on a
+badge that was about to be right. Every other caller passes no argument and is
+byte-for-byte unchanged.
+
+**Left alone on purpose:** `23_rfi_data_integrity.spec.js:134` has the same
+single-read pattern. It is the regression twin and it has not failed; the
+standing rule is not to touch specs 1-32 without cause. Flagged here so the next
+person does not have to rediscover it.
+
+#### Not yet done
+
+All four fixes are unverified — they were made after the run finished and none
+has been re-run. The obvious next step is the affected stages only
+(`users-batch`, `reassign`, `data-integrity`), not another 2-hour chain.

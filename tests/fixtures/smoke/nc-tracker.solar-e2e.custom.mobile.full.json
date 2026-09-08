@@ -1,7 +1,7 @@
 {
   "TC-01": {
-    "ncId": "4522e6ce-30c4-49ac-82cb-08be221f3dd1",
-    "ncCode": "NC-S05b-BL05-CIV-84",
+    "ncId": "ea947c56-996a-43f5-bd09-789d542f2fda",
+    "ncCode": "NC-S05b-BL05-CIV-14",
     "currentStepIndex": 3,
     "currentVersion": "V1",
     "status": "done",
@@ -22,8 +22,8 @@
     "workArea": "BL05"
   },
   "TC-02": {
-    "ncId": "bd3ca2f6-e001-4f2a-bacf-f61142bb391a",
-    "ncCode": "NC-S05b-BL05-CIV-85",
+    "ncId": "84c6d24d-9173-4c62-bae8-6093f9573638",
+    "ncCode": "NC-S05b-BL05-CIV-15",
     "currentStepIndex": 5,
     "currentVersion": "V1",
     "status": "done",
@@ -52,8 +52,8 @@
     "workArea": "BL05"
   },
   "TC-03": {
-    "ncId": "231797fd-bee6-4256-a209-7ac77252d607",
-    "ncCode": "NC-S05b-BL05-CIV-86",
+    "ncId": "b6ef5179-4eb6-4a49-abe7-e8b10d4f8de6",
+    "ncCode": "NC-S05b-BL05-CIV-16",
     "currentStepIndex": 6,
     "currentVersion": "V1",
     "status": "done",
@@ -86,8 +86,8 @@
     "workArea": "BL05"
   },
   "TC-04": {
-    "ncId": "549702b1-3f82-4547-ab9b-913574e1ed59",
-    "ncCode": "NC-S05b-BL05-CIV-87",
+    "ncId": "1aae3b95-d8e1-4910-832e-c861ec06c6ef",
+    "ncCode": "NC-S05b-BL05-CIV-17",
     "currentStepIndex": 8,
     "currentVersion": "V1",
     "status": "done",

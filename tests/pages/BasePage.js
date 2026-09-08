@@ -424,10 +424,45 @@ class BasePage {
   // RFI/NC version badge ("v1"/"v2"/"v3") shown in the header only once a
   // specific record is open (not on list/dashboard pages) — same badge on
   // both the review page (EE/QI) and the create/resubmit page (CI).
-  async getVersionBadge() {
+  // `expected` (optional) is the value the CALLER believes this should settle
+  // on — when given, the badge is polled until it reads that, or the timeout
+  // expires. It then returns whatever it ACTUALLY found either way.
+  //
+  // WHY, and why it cannot mask an app bug. This was a single read with no
+  // retry, and it cost a failure on the first pulse-uat full chain
+  // (2026-09-08): SM08's resubmit assertion got
+  //
+  //   version should bump on resubmit — Expected: "v2", Received: "v1"
+  //
+  // Two test-side causes are plausible and neither was excluded by a single
+  // read: the badge simply had not re-rendered yet, or `.first()` resolved to
+  // the PARENT RFI's own v1 badge while the child's was still mounting. The
+  // comment on getVisibleCode() directly below describes that exact hazard —
+  // "the deepest crumb can mount asynchronously slightly after the shallower
+  // ones, so a position-based pick can resolve against a
+  // temporarily-last-but-not-final element" — and the same reasoning applies to
+  // a badge picked by position. It is also the same class of race already fixed
+  // for the resubmit CODE assertion (framework doc §11: "reads once with no
+  // retry. Now polls 3x").
+  //
+  // Polling toward an expected value is safe here precisely because the value
+  // is still RETURNED rather than asserted: if the app genuinely never bumps
+  // the version, this returns "v1" after the timeout and the caller's
+  // expectation still fails. All it removes is the chance of failing on a badge
+  // that was about to be right.
+  async getVersionBadge({ expected = null, timeout = 15000 } = {}) {
     const badge = this.page.locator('text=/^v\\d+$/i').first();
     await badge.waitFor({ state: 'visible', timeout: 10000 });
-    return (await badge.innerText()).trim();
+
+    let value = (await badge.innerText()).trim();
+    if (!expected) return value;
+
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline && value.toLowerCase() !== String(expected).toLowerCase()) {
+      await this.page.waitForTimeout(500);
+      value = (await badge.innerText().catch(() => value)).trim();
+    }
+    return value;
   }
 
   // The record's UI-visible human-readable code (e.g.

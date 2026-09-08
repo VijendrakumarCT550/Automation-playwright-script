@@ -266,8 +266,41 @@ class ReassignPage extends BasePage {
       await reassignButton.waitFor({ state: 'visible', timeout: 10000 });
     }
 
+    // DISMISS ANY LINGERING TOAST BEFORE CLICKING, and retry the open once.
+    //
+    // Added 2026-09-08 after the first pulse-uat full chain. The RFI half of
+    // SM14 passed and the NC half — which runs immediately after it — failed
+    // with the dialog never opening:
+    //
+    //   waiting for ...filter({ hasText: 'Reassign User' }) to be visible
+    //   23 x locator resolved to hidden <div ... data-state="closed">
+    //
+    // Note what that says: the button was FOUND and CLICKED (the scroll loop
+    // above raised no error), and the dialog element exists in the DOM but never
+    // left `data-state="closed"`. So the click did not reach the button.
+    //
+    // A lingering toast intercepting a click is a known failure mode in this app
+    // — it is one of the four bugs fixed during the NC UI-navigation work, and
+    // BasePage.dismissToastIfPresent() exists for exactly this. The preceding
+    // RFI reassign ends with a success toast, which makes the NC half the most
+    // likely place for it to bite.
+    //
+    // Retried ONCE and then thrown, deliberately: a dialog that will not open
+    // for any other reason still fails, and says so.
+    await this.dismissToastIfPresent().catch(() => {});
     await reassignButton.click();
-    await this.dialog.waitFor({ state: 'visible', timeout: 10000 });
+
+    const opened = await this.dialog
+      .waitFor({ state: 'visible', timeout: 10000 })
+      .then(() => true)
+      .catch(() => false);
+    if (opened) return;
+
+    await this.dismissToastIfPresent().catch(() => {});
+    await this.closeAnyOpenListbox().catch(() => {});
+    await this.page.waitForTimeout(500);
+    await reassignButton.click();
+    await this.dialog.waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async selectAssigneeType(roleLabel) {

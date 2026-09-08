@@ -218,14 +218,56 @@ class UserManagementPage extends BasePage {
     await this.page.keyboard.press('Tab');
   }
 
+  // WAITS FOR THE SUBMIT TO SETTLE BEFORE JUDGING THE TOAST.
+  //
+  // This used to poll for a toast for a flat 40 x 300ms = 12 seconds and then
+  // return whatever it had, which is a guess about how long the app takes rather
+  // than a wait for the app. It cost two failures on the first pulse-uat full
+  // chain (2026-09-08): Contractor Incharge and Contractor Manager both reported
+  //
+  //   Expected a success toast ... Received string: ""
+  //
+  // and the failure snapshot showed the reason plainly —
+  // `button "Loading... Submit" [disabled]`. The request was STILL IN FLIGHT.
+  // Nothing was wrong with the app or the data; the assertion simply ran first.
+  // (Both were VENDOR roles, which is a red herring: the vendor cascade is just
+  // the slowest path through this dialog, so it is where a too-short wait shows
+  // up first.)
+  //
+  // The button renders "Loading... Submit" and disabled while the request runs,
+  // and getByRole's name match is a substring, so `submitButton` still resolves
+  // and its disabled state is the app's own "in flight" signal. Racing that
+  // against the toast and the dialog closing means:
+  //
+  //   * a slow submit is WAITED FOR rather than failed;
+  //   * "" now means "the submit finished and produced no toast", which is a
+  //     real finding, instead of "12 seconds elapsed", which is not.
+  //
+  // Deliberately unchanged: the return value is still the toast text, so every
+  // existing caller behaves exactly as before on a submit that was already fast
+  // enough.
   async submit() {
     await this.submitButton.waitFor({ state: 'visible' });
     await this.submitButton.click();
 
+    const settleDeadline = Date.now() + 60000;
     let toastText = '';
-    for (let i = 0; i < 40 && !toastText; i++) {
+    while (Date.now() < settleDeadline) {
       toastText = (await this.toast.innerText().catch(() => '')).trim();
-      if (!toastText) await this.page.waitForTimeout(300);
+      if (toastText) break;
+
+      // The dialog closing is the other way a successful submit ends.
+      if (!(await this.dialog.isVisible().catch(() => false))) break;
+
+      // Still in flight? Keep waiting. Once the button is enabled again the
+      // request has come back, so one more toast read settles it.
+      const stillLoading = await this.submitButton.isDisabled().catch(() => false);
+      if (!stillLoading) {
+        await this.page.waitForTimeout(500);
+        toastText = (await this.toast.innerText().catch(() => '')).trim();
+        break;
+      }
+      await this.page.waitForTimeout(300);
     }
 
     await this.dialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
