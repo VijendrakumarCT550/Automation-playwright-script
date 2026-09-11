@@ -26,6 +26,73 @@ class RFIChecklistPage extends BasePage {
     this.confirmNoButton  = this.confirmPopup.getByRole('button', { name: 'Cancel' });
   }
 
+  // ---------------------------------------------------------------------
+  // PER-ITEM PHOTO ATTACHMENTS (gap G-14)
+  // ---------------------------------------------------------------------
+  // Every RFI checklist item carries its own "Capture Photo" box, exactly like
+  // NC's — the same `Use Camera` affordance BasePage.capturePhoto() drives, and
+  // the same one RFIReviewPage.approve()'s error path already counts.
+  //
+  // CRUCIALLY, AND UNLIKE NC, THESE ARE OPTIONAL. RFIReviewPage records the
+  // evidence: the app owner approved a checklist manually with "No photos
+  // added" on every item, disproving an earlier inference that Submit was
+  // no-oping because a photo was missing. So a spec here must never treat an
+  // unfilled box as a failure — the point is what happens when a photo IS
+  // attached, and whether it survives to the reviewers.
+  //
+  // HOW AN ATTACH IS OBSERVED — corrected 2026-09-11 from a live screenshot.
+  //
+  // The first version of this counted "Use Camera" boxes and expected the count
+  // to DROP by one, reasoning that a filled item stops offering the control.
+  // That is wrong, and the failure screenshot showed it plainly: after
+  // capturing, item 1 rendered the thumbnail (with its own `x` remove button)
+  // ALONGSIDE a still-present "Use Camera" box. The box persists because an item
+  // accepts MORE THAN ONE photo — 16 boxes for 16 checklist items, before and
+  // after.
+  //
+  // So the real signal is the IMAGE COUNT GOING UP. Box count is still read and
+  // reported, because "16 boxes" is what proves the feature exists on this
+  // checklist at all, but it is no longer the pass/fail signal.
+  async countPhotoBoxes() {
+    return this.page.getByText('Use Camera', { exact: false }).count().catch(() => 0);
+  }
+
+  // Images rendered inside the checklist region. Deliberately scoped to the
+  // form, not the whole page: a bare `img` count picks up the header avatar,
+  // the logo and the notification icon, which is the mistake
+  // BasePage.getAttachmentCount()'s comment already calls out for NC.
+  async countChecklistImages() {
+    const scope = this.page.locator('form, [role="main"], main').first();
+    const target = (await scope.count()) ? scope : this.page.locator('body');
+    return target.locator('img:not([alt*="logo" i])').count().catch(() => 0);
+  }
+
+  // Attaches a photo to the FIRST checklist item offering a photo box.
+  //
+  // Returns both measurements so the caller can report the full picture and
+  // assert on the one that actually means something:
+  //   boxesBefore/boxesAfter   expected to be EQUAL — the box persists
+  //   imagesBefore/imagesAfter expected to INCREASE — this is the real signal
+  async attachPhotoToFirstItem() {
+    const boxesBefore = await this.countPhotoBoxes();
+    const imagesBefore = await this.countChecklistImages();
+    if (!boxesBefore) {
+      return { boxesBefore, boxesAfter: boxesBefore, imagesBefore, imagesAfter: imagesBefore, attached: false };
+    }
+
+    await this.capturePhoto();
+    // The thumbnail mounts client-side a beat after the camera modal closes —
+    // same re-render lag getAttachmentCount() polls for on the NC side.
+    let imagesAfter = imagesBefore;
+    for (let i = 0; i < 10 && imagesAfter <= imagesBefore; i++) {
+      await this.page.waitForTimeout(500);
+      imagesAfter = await this.countChecklistImages();
+    }
+
+    const boxesAfter = await this.countPhotoBoxes();
+    return { boxesBefore, boxesAfter, imagesBefore, imagesAfter, attached: imagesAfter > imagesBefore };
+  }
+
   async _dismissDialogIfOpen() {
     const dialog = this.page.locator('[data-scope="dialog"][data-state="open"]');
     if (await dialog.isVisible({ timeout: 1500 }).catch(() => false)) {

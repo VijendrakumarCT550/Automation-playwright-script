@@ -3,7 +3,7 @@
 Compiled 2026-09-06 off the repository itself (`tests/`, `tests/config/`,
 `playwright.config.js`, `docs/`) rather than off a run.
 
-**Last updated 2026-09-06: G-04 CLOSED AND VERIFIED LIVE · G-18 route level CLOSED AND VERIFIED LIVE (new G-27 records what it could not reach) · G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
+**Last updated 2026-09-11: G-14 upload+propagation CLOSED AND VERIFIED LIVE (new G-28 for deletion; download looks not-applicable) · G-04 CLOSED AND VERIFIED LIVE · G-18 route level CLOSED AND VERIFIED LIVE (new G-27 records what it could not reach) · G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
 rule R2a. See docs/smoke-e2e-framework.md's 2026-09-06 entry.
 
 The full illustrated version — execution topology, the RFI/NC state machines,
@@ -75,7 +75,8 @@ them unprompted.**
 | G-11 | **Reports beyond a total and one download.** No per-filter correctness, and no cross-check that report rows agree with the same data on the RFI/NC list. | medium |
 | G-12 | **Logout and session invalidation.** `DashboardPage.logout()` exists; no test drives it as the behaviour under test, and nothing asserts a logged-out session cannot reach a protected route. | medium |
 | G-13 | **Search.** User Management search is used only as a helper; its semantics (partial match, no-result state) are never asserted. | low |
-| G-14 | **RFI attachments.** Covered on the NC side (photo capture, count, propagation); RFI-side upload/download/propagation is not. | medium |
+| ~~G-14~~ | ~~**RFI attachments.**~~ **UPLOAD + PROPAGATION CLOSED AND VERIFIED LIVE 2026-09-11** — `tests/specs/34_rfi_attachments.spec.js` (4 tests, 2.3 min on pulse-test). CI attaches a photo to a checklist item (16 boxes, one per item) and it reaches BOTH reviewers: `images 0→1` on CI, `1` on EE's review, `1` on QI's after EE approves. RFI renders a "View Attachments" label like NC, but the thumbnail is also inline. **DOWNLOAD: no download control exists on any of the four screens** — that half looks NOT-APPLICABLE rather than uncovered; confirm with the app owner before building for it. Follow-up noted as G-28 (the thumbnail has an `×` remove control, so deletion is untested). | upload+propagation closed |
+| G-28 | **RFI attachment deletion.** The thumbnail carries its own `×` remove control (seen live 2026-09-11 while closing G-14). Adding a photo is now covered; removing one is not, and a removal that does not persist would silently leave evidence attached to an RFI the CI meant to clear. | low |
 | G-15 | **Profile, settings, theme toggle.** Never opened. | low |
 | G-16 | **NC list depth.** The grid is driven only to find a row by code; its own sorting/filtering/pagination is untested outside the shared dashboard filter. | low |
 
