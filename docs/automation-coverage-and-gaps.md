@@ -3,6 +3,8 @@
 Compiled 2026-09-06 off the repository itself (`tests/`, `tests/config/`,
 `playwright.config.js`, `docs/`) rather than off a run.
 
+**Last updated 2026-09-15: RFI↔NC LINKAGE CLOSED AND VERIFIED LIVE — G-01 (single linked NC), G-29 (two NCs, the plural rule) and G-30 (an NC rejected back to CI), specs `36`/`37`/`38` on pulse-qa. New §2b records the test-infrastructure landmines found on the way, all of which produce a silently wrong reading rather than a failure. NOTE: 37/38 were filed as G-27/G-27b during the run and are renumbered here — G-27 was already action-level authorisation, and their log lines still say G-27, as do the NC descriptions they wrote into live data.**
+
 **Last updated 2026-09-11: G-14 upload+propagation CLOSED AND VERIFIED LIVE (new G-28 for deletion; download looks not-applicable) · G-04 CLOSED AND VERIFIED LIVE · G-18 route level CLOSED AND VERIFIED LIVE (new G-27 records what it could not reach) · G-03 WITHDRAWN (my error — it was already covered)** — `SM28_nc_blocks_rfi.spec.js` now asserts
 rule R2a. See docs/smoke-e2e-framework.md's 2026-09-06 entry.
 
@@ -52,7 +54,9 @@ them unprompted.**
 
 | ID | Gap | State |
 |---|---|---|
-| G-01 | **RFI↔NC linkage.** "Raise NC" on a Not-Ok checklist item rejects the RFI *with* a linked NC (8 fields, photo mandatory); CI cannot resubmit until every linked NC closes its own CI→EE→QI cycle. Zero coverage — the largest single untested behaviour in the product. | parked 2026-08-19 |
+| ~~G-01~~ | ~~**RFI↔NC linkage.**~~ **CLOSED FOR THE SINGLE-NC CASE, VERIFIED LIVE 2026-09-15** — `tests/specs/36_rfi_linked_nc_lifecycle.spec.js` (8 tests, 5.7 min on pulse-qa, `.env` CI/EE/QI on A-06c/BL01). Park lifted by the user asking for the feature on 2026-09-15. Walks the whole nested workflow: QI rejects with a linked NC → **CI's resubmit is refused** → CI responds (root cause + corrective action) → EE approves → QI approves → **CI's resubmit now succeeds**. The gate is asserted in BOTH directions, since an RFI that can never be resubmitted would also satisfy the blocked half. **THE BLOCK BITES AT THE FINAL SUBMIT** — the RFI *is* in CI's queue (~5s after the rejection) and `Proceed` *is* allowed, so "reached page 2" ≠ "resubmitted"; see `rfi-business-logic.md` §10a, which also records two wrong readings of the enforcement point and what caused each. Panel locators live in `RFIReviewPage`, captured by `tests/specs/inspection/00_inspect_rfi_linked_nc_panel.spec.js`. **Closed the same day: G-29** (multi-NC) and **G-30** (NC rejected back to CI). | single-NC closed |
+| ~~G-29~~ | ~~**Multiple linked NCs on one RFI.**~~ **CLOSED, VERIFIED LIVE 2026-09-15** — `tests/specs/37_rfi_linked_nc_multi.spec.js` (7 tests, 9.8 min on pulse-qa). Two Not-Ok questions produce **two distinct NC records** (`CIV-12`, `CIV-13`, each matched by its own panel's description, not by row order). **THE PLURAL RULE HOLDS:** both open → refused; **NC #1 approved and #2 still open → still refused** (`proceeded=true, submitted=false`); both approved → released. That middle step is the whole point — with a single NC, "is ANY NC approved?" and "are ALL NCs approved?" return identical answers, so G-01 could not have detected the difference. Found a real defect in our own page object that only two panels can expose: Ark UI mounts one date-picker content per panel and keeps closed ones in the DOM, so the page-level locator was a strict-mode violation (now scoped to `data-state="open"`). | closed |
+| ~~G-30~~ | ~~**Linked NC rejected back to CI.**~~ **CLOSED, VERIFIED LIVE 2026-09-15** — `tests/specs/38_rfi_linked_nc_reject_rounds.spec.js` (7 tests, 9.2 min on pulse-qa). The app owner's description includes *"with rejections flowing back to the contractor in charge for resubmission"*, which G-01's happy path never exercised. Bounces one linked NC **twice** — EE rejects, then (after an EE approval) QI rejects — asserting each time that the NC **returns to CI's queue** and that **the RFI is still blocked**. Both reviewers are tested because they are not symmetric (EE reviews first, so QI's return leg is its own claim). Finally: three CI submissions and two rejections later, both approve and **the RFI is released** — which rules out the mirror-image defect of a bounce leaving state behind that gates the RFI forever. | closed |
 | G-02 | **Wind RFI and NC flows.** `WIND_E2E.nc` is `null` (form never opened); only six WTG-Mandvi areas are SO-mapped in DRS against a nine-case matrix. Live options: a reduced wind TC set, or a different activity mapped across all seven areas. | parked 2026-09-04 |
 
 ### Documented app behaviour with no assertion behind it
@@ -97,6 +101,56 @@ them unprompted.**
 | G-26 | **SM16's signal is currently discounted.** The 28 dashboard-filter tests pass, but the screen sits on a known, already-reported backend issue; a future failure there is to be reported factually, not investigated. Re-validate once fixed. | watch |
 
 ---
+
+## 2b. Test-infrastructure landmines (not app defects)
+
+Locator and timing traps in **our own** code that produce a *silently wrong
+reading* rather than a clean failure. All five below were found on 2026-09-15
+while closing G-01 and G-29, each after it had already sent a run to the wrong conclusion.
+
+| What | Why it is dangerous | Status |
+|---|---|---|
+| **`NCTasksPage.ncTab` is `button:has-text("NC")`.** Playwright's `:has-text()` is a CASE-INSENSITIVE SUBSTRING match, so it also matches **"Cancel"** (ca-**nc**-el) and any other label containing "nc"; `.first()` then takes whichever is first in the DOM. | The tab click reports success, the page stays on the RFI tab, and whatever reads the grid next reads **RFI rows believing they are NC rows**. Seen live: three consecutive attempts, no error, RFI grid throughout. Used by `tests/utils/nc-nav.js` and `32_nc_draft_autosave.spec.js`. | **OPEN.** Spec 36 carries a strict local version (`clickNcTabExactly`, exact `^NC$` on role=tab/button). Not changed centrally because that locator is load-bearing for the whole NC flow suite — fix it with an NC-flow run to confirm. |
+| **`BasePage.capturePhoto()` returns when the camera modal CLOSES, not when a photo attaches.** Its own comments record that the Capture click can no-op on a stream that has not started rendering frames. | The next Submit/Review silently no-ops on the unfilled mandatory photo, and surfaces 15–20s later as "the dialog never appeared" / "Review button still visible" — pointing at the wrong thing entirely. The app's real complaint (*"At least one photo is required"*) renders INLINE, not as a toast, so an error handler that only reads toasts reports "no message". | **Fixed at two call sites:** `RFIReviewPage.captureLinkedNcPhoto` (thumbnail `<img>` inside the panel) and `NCReviewPage._capturePhotoVerified` (page-level image-count delta), both retrying 3× then failing loudly. Other `capturePhoto()` callers are still unverified. |
+| **`RFIListPage.scrollToRowByCode` jumps to the grid's BOTTOM** (`scrollTop = scrollHeight`) on every pass, per its documented assumption that newly touched rows sort there. | A row sitting **mid-list** is never mounted, so a row that is plainly present is reported "not found in Pending with me". This flipped G-01's own headline finding between two consecutive runs. | **Worked around** in `linked-nc-flow.js` (`openRfiRow` scrolls incrementally to mount the row, then hands off — `scrollToRowByCode` short-circuits when the row already exists). Central fix not attempted. |
+| **Reaching the NC queue by clicking the tab is unreliable** — three separate runs ended on the RFI grid, once even after an exact-name match found a control and clicked it. | Same dangerous outcome every time: **RFI rows read as NC rows**, silently. | **Fixed by not clicking**: `linked-nc-flow.js` navigates straight to `/my-tasks/nc/list/pending-with-me` and proves arrival by the "NC ID" column header, keeping the tab/tile clicks only as a fallback. Reaching a queue in order to READ it is setup, not the behaviour under test — the RFI/NC flow itself is still driven entirely through the UI. |
+| **A second linked-NC panel mounts a second Ark UI date picker**, and closed pickers stay in the DOM (`hidden`, `data-state="closed"`). | `[data-scope="date-picker"][data-part="content"]` becomes a strict-mode violation the moment an RFI carries two linked NCs — invisible to every single-NC test. | **Fixed** in `RFIReviewPage.selectLinkedNcTargetDate` (scoped to `data-state="open"`). Same family as the positioner-vs-content trap already documented there. |
+
+**The shared lesson:** in this app, an action that fails validation *no-ops
+silently*. Any helper that reports success on "the modal closed" / "the click
+happened" rather than on the state actually changing will eventually hand a test
+a confident wrong answer. Verify the effect, not the gesture.
+
+## 2c. Bulk data-generation specs (tools, not coverage)
+
+Specs whose job is to CREATE REAL RECORDS on a live environment, so other work
+has data to look at. They assert almost nothing and should not be counted as
+coverage; they are listed here because their **ground cost is permanent**.
+
+| Spec | Creates | As |
+|---|---|---|
+| `03_rfi_bulk_create.spec.js` | N RFIs, one work area | CI |
+| `20_rfi_bulk_create_multi_location.spec.js` | N RFIs across entries (misnamed — see the smoke doc) | CI |
+| **`39_nc_bulk_create_qi.spec.js`** (new 2026-09-15) | N NCs, one work area | **QI** |
+
+**`39` is the NC counterpart of `03`, written on 2026-09-15 and verified live the
+same day** — 10 NCs on `A-06c` / `BL02` (Piling - Robotic Docking System, vendor
+CHOUHAN, 2 work sections each), one QI login shared by a serial loop, with
+per-iteration try/catch and an end-of-run summary. Edit `TOTAL_NCS` before a run.
+
+Three things about it are NC-specific, not stylistic:
+
+* **The QI creates an NC**, not the CI — the reverse of RFI.
+* **Its loop body is simpler than `03`'s on purpose.** NC is one scrollable form
+  with Submit at the bottom (no Proceed then checklist step), and NC does **not**
+  autosave on navigate-away (proven in `32_nc_draft_autosave.spec.js`), so a plain
+  navigation back to NC My Tasks is already a clean reset even after a failed
+  iteration. The RFI loop needs a cancel-the-resumed-draft dance; this one must
+  never grow one — confirming the "cancel NC?" popup **deletes** the draft.
+* **Keep `workArea` on NC-only ground.** An NC consumes nothing and duplicate NCs
+  against identical details are legal, but a non-approved NC BLOCKS RFI
+  create/resubmit for the same (inspection checkpoint, work section) — so pointing
+  this file at RFI ground locks the RFI flow out of it.
 
 ## 2a. Confirmed not-a-bug rules
 

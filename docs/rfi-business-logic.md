@@ -344,18 +344,111 @@ for future data-integrity/dependency test cases:
   independent linked NC within the same RFI.
 - The NC detail page shows the parent RFI's ID as a clickable link back.
 
-**Not yet automated**: our NC flow (`nc-flow-turns.js`) only covers
-QI-creates-a-standalone-NC-directly (matches `project_nc_creation_feature`).
-The *linked-from-RFI-checklist* NC creation path, and the
-"RFI-blocked-until-linked-NC-closes" dependency, are both real app
-behavior we haven't exercised. Deferred — not needed for the current
-field-values-persist-correctly phase, but relevant if we ever build a
-combined RFI+NC interaction test.
+**AUTOMATED AND VERIFIED LIVE 2026-09-15** — `tests/specs/36_rfi_linked_nc_lifecycle.spec.js`,
+8 tests, 5.7 min on pulse-qa with the `.env` CI/EE/QI accounts on A-06c / BL01.
+The park (app owner, 2026-08-19: *"wait for RFI linked NC we will do later along
+with different scenario"*) was lifted by the user asking for this feature
+directly. Every bullet above is now confirmed rather than documented-only,
+**with one correction and two specifics the prose did not capture**:
 
-**Explicitly parked per app owner (2026-08-19)**: "wait for RFI linked NC
-we will do later along with different scenario" — do not start
-investigating or building this until the app owner brings it back up as
-its own scenario.
+### 10a. Where the resubmit block actually bites — at SUBMIT, not earlier
+
+This is the correction, and it matters for any future test of the rule. With a
+linked NC open, CI:
+
+* **does** see the rejected RFI in "Pending with me" (status `Rejected`) — it
+  appears within ~5s of QI's rejection;
+* **is allowed through `Proceed`** onto the checklist page;
+* **is refused at the final `Submit`** — the app never navigates to
+  `/rfi/<id>/view`, which `RFIChecklistPage.confirmSubmit` documents as the only
+  reliable completion signal for both create and resubmit.
+
+So **"reached page 2" is NOT "resubmitted"**, and a test that stops at `Proceed`
+reads a perfectly working gate as a broken one. `35_rfi_nc_linkage.spec.js`
+stopped exactly there and flagged that ambiguity as unresolved; this resolves it.
+
+Two earlier readings of the enforcement point were wrong and are recorded so
+they are not re-derived: *"the RFI never appears in CI's queue"* came from
+one-shot lookups taken ~20s after the previous actor's action, and from
+`RFIListPage.scrollToRowByCode` jumping to the grid's BOTTOM (so a row sitting
+mid-list never mounts). Both made an absent row look like a gate.
+
+### 10b. The gate releases — proven in the same run
+
+Once the linked NC is approved by **both** EE and QI, CI's resubmit of the same
+RFI succeeds (reachable, `Proceed` allowed, `Submit` completes). Asserting only
+the blocked half would have been far weaker: an RFI that can *never* be
+resubmitted also satisfies "cannot resubmit while an NC is open".
+
+### 10c. The linked-NC panel (read off a live DOM capture)
+
+`tests/specs/inspection/00_inspect_rfi_linked_nc_panel.spec.js`; locators live in
+`RFIReviewPage` (`linkedNcPanel` / `checkRaiseNc` / `fillLinkedNc` /
+`submitChecklistRejection`). Fields: **NC Description\***, **Defect Type\***,
+**Category\*** (`Critical` / `Non Critical`), **Target Date for Closure\***,
+**NC Quantity\***, **Unit of Measurement\*** (defaults `EA`), **Debit Amount
+(INR)** optional, **Capture Photo\***.
+
+Three traps, each of which silently produces a no-op rather than an error:
+
+1. **NC Description and Defect Type have no placeholder and no `aria-label`.**
+   The standalone NC form's `getByPlaceholder('Enter NC Description')` cannot
+   match them. They are properly label-associated inside their own
+   `[data-scope="field"][data-part="root"]`, which is the anchor to use.
+2. **The panel's mandatory photo box is not the last camera box on the page.**
+   The checklist renders one per item (16), and the NC's is inserted at the item
+   that raised it. Capturing into `.last()` fills item 16 and leaves the NC's
+   empty; the app then reports *"At least one photo is required"* inline — not as
+   a toast — and Submit no-ops.
+3. **A checklist reject does not redirect.** `rejectFromFirstPage`'s completion
+   signal is the app's own redirect to `/my-tasks`; a checklist reject instead
+   leaves the reviewer on the RFI view with the breadcrumb flipped to
+   **"RFIs Pending with others"**.
+
+Confirmed alongside: the NC carries QI's NC Description to CI unchanged, its
+detail page does show the parent RFI code, and QI's panel photo propagates as an
+attachment.
+
+### 10d. "ALL linked NCs" — the plural rule, and rejections flowing back
+
+Both verified live 2026-09-15, each in its own spec, because neither can be
+proven by the single-NC lifecycle above.
+
+**`37_rfi_linked_nc_multi.spec.js` — two NCs (7 tests, 9.8 min).** Two Not-Ok
+questions produce **two distinct NC records**. The gate then behaves as the
+plural rule requires:
+
+| state | CI's resubmit |
+|---|---|
+| both NCs open | refused |
+| **NC #1 approved, NC #2 still open** | **refused** |
+| both approved | succeeds |
+
+That middle row is the point of the file. With only ONE linked NC, *"does this
+RFI have **any** approved NC?"* and *"are **all** its NCs approved?"* return the
+identical answer for every input — so §10a's spec passes either way and a backend
+asking the wrong question would go undetected, letting a contractor resubmit work
+that still carries a live non-conformance.
+
+**`38_rfi_linked_nc_reject_rounds.spec.js` — the NC bounced back (7 tests, 9.2
+min).** The app owner's description includes *"rejections flowing back to the
+contractor in charge for resubmission"*, which the happy path never exercises.
+One linked NC is rejected **twice** — by EE, then (after an EE approval) by QI:
+
+* each rejection **returns the NC to CI's "Pending with me"** (asserted for both
+  reviewers separately — they are not symmetric, since EE reviews first);
+* **the RFI stays blocked after each bounce.** This is the one with teeth: a
+  rejection is a terminal-looking event, and if the backend counted "EE rejected
+  it" as "no longer pending", the RFI would be released while its
+  non-conformance had just been judged *inadequate* — worse than merely
+  unresolved;
+* after three CI submissions and two rejections, both reviewers approve and
+  **the RFI is released** — ruling out the mirror-image defect, where a bounce
+  leaves state behind that gates the RFI forever.
+
+The NC's **visible code is stable across a bounce** (resubmitting creates a new
+child record with its own id, but the code does not change, unlike RFI's), which
+is what lets every step address it by the same code.
 
 ## 11. Quantity / Unit of Measurement rules
 

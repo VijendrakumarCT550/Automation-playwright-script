@@ -431,6 +431,308 @@ class RFIReviewPage extends BasePage {
     await this.confirmSubmitButton.click();
     await this._waitForPopupToClose(this.confirmPopup);
   }
+
+  // -------------------------------------------------------------------------
+  // RAISE NC — rejecting an RFI *with* a linked non-conformance (gap G-01)
+  // -------------------------------------------------------------------------
+  // Marking a checklist item "Not Ok" reveals a "Raise NC" checkbox for THAT
+  // item; checking it opens a full NC form inline and turns the rejection into
+  // a rejection-with-NC. Every starred field below must be valid or Submit
+  // SILENTLY NO-OPS (this app's documented behaviour — see approve()), which is
+  // exactly how four earlier runs mistook an unfilled panel for "the reject
+  // dialog never appeared".
+  //
+  // ALL LOCATORS HERE WERE READ OFF A LIVE DOM CAPTURE, not guessed:
+  // tests/specs/inspection/00_inspect_rfi_linked_nc_panel.spec.js, run against
+  // pulse-qa 2026-09-15 (artefacts under test-results/linked-nc-panel/). Two
+  // things that capture settled, and that cost the previous attempt four runs:
+  //
+  //   * NC Description and Defect Type have NO placeholder and NO aria-label.
+  //     The standalone form's `getByPlaceholder('Enter NC Description')` cannot
+  //     match them. They ARE properly label-associated
+  //     (<label for=":r1r:"> + <input id=":r1r:">) inside their own
+  //     [data-scope="field"][data-part="root"], which is what is used below.
+  //   * The panel carries its OWN mandatory "Capture Photo *", and it is NOT
+  //     the last camera box on the page — the checklist has one box per item
+  //     (16 of them) and the NC's is inserted at item 1. Scoping the capture to
+  //     the panel is the whole reason this works.
+
+  // The panel container: the parent of the "Raise NC" checkbox root, which
+  // holds the checkbox and every NC field including its camera box. `index`
+  // selects which checklist item's panel, so one rejection can carry several
+  // independent NCs ("one NC per question" — confirmed live: marking a second
+  // item Not Ok produces a second "Raise NC" control).
+  linkedNcPanel(index = 0) {
+    return this.raiseNcCheckbox(index).locator('xpath=..');
+  }
+
+  // The checkbox ROOT (a <label>), not the hidden <input>. The input is
+  // visually hidden with a 1px clip rect, so clicking it times out — the same
+  // anatomy NCReviewPage documents for the acknowledgement checkbox, where
+  // clicking the root label is what actually toggles it.
+  raiseNcCheckbox(index = 0) {
+    return this.page
+      .locator('[data-scope="checkbox"][data-part="root"]')
+      .filter({ hasText: /raise\s*nc/i })
+      .nth(index);
+  }
+
+  // Marks one checklist item Not Ok and fills its mandatory Remark.
+  //
+  // force:true on the radio for the reason rejectFromChecklistPage documents:
+  // the real <input> sits under a styled sibling that permanently intercepts
+  // pointer events at the input's own coordinates.
+  async markChecklistItemNotOk(index, remark) {
+    const notOk = this.page.getByRole('radio', { name: 'Not Ok' }).nth(index);
+    await notOk.waitFor({ state: 'attached', timeout: 15000 });
+    await notOk.click({ force: true });
+
+    const remarkInput = this.page.getByPlaceholder('Type your comments here').nth(index);
+    await remarkInput.waitFor({ state: 'visible', timeout: 10000 });
+    await remarkInput.fill(remark);
+  }
+
+  // Checks "Raise NC" for one item and verifies it actually toggled, so a
+  // regression fails here rather than 20s later as a mystifying silent no-op.
+  async checkRaiseNc(index = 0) {
+    const root = this.raiseNcCheckbox(index);
+    await root.waitFor({ state: 'visible', timeout: 15000 });
+    if ((await root.getAttribute('data-state').catch(() => null)) === 'checked') return;
+
+    await root.click();
+    const state = await root.getAttribute('data-state').catch(() => null);
+    if (state !== 'checked') {
+      throw new Error(`"Raise NC" did not toggle to checked (data-state="${state}")`);
+    }
+    // The panel's fields are rendered by the toggle — wait for the first of
+    // them rather than a fixed sleep.
+    await this.linkedNcDescriptionInput(index).waitFor({ state: 'visible', timeout: 15000 });
+  }
+
+  // One field of the panel, by its label text. The label is a real <label for>
+  // pointing at the input's id, but the ids are React-generated (":r1r:") and
+  // not CSS-selectable, so the field ROOT is the anchor.
+  _linkedNcField(index, labelText) {
+    return this.linkedNcPanel(index)
+      .locator('[data-scope="field"][data-part="root"]')
+      .filter({ hasText: labelText })
+      .first();
+  }
+
+  linkedNcDescriptionInput(index = 0) {
+    return this._linkedNcField(index, 'NC Description').locator('input');
+  }
+
+  linkedNcDefectTypeInput(index = 0) {
+    return this._linkedNcField(index, 'Defect Type').locator('input');
+  }
+
+  // The panel's own camera box — scoped to the panel, never `.last()` on the
+  // page. Returns the field root, which is what capturePhoto() expects (it
+  // looks for a "Use Camera" DESCENDANT of whatever it is given).
+  linkedNcPhotoBox(index = 0) {
+    return this._linkedNcField(index, 'Capture Photo');
+  }
+
+  // Target Date for Closure. Same Ark UI date picker as the standalone NC form,
+  // so the calendar mechanics are NCCreatePage.selectTargetDate's — including
+  // the "three next-triggers are mounted at once, so match the day view's by
+  // its aria-label" correction. The TRIGGER is scoped to the panel; the
+  // calendar CONTENT is page-level, because Ark mounts it in a positioner
+  // outside the field.
+  async selectLinkedNcTargetDate(index = 0, daysFromNow = 14) {
+    const target = new Date();
+    target.setDate(target.getDate() + daysFromNow);
+    const dataValue = [
+      target.getFullYear(),
+      String(target.getMonth() + 1).padStart(2, '0'),
+      String(target.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    await this.linkedNcPanel(index).getByRole('button', { name: /open date picker/i }).first().click();
+
+    // SCOPED TO THE OPEN CALENDAR, and with more than one linked NC that is not
+    // optional. Ark UI mounts a date-picker content element PER PICKER and keeps
+    // it in the DOM when closed (hidden, data-state="closed"), so a page with two
+    // linked-NC panels has two of them and a bare
+    // `[data-scope="date-picker"][data-part="content"]` is a strict-mode
+    // violation — caught live 2026-09-15 by the two-NC spec, on a panel the
+    // single-NC path had filled correctly hundreds of times.
+    //
+    // Keying on data-state="open" picks the one that just opened, which is also
+    // the only one that can be interacted with. Same family of trap as the
+    // positioner-vs-content note at the top of this file.
+    const calendar = this.page
+      .locator('[data-scope="date-picker"][data-part="content"][data-state="open"]')
+      .first();
+    await calendar.waitFor({ state: 'visible', timeout: 10000 });
+
+    for (let i = 0; i < 6; i += 1) {
+      const cell = calendar.locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`);
+      if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await cell.click();
+        await calendar.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+        return;
+      }
+      await calendar.getByRole('button', { name: 'Switch to next month' }).click();
+      await this.page.waitForTimeout(200);
+    }
+    throw new Error(`Linked NC Target Date: no cell for ${dataValue} within 6 months of forward navigation`);
+  }
+
+  // Fills every field of one item's linked-NC panel. Defaults mirror
+  // nc-flow-turns.js's NC_DATA so a linked NC and a standalone one carry
+  // comparable data; Debit Amount is the one optional field and is only touched
+  // when a caller passes it.
+  async fillLinkedNc(index, data = {}) {
+    const {
+      description = 'Linked NC raised by automation',
+      defectType = 'Workmanship defect',
+      category = 'Critical',
+      targetDateDays = 14,
+      quantity = 1,
+      unit = 'EA',
+      debitAmount = null,
+      capturePhoto = true,
+    } = data;
+
+    const panel = this.linkedNcPanel(index);
+
+    await this.linkedNcDescriptionInput(index).fill(description);
+    await this.linkedNcDefectTypeInput(index).fill(defectType);
+
+    await this.selectDropdownOption(
+      this._linkedNcField(index, 'Category').getByRole('combobox').first(),
+      category
+    );
+
+    await this.selectLinkedNcTargetDate(index, targetDateDays);
+
+    await panel.getByPlaceholder('Enter Quantity').fill(String(quantity));
+    await this.selectDropdownOption(
+      this._linkedNcField(index, 'Unit of Measurement').getByRole('combobox').first(),
+      unit
+    );
+
+    if (debitAmount != null) {
+      await panel.getByPlaceholder('Debit Amount (INR)').fill(String(debitAmount));
+    }
+
+    // Mandatory, unlike the checklist item's own photo (which carries no
+    // asterisk — app owner confirmed). Left until last so the camera modal's
+    // full-viewport backdrop cannot intercept clicks meant for other fields.
+    if (capturePhoto) {
+      await this.captureLinkedNcPhoto(index);
+    }
+  }
+
+  // Captures into the NC panel's own camera box AND VERIFIES A THUMBNAIL
+  // ACTUALLY LANDED.
+  //
+  // WHY THE VERIFICATION IS THE POINT. BasePage.capturePhoto() returns
+  // successfully as soon as the camera modal closes, which is not the same as
+  // the photo having been attached — its own comments record that clicking
+  // Capture can silently no-op on a fake stream that has not started rendering
+  // frames. Caught live 2026-09-15: two runs of identical code, one attached
+  // the photo and one did not, and the failing one surfaced 15s later as
+  // "Submit did not open the confirm dialog" with the app's real complaint —
+  // "At least one photo is required" — buried in the page rather than raised.
+  //
+  // A thumbnail is an <img> inside this field root (the camera glyph itself is
+  // an inline <svg>, so a count of 0 before and >=1 after is unambiguous).
+  async captureLinkedNcPhoto(index = 0, { attempts = 3 } = {}) {
+    const box = this.linkedNcPhotoBox(index);
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      await this.capturePhoto(box).catch((err) => { lastError = err; });
+      await this.page.waitForTimeout(500);
+      const thumbnails = await box.locator('img').count().catch(() => 0);
+      if (thumbnails > 0) return thumbnails;
+    }
+
+    throw new Error(
+      `The linked NC's mandatory Capture Photo is still empty after ${attempts} attempts — ` +
+      `no thumbnail appeared in the panel's photo box. Submitting now would silently no-op ` +
+      `and the app would report "At least one photo is required" only on screen.` +
+      (lastError ? `\n  last camera error: ${String(lastError.message).split(/\r?\n/)[0]}` : '')
+    );
+  }
+
+  // Submits a checklist rejection — with or without linked NCs — and INSISTS
+  // that the app confirmed a REJECTION.
+  //
+  // IT DOES NOT REDIRECT, and callers must not wait for one. Confirmed live
+  // 2026-09-15: unlike rejectFromFirstPage (whose completion signal IS the
+  // app's own redirect to /my-tasks — see _waitForRedirectToMyTasks), a
+  // CHECKLIST reject leaves the reviewer on the RFI's view page and flips the
+  // breadcrumb from "RFIs Pending with me" to "RFIs Pending with others". A
+  // waitForURL('**/my-tasks') here times out after a rejection that actually
+  // succeeded.
+  //
+  // The same Submit button approves or rejects depending on checklist state,
+  // and only the confirm popup's wording tells them apart. approve() already
+  // guards the opposite direction (refusing to submit a rejection it thinks is
+  // an approval); this is that guard's mirror, so a run that silently reverted
+  // every item to Ok cannot report a successful reject-with-NC.
+  async submitChecklistRejection() {
+    await this.submitButton.click();
+
+    try {
+      await this.confirmPopup.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (firstMiss) {
+      // ONE retry after a settle, for the same reason approve() does it: a
+      // Submit click can simply not register on a form that is not fully ready,
+      // with no toast and no dialog. Only ever reached when nothing opened, so
+      // a working path is untouched.
+      await this.page.waitForTimeout(3000);
+      await this.page.waitForLoadState('networkidle').catch(() => {});
+      await this.submitButton.click({ timeout: 10000 }).catch(() => {});
+    }
+
+    try {
+      await this.confirmPopup.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (err) {
+      const toastText = ((await this.page
+        .locator('[data-scope="toast"], [role="alert"]').first()
+        .innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+
+      // THE APP'S OWN COMPLAINT, which is on the page rather than in a toast.
+      // Confirmed live 2026-09-15: an unattached NC photo renders "At least one
+      // photo is required" inline next to the field, and the run that hit it
+      // reported only "no toast/alert visible" — the diagnosis was sitting in
+      // the DOM the whole time. Read it out rather than listing guesses.
+      const inlineErrors = [...new Set(
+        (await this.page.getByText(/is required|required field/i).allInnerTexts().catch(() => []))
+          .map((t) => t.replace(/\s+/g, ' ').trim())
+          .filter((t) => t && t.length < 120)
+      )];
+
+      throw new Error(
+        `SUBMIT_DID_NOT_CONFIRM: Submit did not open the reject-confirm dialog within 15s.\n` +
+        `  app message  : ${toastText ? JSON.stringify(toastText) : '(no toast/alert visible)'}\n` +
+        `  on-page errors: ${inlineErrors.length ? JSON.stringify(inlineErrors) : '(none found)'}\n` +
+        `  This app no-ops rather than blocking on an invalid mandatory field. On a ` +
+        `reject-with-NC the usual cause is the NC panel's OWN "Capture Photo *" ` +
+        `(fillLinkedNc verifies that one now), or an empty NC Description / ` +
+        `Defect Type / Target Date.`
+      );
+    }
+
+    const confirmText = ((await this.confirmPopup.innerText().catch(() => '')) || '')
+      .replace(/\s+/g, ' ').trim();
+    if (!/reject/i.test(confirmText)) {
+      throw new Error(
+        `submitChecklistRejection() was about to submit something that is NOT a ` +
+        `rejection — the confirm popup reads "${confirmText}". No checklist item is ` +
+        `marked "Not Ok".`
+      );
+    }
+
+    await this.confirmSubmitButton.click();
+    await this._waitForPopupToClose(this.confirmPopup);
+    return confirmText;
+  }
 }
 
 module.exports = RFIReviewPage;

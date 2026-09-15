@@ -87,13 +87,43 @@ class NCReviewPage extends BasePage {
     await this.page.waitForTimeout(3000);
   }
 
+  // Captures the review's mandatory photo AND VERIFIES IT ATTACHED.
+  //
+  // BasePage.capturePhoto() returns as soon as the camera modal closes, which
+  // is not the same as a photo having been attached — its own comments record
+  // that the Capture click can silently no-op on a stream that has not started
+  // rendering frames. When that happens here the failure surfaces 20s later as
+  // "_waitForReviewToComplete: Review button still visible", with the app's
+  // unhelpful "(* Required fields)" as the only clue.
+  //
+  // CAUGHT LIVE 2026-09-15 on QI's approval of a linked NC. An image COUNT
+  // delta is the check rather than a scoped thumbnail lookup, because this page
+  // renders the reviewer's own box alongside the propagated "View Attachments"
+  // gallery and a page-level delta is unambiguous either way.
+  async _capturePhotoVerified({ attempts = 3 } = {}) {
+    let lastError = null;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const before = await this.page.locator('img').count().catch(() => 0);
+      await this.capturePhoto().catch((err) => { lastError = err; });
+      await this.page.waitForTimeout(500);
+      const after = await this.page.locator('img').count().catch(() => 0);
+      if (after > before) return;
+    }
+    throw new Error(
+      `NC review: the mandatory Capture Photo never attached after ${attempts} attempts ` +
+      `(the page's image count did not increase). Review would be silently blocked and ` +
+      `report only "(* Required fields)".` +
+      (lastError ? ` Last camera error: ${String(lastError.message).split(/\r?\n/)[0]}` : '')
+    );
+  }
+
   async approve() {
     // force:true — same custom-radio pattern already confirmed for RFI
     // (the real <input> is visually covered by a sibling styled control).
     await this.okRadio.click({ force: true });
     // Capture Photo + the acknowledgement checkbox are both newly
     // mandatory on approve, not just reject.
-    await this.capturePhoto();
+    await this._capturePhotoVerified();
     await this.checkAcknowledgement();
     await this.reviewButton.click();
     await this.confirmIfPopup();
@@ -106,8 +136,9 @@ class NCReviewPage extends BasePage {
     await this.remarksInput.fill(remarks);
     // Capture Photo + acknowledgement checkbox are mandatory here too —
     // same as approve() (see there for the "not yet live-confirmed"
-    // caveat on acknowledgeCheckbox's selector).
-    await this.capturePhoto();
+    // caveat on acknowledgeCheckbox's selector), and verified for the same
+    // reason (see _capturePhotoVerified).
+    await this._capturePhotoVerified();
     await this.checkAcknowledgement();
     await this.reviewButton.click();
     await this.confirmIfPopup();
