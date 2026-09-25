@@ -395,6 +395,14 @@ Three traps, each of which silently produces a no-op rather than an error:
    The standalone NC form's `getByPlaceholder('Enter NC Description')` cannot
    match them. They are properly label-associated inside their own
    `[data-scope="field"][data-part="root"]`, which is the anchor to use.
+
+   > **Defect Type changed shape on 2026-09-17** — on the standalone NC form it
+   > is now a searchable dropdown, not free text (see
+   > [app-owner-decisions-and-conventions.md](app-owner-decisions-and-conventions.md)
+   > §3). `RFIReviewPage.setLinkedNcDefectType` handles the panel *adaptively*:
+   > dropdown if the panel carries a combobox, the label-associated text input
+   > if it does not. Which shape the panel actually has is still unconfirmed
+   > live — the DOM capture above predates the change.
 2. **The panel's mandatory photo box is not the last camera box on the page.**
    The checklist renders one per item (16), and the NC's is inserted at the item
    that raised it. Capturing into `.last()` fills item 16 and leaves the NC's

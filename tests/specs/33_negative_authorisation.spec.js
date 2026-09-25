@@ -104,12 +104,18 @@ const ROLES = ['CAD', 'PM', 'EL', 'QL', 'CM', 'CI'];
 // batch, and that is a deliberate correction rather than a convenience.
 //
 // The bare CAD/PM/EL/QL/CM entries in last-created-users.json carry NO baseUrl
-// at all — they predate the environment guard smoke-users.js added after a run
-// on 2026-09-03 silently reused users from a deployment they did not exist on.
+// at all — they predate the environment tracking added after a run on
+// 2026-09-03 silently reused users from a deployment they did not exist on.
 // Checked 2026-09-06: they are from batch 67 against an unrecorded deployment,
 // and this chain now runs on pulse-qa, where they almost certainly do not exist.
-// resolveSmokeUsers() applies that guard, so a stale entry fails immediately
-// with a message naming the problem instead of as an inscrutable login failure.
+// Since 2026-09-09 the record is PARTITIONED by deployment and those unkeyed
+// entries live in its `shared` bucket, so resolveSmokeUsers() — which reads
+// prefixed, deployment-scoped entries — never picks them up by accident.
+//
+// Deliberately the synchronous resolveSmokeUsers() and not the smoke tier's
+// ensureSmokeUsers(): this is a REGRESSION spec, and a spec about what a role
+// may NOT do should not create and WAM users as a side effect. A missing user
+// here should be a loud failure pointing at the smoke user stage.
 //
 // It also makes promoting this file to SM29 close to a copy, since every SM*
 // stage resolves its users exactly this way.

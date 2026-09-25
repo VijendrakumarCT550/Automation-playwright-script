@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { openFromPendingWithMe } = require('../utils/rfi-nav');
 const {
   createAndSubmitCheckpoint,
@@ -138,12 +139,22 @@ async function ciResubmitWithEditedObservations(page, rfiCode, observationPrefix
   return match[1];
 }
 
-test('RFI data integrity: CI-entered values reach EE and QI review screens unchanged (smoke, created users)', async ({ page, profile }) => {
+// Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold the RFI
+// area in WAM before either test creates anything. Once for the file, not per
+// test. No-op when already mapped — see smoke-prereqs.js.
+test.beforeAll(async ({ browser, profile }) => {
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
+  await ensureWorkAreaMapping(browser, profile, users, {
+    roles: ROLES, areas: [profile.rfi.workArea], label: 'SM08 prereq',
+  });
+});
+
+test('RFI data integrity: CI-entered values reach EE and QI review screens unchanged (smoke, created users)', async ({ browser, page, profile }) => {
   test.setTimeout(20 * 60 * 1000);
   expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
   const { baseData, checkpoint, expected } = resolveRfiFixture(profile);
-  const users = resolveSmokeUsers(profile, ROLES);
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
   const loginAs = (p, role) => loginAsFlowUser(p, users[role].email, PASSWORD);
 
   // ---- CI: create, then re-read via the dashboard-first pattern ----
@@ -176,12 +187,12 @@ test('RFI data integrity: CI-entered values reach EE and QI review screens uncha
   await qiView.approve();
 });
 
-test('RFI data integrity: resubmit after reject reaches EE and QI review screens correctly (smoke, created users)', async ({ page, profile }) => {
+test('RFI data integrity: resubmit after reject reaches EE and QI review screens correctly (smoke, created users)', async ({ browser, page, profile }) => {
   test.setTimeout(20 * 60 * 1000);
   expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
   const { baseData, checkpoint, expected } = resolveRfiFixture(profile);
-  const users = resolveSmokeUsers(profile, ROLES);
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
   const loginAs = (p, role) => loginAsFlowUser(p, users[role].email, PASSWORD);
 
   // ---- CI: create ----

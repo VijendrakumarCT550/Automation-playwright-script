@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround, smokeMappedWorkAreas } = require('../config/projects');
 const { openAssignmentDialog, assignAndProve } = require('../utils/smoke-wam');
 
@@ -60,7 +60,7 @@ test.describe('Smoke stage SM27 - restore the SM01 baseline mapping', () => {
     profile = p;
     requireFeatureGround(profile);
 
-    users = resolveSmokeUsers(profile, FLOW_ROLES);
+    users = await ensureSmokeUsers(browser, profile, FLOW_ROLES);
     areas = smokeMappedWorkAreas(profile);
     expect(areas.length, `Profile "${profile.key}" maps no work areas`).toBeGreaterThan(0);
 

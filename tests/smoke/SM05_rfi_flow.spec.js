@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginFreshUserSession } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { resolveFlowWorkAreas } = require('../config/projects');
 const { createSmokeRfiTracker, prepareRun, printRunSummary } = require('../utils/smoke-tracker');
 const { makeRfiContext, runCITurn, runEETurn, runQITurn } = require('../utils/smoke-rfi-turns');
@@ -81,12 +82,18 @@ test('RFI full flow, 9 TC, one session per role', async ({ browser, profile, isM
 
   const viewport = isMobileViewport ? 'mobile' : 'desktop';
 
-  // Resolves the users stages 1-3 created, checking BOTH that they belong to
-  // this profile and that they were created against THIS deployment — see
-  // smoke-users.js for why the second check exists.
-  const users = resolveSmokeUsers(profile, ROLES);
+  // Resolves the users stages 1-3 created ON THIS DEPLOYMENT, and creates plus
+  // WAMs any flow role that has never been created here — which is what makes a
+  // `--no-deps` run of just this stage work after an environment switch. See
+  // smoke-users.js.
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
 
   const pool = resolveFlowWorkAreas(profile, { flow: 'rfi', viewport });
+  // Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold this stage's
+  // ground in WAM. No-op when they already do — see smoke-prereqs.js.
+  await ensureWorkAreaMapping(browser, profile, users, {
+    roles: ROLES, areas: pool, label: `SM05 ${viewport} prereq`,
+  });
   const { tracker, tcSet, file } = createSmokeRfiTracker({ profileKey: profile.key, viewport });
 
   console.log(

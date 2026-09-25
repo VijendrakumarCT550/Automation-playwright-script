@@ -289,7 +289,7 @@ which is a change to `SMOKE_VIEWPORTS` handling in the config.
 | `fixtures/rfi-tracker.json` | **high** — one hardcoded path ([tracker-utils.js:7](../tests/utils/tracker-utils.js#L7)), owned by 08/09/10/21 + `reset:rfi-tracker` | per-chain files, section 5.2 |
 | `fixtures/nc-tracker.json` | **high** — same shape ([nc-tracker-utils.js:8](../tests/utils/nc-tracker-utils.js#L8)), owned by 15/16/17/22 | per-chain files, section 5.2 |
 | `.env` `CI_EMAIL`/`EE_EMAIL`/`QI_EMAIL` | **high** — `loginAsRole` silently logs in the *regression* user | smoke never calls `loginAsRole`; only `loginAsFlowUser` with recorded users |
-| `fixtures/last-created-users.json` | low — keyed by prefix, and prefixes differ (`CISL`/`CIWTG` vs `CIC`) | leave as is; the existing `profileKey` guard stays |
+| `fixtures/last-created-users.json` | low — keyed by prefix, and prefixes differ (`CISL`/`CIWTG` vs `CIC`) | leave as is; the existing `profileKey` guard stays *(since 2026-09-09 it is also partitioned per deployment — see the last section)* |
 | `fixtures/user-creation-counter.json` | none — monotonic counter, harmless to share | leave as is |
 
 ### 5.2 Tracker isolation: one implementation, N state files
@@ -907,6 +907,12 @@ today. On a mismatch, capture to an env-suffixed filename instead — preserving
 the old file and still recording the new environment's true original.
 
 ### Found and fixed live, 2026-09-03
+
+> **Superseded 2026-09-09** — the `baseUrl`-rejection fix described here caused a
+> second problem of its own (one prefix could still only describe one
+> deployment, so switching environments invalidated the other one's batch). The
+> file is now partitioned per deployment instead; see the 2026-09-09 section at
+> the end.
 
 **`last-created-users.json` had no environment dimension.** It recorded users by
 role PREFIX only, with no note of which deployment they existed on.
@@ -2692,3 +2698,137 @@ person does not have to rediscover it.
 All four fixes are unverified — they were made after the run finished and none
 has been re-run. The obvious next step is the affected stages only
 (`users-batch`, `reassign`, `data-integrity`), not another 2-hour chain.
+
+### 2026-09-09: the users file is now keyed by ENVIRONMENT, and a missing user gets created
+
+Reported while switching the suite between deployments:
+
+```
+Error: Cannot resolve the smoke users for profile "solar-e2e" on
+https://pulse-test.cfapps.ap11.hana.ondemand.com:
+  - EE (prefix "EESL"): no user recorded at all
+```
+
+Two separate problems, and the second one had been *created* by the fix for the
+first (§ "Found and fixed live, 2026-09-03").
+
+#### 1: one prefix could only describe one deployment
+
+`fixtures/last-created-users.json` was a flat map, `{ "CISL": {...}, ... }`, and
+a PULSE user exists on exactly ONE deployment. The 2026-09-03 fix stamped
+`baseUrl` on each entry and **rejected** any entry whose `baseUrl` was not the
+current one, which stopped the phantom-user bug — but it also meant:
+
+- creating users on qa **overwrote** the pulse-test record for the same prefix;
+- pointing back at pulse-test then rejected the qa entry wholesale.
+
+So every environment switch invalidated the other environment's whole batch, and
+because the app owner validates one stage at a time with `--no-deps` (which skips
+SM01 entirely), the next stage died on "no user recorded at all" for users that
+genuinely existed on the host they were created against.
+
+The fix is the one already made for tracker FILES on 2026-09-06 — **key the store
+by deployment instead of guarding its contents**:
+
+```json
+{
+  "version": 2,
+  "environments": { "test": { "CISL": {...} }, "qa": { "CISL": {...} } },
+  "shared":       { "EE": {...}, "CI": {...} }
+}
+```
+
+Both deployments' users coexist, switching back destroys neither, and there is no
+reset step to remember. `loadLastCreatedUsers()` still returns a FLAT
+prefix→entry map — the current deployment's bucket layered over `shared` — so
+every existing caller is untouched.
+
+`shared` is for entries recorded **without** a `baseUrl`, which is exactly what
+`12_user_management.spec.js` writes for its bare `CI`/`EE`/`QI`/… batch. Those
+stay visible from every environment, preserving the regression tier's behaviour
+bit-for-bit; only the smoke tier, which does stamp `baseUrl`, is partitioned, and
+only the smoke tier ever had the bug. A legacy flat file is migrated on first
+read, distributing each entry by the `baseUrl` it recorded.
+
+The environment key itself moved to `tests/config/environments.js`
+(`environmentKey()` / `environmentKeyFor()`) and `smoke-tracker.js`'s `envKey()`
+is now an alias of it. Two definitions of "which deployment is this?" that could
+drift is how the users file and the trackers came to disagree in the first place.
+
+#### 2: a genuinely missing user was a dead end
+
+The old message told you to go run another Playwright project. The stages now
+call `ensureSmokeUsers(browser, profile, roleKeys)`, which resolves and **creates
+whatever is not there** — `SMOKE_AUTOCREATE_USERS=0` restores the old
+fail-with-instructions behaviour for a run that must not mutate anything.
+
+Creating a PULSE user is not enough to make it usable (no access until it is
+WAM'd), so for the four work-area-scoped FLOW roles the self-heal also performs
+SM03's assignment onto `smokeMappedWorkAreas(profile)` — same filters, same
+single-select work-area rows, same close-reopen-verify.
+
+**It deliberately does NOT map the hierarchy tiers** (EL/QL/PM/PAD/SAD/CAD).
+That is SM04's cascade, and the row *granularity* changes per role (clusters,
+sites, work locations, work areas), several of those rows are genuinely
+multi-assignee where re-clicking a selected option toggles it OFF, and the
+Project Manager work-location row is single-select so an assign EVICTS the
+incumbent. Replicating that here to save a step is how shared WAM data gets
+quietly destroyed. Such a user is created and the run says out loud that SM04
+has to run.
+
+SM01's per-role creation body moved to `tests/utils/smoke-user-factory.js`
+unchanged, so the self-heal creates a user **exactly** as stage 1 does — two
+copies would be two chances to disagree about project-type scoping, and getting
+that wrong produces a user that logs in fine and then cannot see the work area.
+SM01's own reuse check now delegates to `inspectSmokeUsers()` and its
+`entry.baseUrl === process.env.BASE_URL` comparison is gone: being in the
+deployment's bucket *is* that check now.
+
+#### Verified live, and then hardened by review (2026-09-10)
+
+`--project=smoke-solar-wam --no-deps` on pulse-test: **4 passed (2.1m)**. The
+self-heal found only `EE` missing (the other nine resolved from the `test`
+bucket), created `EESLretUser131`, WAM'd it onto all ten mapped areas
+(`changed=10/10`, persisted after reopen) — and then SM03's *own* EE test
+reported `changed=false` / `"No changes to save"`, which is an independent
+confirmation that the self-heal's assignment had reached the server.
+
+**The 19 pulse-uat records were recovered.** The working tree had already lost
+them before any of this work started — 20 entries, every one stamped
+pulse-test — which is the reported bug caught in the act: pulse-test runs had
+overwritten the uat entries prefix by prefix. `git show HEAD` still had them, and
+the partitioned shape can hold both, so they were merged back into a `uat`
+bucket without touching the newer `test` ones. The file now reads
+`test:21, uat:19`.
+
+An adversarial review of the diff found four things worth fixing, all now done
+and covered by a scripted check (8 store guards + 4 self-heal guards):
+
+- **The `shared` bucket could re-admit a phantom.** Its rule was "has no
+  baseUrl", not "is not a smoke user", and `shared` merges into *every*
+  environment's view — so a pre-`baseUrl` smoke entry (which carries
+  `profileKey`) would have been trusted everywhere, exactly the bug this shape
+  exists to kill. `inspectSmokeUsers` now treats a `baseUrl`-less entry as
+  missing, and `recordLastCreatedUser` refuses to file a profile-scoped user
+  with no `baseUrl` at all.
+- **A corrupt file silently erased everything.** `loadUserStore`'s blanket catch
+  returned an empty store for a truncated or hand-mangled file, and the next
+  write would have persisted that emptiness over 40 real users. Only `ENOENT`
+  is empty state now; a parse failure or a non-object throws and says to restore
+  from git. (`null` also used to crash with a `TypeError`.)
+- **A `profileKey` mismatch is fatal again.** Queuing it for creation meant
+  responding to a config mistake — two profiles sharing a prefix — by
+  overwriting the record and re-pointing every mapped work-area row.
+- **Lanes.** `lanes.js` keeps user-creating stages out of concurrent lanes
+  because the counter and the record are read-modify-write and the WAM ground is
+  shared; a stage that heals itself is invisible to that validator. So
+  `run-smoke-lanes.js` now sets `SMOKE_LANE` on every child and the self-heal
+  refuses to create when it is set. Temp files for both atomic writes also carry
+  pid + randomness — a fixed `.tmp` name is a collision between concurrent
+  processes, not a safeguard.
+
+Two deliberate limits: the self-heal tops up at most **4** roles (more than that
+is a deployment to bootstrap, which is SM01's job and would blow the 10-minute
+`beforeAll` budget), and it **does** evict whoever holds the mapped rows — which
+is correct, since it only runs for a role that has no user on this deployment at
+all, and the chain cannot proceed until its own user holds those rows.

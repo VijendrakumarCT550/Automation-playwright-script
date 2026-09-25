@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { openAssignmentDialog, assignAndProve } = require('../utils/smoke-wam');
 
@@ -62,10 +62,10 @@ test.describe('Smoke stage SM11 - WAM basics, plain work-area roles', () => {
       `stage has no rows to assign. See tests/config/projects.js.`
     ).toBeGreaterThan(0);
 
-    // Resolves SM01's users for THIS run, checking both that they belong to this
-    // profile and that they were created against THIS deployment — an
-    // undefined name reaching a dropdown search fails as an inscrutable timeout.
-    users = resolveSmokeUsers(profile, ROLES);
+    // Resolves SM01's users for THIS run and THIS deployment, creating any that
+    // have never been created here — an undefined name reaching a dropdown
+    // search fails as an inscrutable timeout.
+    users = await ensureSmokeUsers(browser, profile, ROLES);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     console.log(

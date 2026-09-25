@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { runDependencyChainForActivity } = require('../utils/rfi-dependency-flow');
 
 // Tail stage (file SM07): the smoke replica of 29_rfi_activity_dependency.spec.js
@@ -50,7 +51,7 @@ test.describe.configure({ mode: 'serial' });
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 const ROLES = ['CI', 'EE', 'QI'];
 
-test('RFI Activity Dependency chain (smoke, created users)', async ({ page, profile }) => {
+test('RFI Activity Dependency chain (smoke, created users)', async ({ browser, page, profile }) => {
   // Up to 9 logins in one linear run (see runDependencyChainForActivity's header
   // comment), each now a fast created-user login rather than a multi-minute .env
   // PWA load — 45 minutes leaves generous headroom for withRetry's retries.
@@ -63,7 +64,12 @@ test('RFI Activity Dependency chain (smoke, created users)', async ({ page, prof
   ).toBeTruthy();
   expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-  const users = resolveSmokeUsers(profile, ROLES);
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
+  // Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold this stage's
+  // ground in WAM. No-op when they already do — see smoke-prereqs.js.
+  await ensureWorkAreaMapping(browser, profile, users, {
+    roles: ROLES, areas: [profile.dependencyChain.workArea], label: 'SM07 prereq',
+  });
 
   console.log(
     `\n=== Smoke RFI activity dependency: "${profile.key}" ===\n` +

@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { ensureDialogOpen, reopenWithFilters } = require('../utils/smoke-wam');
 const DashboardPage = require('../pages/DashboardPage');
@@ -59,7 +59,7 @@ for (const tier of TIERS) {
       expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
       const needed = [tier.key, tier.single, ...(tier.multiTarget ? [tier.multiTarget.key] : [])];
-      users = resolveSmokeUsers(profile, needed);
+      users = await ensureSmokeUsers(browser, profile, needed);
 
       context = await browser.newContext({
         permissions: ['geolocation'],

@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { openAssignmentDialog, ensureDialogOpen, reopenWithFilters } = require('../utils/smoke-wam');
 
@@ -105,7 +105,7 @@ test.describe('Smoke stage SM19 - WAM patch/update semantics per role', () => {
       `forced the old linear chain.`
     ).toBeTruthy();
 
-    users = resolveSmokeUsers(profile, ALL.map((r) => r.key));
+    users = await ensureSmokeUsers(browser, profile, ALL.map((r) => r.key));
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     console.log(

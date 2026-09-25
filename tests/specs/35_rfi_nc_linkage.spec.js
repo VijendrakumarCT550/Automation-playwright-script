@@ -114,8 +114,16 @@ async function fillLinkedNcPanel(page, profile) {
   await tryFill('NC Description', async () => {
     await nc.ncDescriptionInput.fill('Linked NC raised by automation (G-01)');
   });
+  // Defect Type is a searchable dropdown on the standalone NC form since
+  // 2026-09-17, and its options are derived from the NC's activity data — so
+  // this asks for the profile's preference and accepts whatever the panel
+  // actually offers. Routed through RFIReviewPage rather than NCCreatePage
+  // because that one is adaptive: dropdown if the PANEL has one too, the old
+  // free-text input if it does not.
   await tryFill('Defect Type', async () => {
-    await nc.defectTypeInput.fill(src.defectType || 'Workmanship defect');
+    const review = new RFIReviewPage(page);
+    const picked = await review.setLinkedNcDefectType(0, src.defectType || '__first__');
+    note(`  Defect Type set to "${picked}"`);
   });
   await tryFill('Category', async () => {
     await nc.selectDropdownOption(nc.categoryDropdown, src.category || 'Critical');

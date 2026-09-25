@@ -29,7 +29,24 @@ class NCCreatePage extends BasePage {
 
     // Page 2 of 2
     this.ncDescriptionInput = page.getByPlaceholder('Enter NC Description');
-    this.defectTypeInput    = page.getByPlaceholder('Enter Defect Type');
+    // DEFECT TYPE IS A DROPDOWN, NOT A TEXT INPUT — app change seen
+    // 2026-09-17. It used to be free text (`getByPlaceholder('Enter Defect
+    // Type')`, removed); it is now a searchable single-select whose trigger
+    // reads "Select Defect Type", and whose OPTION LIST THE APP COMPUTES FROM
+    // THE REST OF THE FORM (Work Location / Work Area / Package / Activity /
+    // Sub-Activity). So it must be filled AFTER that cascade, and no fixed
+    // literal is guaranteed to be on offer — see selectDefectType below and
+    // BasePage.selectSearchableOption.
+    //
+    // Two locators because this app's newer fields do not reliably carry an
+    // accessible name: the by-name one every other dropdown here uses, and a
+    // by-label field-root fallback of the kind RFIReviewPage's linked-NC
+    // fields already needed. _defectTypeTrigger() picks whichever resolves.
+    this.defectTypeDropdown = page.getByRole('combobox', { name: /Defect Type/i }).first();
+    this.defectTypeField    = page
+      .locator('[data-scope="field"][data-part="root"]')
+      .filter({ hasText: /Defect Type/i })
+      .first();
     this.categoryDropdown   = page.getByRole('combobox', { name: /Category/i }).first();
     // Newly mandatory field. Same Ark UI date-picker component already
     // confirmed for the Dashboard Filter's From/To fields (see
@@ -75,6 +92,65 @@ class NCCreatePage extends BasePage {
     await this.page.waitForTimeout(300);
   }
 
+  // Resolves the Defect Type trigger, by accessible name when it has one and
+  // by its labelled field root otherwise. waitFor (not isVisible) because
+  // isVisible is a single immediate check and does not poll.
+  async _defectTypeTrigger() {
+    const byName = await this.defectTypeDropdown
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (byName) return this.defectTypeDropdown;
+
+    const byLabel = this.defectTypeField.getByRole('combobox').first();
+    await byLabel.waitFor({ state: 'visible', timeout: 10000 });
+    return byLabel;
+  }
+
+  // Picks a Defect Type. `preferred` is a PREFERENCE (a string, or candidates
+  // tried in order), not a requirement: the list is activity-dependent, so the
+  // first offered option is taken when none of the candidates is present, and
+  // the label actually picked is returned and cached on `lastDefectType` for
+  // callers that need to assert on the real value (e.g. the draft/resume
+  // round-trip in 32_nc_draft_autosave.spec.js).
+  //
+  // Pass '__first__' to say "whatever this NC's activity offers" explicitly —
+  // the same sentinel fillForm's other dropdowns already accept.
+  //
+  // VERIFIES THE PICK LANDED rather than trusting the click: this app no-ops
+  // on invalid input, and a Defect Type left unset would surface much later as
+  // a silent Submit that never happens.
+  async selectDefectType(preferred) {
+    const trigger = await this._defectTypeTrigger();
+    const picked = await this.selectSearchableOption(trigger, { preferred });
+
+    const shown = (await trigger.innerText()).trim();
+    if (!shown || /^select\s+defect\s+type$/i.test(shown)) {
+      throw new Error(
+        `Defect Type still reads "${shown}" after picking "${picked}" — the selection did not stick`
+      );
+    }
+
+    const asked = (Array.isArray(preferred) ? preferred : [preferred])
+      .filter(v => v != null && v !== '' && v !== '__first__');
+    if (asked.length && !asked.some(v => picked.toLowerCase().includes(String(v).toLowerCase()))) {
+      console.log(
+        `Defect Type: none of [${asked.join(', ')}] is offered for this NC's ` +
+        `activity — picked "${picked}" instead`
+      );
+    }
+
+    this.lastDefectType = picked;
+    return picked;
+  }
+
+  // Reads the Defect Type currently shown on the form (the dropdown's own
+  // text — it is a button now, so inputValue() no longer applies).
+  async getDefectTypeText() {
+    const trigger = await this._defectTypeTrigger();
+    return (await trigger.innerText()).trim();
+  }
+
   // Navigates the calendar forward (this app's target dates are always in
   // the future) until the target day's cell is found, then clicks it.
   // Bounded to 6 months of forward navigation so a wrong assumption about
@@ -91,10 +167,33 @@ class NCCreatePage extends BasePage {
     await this.targetDateTrigger.click();
     await this.dateCalendar.waitFor({ state: 'visible', timeout: 5000 });
 
+    // MUST EXCLUDE DISABLED CELLS, not just look for the date. Ark pads the day
+    // grid with the tail of the previous month and the head of the next one,
+    // and those padding cells carry data-outside-range / data-disabled /
+    // aria-disabled="true". So a date's cell EXISTS AND IS "VISIBLE" a month
+    // before it is actually clickable — and clicking it never succeeds:
+    // Playwright's actionability retry just spins on "element is not enabled"
+    // for the full 30s.
+    //
+    // CONFIRMED LIVE 2026-09-17 (spec 14 on pulse-test): a 14-day target from
+    // the 17th resolves to 2026-10-01, which September's grid renders as a
+    // greyed-out padding cell, so NC creation timed out here — for every run
+    // from the 17th of any month onwards. DashboardFilterPage documented this
+    // exact trap on 2026-09-05 ("the literal first DOM match was 31 August,
+    // greyed out"); the fix simply never reached this picker or the linked-NC
+    // one in RFIReviewPage.
+    const enabledCell = () => this.dateCalendar.locator(
+      `[data-part="table-cell-trigger"][data-value="${dataValue}"]` +
+      `:not([data-outside-range]):not([data-disabled]):not([aria-disabled="true"])`
+    );
+
     for (let i = 0; i < 6; i++) {
-      const cell = this.dateCalendar.locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`);
-      if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await cell.click();
+      const clickable = await enabledCell()
+        .waitFor({ state: 'visible', timeout: 1000 })
+        .then(() => true)
+        .catch(() => false);
+      if (clickable) {
+        await enabledCell().click();
         await this.dateCalendar.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
         return;
       }
@@ -105,7 +204,18 @@ class NCCreatePage extends BasePage {
       await this.dateCalendar.getByRole('button', { name: 'Switch to next month' }).click();
       await this.page.waitForTimeout(200);
     }
-    throw new Error(`Target Date for Closure: no date cell found for ${dataValue} within 6 months of forward navigation`);
+    // Name WHICH failure this is: the date never appeared at all, or it
+    // appeared and the app refuses it (a min/max-date restriction).
+    const present = await this.dateCalendar
+      .locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`)
+      .count()
+      .catch(() => 0);
+    throw new Error(
+      `Target Date for Closure: no ENABLED date cell for ${dataValue} within 6 months of ` +
+      `forward navigation — ${present
+        ? 'the cell exists but is disabled, so this is a min/max-date restriction on the field'
+        : 'there is no cell for that date at all'}`
+    );
   }
 
   // NC Quantity is only required when the selected Unit is NOT "Not
@@ -118,6 +228,11 @@ class NCCreatePage extends BasePage {
   // capturePhoto defaults to true unless a caller explicitly opts out with
   // `capturePhoto: false` (e.g. a test deliberately exercising the "photo
   // required" validation error).
+  //
+  // `defectType` is a dropdown PREFERENCE, not a literal to type — see
+  // selectDefectType. It is filled here, after the cascade, because the app
+  // derives the options from those fields; what was actually picked is left on
+  // `this.lastDefectType`.
   async fillForm(data) {
     const pick = async (dropdown, value) => {
       if (value == null) return;
@@ -165,9 +280,7 @@ class NCCreatePage extends BasePage {
     }
 
     if (data.defectType) {
-      await this.defectTypeInput.waitFor({ state: 'visible' });
-      await this.defectTypeInput.click({ clickCount: 3 });
-      await this.defectTypeInput.pressSequentially(data.defectType, { delay: 20 });
+      await this.selectDefectType(data.defectType);
     }
 
     await pick(this.categoryDropdown, data.category);

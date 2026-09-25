@@ -80,7 +80,11 @@ const NC_DATA = {
   // pass overwrites it with that level's unique marker — so this text only
   // ever exists inside a draft, never on a submitted NC.
   ncDescription: 'Automated NC draft-autosave - pre-draft text',
-  defectType:   'Workmanship defect',
+  // Defect Type is a DROPDOWN since 2026-09-17, and its options are derived
+  // from the cascade above — so this is a preference, and '__first__' asks for
+  // whatever this activity actually offers. What gets picked is read back off
+  // `ncCreate.lastDefectType` (see expectedFor) rather than assumed.
+  defectType:   '__first__',
   category:     'Critical',
   targetDateClosureDays: 14,
 };
@@ -241,7 +245,7 @@ async function readField(ncCreate, key) {
   switch (key) {
     case 'ncQuantity':            return (await ncCreate.ncQuantityInput.inputValue()).trim();
     case 'ncDescription':         return (await ncCreate.ncDescriptionInput.inputValue()).trim();
-    case 'defectType':            return (await ncCreate.defectTypeInput.inputValue()).trim();
+    case 'defectType':            return await ncCreate.getDefectTypeText();
     case 'targetDateClosureDays': return (await ncCreate.targetDateInput.inputValue()).trim();
     case 'unit':                  return (await ncCreate.unitDropdown.innerText()).trim();
     case 'category':              return (await ncCreate.categoryDropdown.innerText()).trim();
@@ -257,6 +261,16 @@ async function readField(ncCreate, key) {
       return (await locator.innerText()).trim();
     }
   }
+}
+
+// What a restored field SHOULD read. For every field but Defect Type that is
+// simply the literal NC_DATA asked for. Defect Type's option list is computed
+// by the app from the cascade, so the only valid expectation is the label the
+// page object actually picked when it filled the draft — asserting the
+// requested value there would test the app's defect catalogue, not the draft.
+function expectedFor(ncCreate, key) {
+  if (key === 'defectType') return ncCreate.lastDefectType || NC_DATA.defectType;
+  return NC_DATA[key];
 }
 
 // Returns the page to a clean NC My Tasks with no create form open. Mirrors
@@ -411,6 +425,7 @@ test.describe.fixme('NC draft-autosave at every depth of the create form', () =>
 
       for (const fieldKey of level.tail) {
         const shown = await readField(ncCreate, fieldKey);
+        const wanted = expectedFor(ncCreate, fieldKey);
         if (fieldKey === 'targetDateClosureDays') {
           // NC_DATA holds a number of DAYS, but the field renders a resolved
           // dd/mm/yyyy date — so the only meaningful check is that a date is
@@ -424,8 +439,8 @@ test.describe.fixme('NC draft-autosave at every depth of the create form', () =>
           expect(
             shown,
             `${level.key}: "${fieldKey}" should survive the NC draft/resume round trip ` +
-            `(expected it to still show "${NC_DATA[fieldKey]}")`
-          ).toContain(String(NC_DATA[fieldKey]));
+            `(expected it to still show "${wanted}")`
+          ).toContain(String(wanted));
         }
       }
 

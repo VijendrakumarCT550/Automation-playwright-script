@@ -45,7 +45,7 @@ const NCCreatePage = require('../pages/NCCreatePage');
 // ===========================================================================
 
 // EDIT THIS before a run — how many NCs this run should create.
-const TOTAL_NCS = 10;
+const TOTAL_NCS = 4;
 
 // Values are 14_nc_create_qi.spec.js's proven-live combination, unchanged.
 // Work Location MUST be set explicitly: confirmed live that it is no longer
@@ -65,7 +65,13 @@ const NC_DATA = {
   workSectionCount: 2,
   ncQuantity:       2,
   unit:             'EA',
-  defectType:       'Workmanship defect',
+  // Defect Type is a DROPDOWN since the 2026-09-17 app change, and the app
+  // derives its options from the fields above — "Workmanship defect" (the old
+  // free-text value) is not in any list. '__first__' takes whatever this
+  // activity offers; put a real label here to prefer one, it falls back to the
+  // first option when that label is not on offer. See
+  // NCCreatePage.selectDefectType.
+  defectType:       '__first__',
   category:         'Critical',
   // Mandatory. capturePhoto is not listed — NCCreatePage.fillForm defaults it
   // to true, and the photo is mandatory too.

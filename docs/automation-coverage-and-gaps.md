@@ -105,8 +105,9 @@ them unprompted.**
 ## 2b. Test-infrastructure landmines (not app defects)
 
 Locator and timing traps in **our own** code that produce a *silently wrong
-reading* rather than a clean failure. All five below were found on 2026-09-15
-while closing G-01 and G-29, each after it had already sent a run to the wrong conclusion.
+reading* rather than a clean failure. All but the last below were found on
+2026-09-15 while closing G-01 and G-29, and the last on 2026-09-20 during the
+reassignment work — each after it had already sent a run to the wrong conclusion.
 
 | What | Why it is dangerous | Status |
 |---|---|---|
@@ -115,11 +116,52 @@ while closing G-01 and G-29, each after it had already sent a run to the wrong c
 | **`RFIListPage.scrollToRowByCode` jumps to the grid's BOTTOM** (`scrollTop = scrollHeight`) on every pass, per its documented assumption that newly touched rows sort there. | A row sitting **mid-list** is never mounted, so a row that is plainly present is reported "not found in Pending with me". This flipped G-01's own headline finding between two consecutive runs. | **Worked around** in `linked-nc-flow.js` (`openRfiRow` scrolls incrementally to mount the row, then hands off — `scrollToRowByCode` short-circuits when the row already exists). Central fix not attempted. |
 | **Reaching the NC queue by clicking the tab is unreliable** — three separate runs ended on the RFI grid, once even after an exact-name match found a control and clicked it. | Same dangerous outcome every time: **RFI rows read as NC rows**, silently. | **Fixed by not clicking**: `linked-nc-flow.js` navigates straight to `/my-tasks/nc/list/pending-with-me` and proves arrival by the "NC ID" column header, keeping the tab/tile clicks only as a fallback. Reaching a queue in order to READ it is setup, not the behaviour under test — the RFI/NC flow itself is still driven entirely through the UI. |
 | **A second linked-NC panel mounts a second Ark UI date picker**, and closed pickers stay in the DOM (`hidden`, `data-state="closed"`). | `[data-scope="date-picker"][data-part="content"]` becomes a strict-mode violation the moment an RFI carries two linked NCs — invisible to every single-NC test. | **Fixed** in `RFIReviewPage.selectLinkedNcTargetDate` (scoped to `data-state="open"`). Same family as the positioner-vs-content trap already documented there. |
+| **`ReassignPage.listRowIds` / `getRowById` see only MOUNTED rows** — the grid virtualises VERTICALLY, and neither scrolls down. | Reports a record as **absent from the deployment** when it is merely below the fold. Live on pulse-test 2026-09-20: `41_reassign_eligibility` step 0 declared there was no pending A-06c RFI while **eleven** existed, and its failure message instructed us to raise one — so acting on the message would have written real records to a shared environment to fix a non-problem. Opening a below-the-fold row then times out and blames the row. | **Fixed on the page object:** `collectAllRowIds()` (steps down the whole list — use it whenever an id's ABSENCE is the conclusion) and `scrollToRowById(id)` (scrolls until the row mounts, else throws with the scanned row count). `listRowIds()` deliberately keeps its "pick a row to act on" meaning, so `11_reassign_rfi_nc` and `SM14` are unaffected. |
 
 **The shared lesson:** in this app, an action that fails validation *no-ops
 silently*. Any helper that reports success on "the modal closed" / "the click
 happened" rather than on the state actually changing will eventually hand a test
 a confident wrong answer. Verify the effect, not the gesture.
+
+## 2d. THE FALSE-ABSENCE FAMILY — five instances, one rule
+
+Section 2b's entries are about actions that no-op silently. These are about
+QUESTIONS THAT ANSWER "NO" WHEN THE TRUTH IS "YES", all found between
+2026-09-15 and 2026-09-20, four of them on one day of reassignment work.
+
+They matter more than their individual fixes because **a false absence is the
+most expensive wrong answer this suite can produce**: it reads as evidence of a
+missing record, a lost permission, or a stranded RFI — i.e. as a serious
+product defect — and two of these were within minutes of being reported to
+developers as exactly that.
+
+| # | Mechanism | The claim it produced | Fix |
+|---|---|---|---|
+| 1 | `listRowIds` / `getRowById` see only MOUNTED rows (vertical virtualisation) | "this deployment has no pending A-06c RFI" — there were **eleven** | `collectAllRowIds()` |
+| 2 | `scrollToRowById` scanned DOWNWARD from wherever the grid sat; a prior listing leaves it at the bottom | "0 of 7 pool records found" — immediately after printing all 7 | reset to top first |
+| 3 | The grid is read as soon as it EXISTS, while still filling | "CIV-35 is in neither queue" — it was in the EE's | `waitForGridToSettle()` |
+| 4 | Same as (3) but inside a retry loop — every re-navigation read equally early | survived five polled attempts | settle inside each pass |
+| 5 | **One browser context reused across logins** | "EE_D's queue holds 1 row" — a fresh context, same user, same moment, saw **7**; and the missing row could not be clicked either | `actAs()`: a fresh context per role switch |
+
+**(5) is unexplained.** `loginAsFlowUser` already clears cookies and localStorage
+(the standing PULSE login rule), and a dashboard-first refresh did not shift it.
+It is recorded as an open unknown, not a solved problem. Anyone testing
+multi-role flows in one browser will meet it and will reasonably conclude the
+app lost their records.
+
+### The rule
+
+**A helper that cannot see the whole search space must never be the source of a
+negative claim.** Before concluding "it is not there", the search must have:
+
+1. **settled** — the list has stopped growing (not just rendered);
+2. **covered the space** — scrolled end to end from a known starting point;
+3. **been asked in a clean session** — when the answer would be a defect report,
+   confirm it in a fresh context before believing it.
+
+`45_reassign_capability.isInPendingWithMe` does all three, and deliberately
+asymmetrically: a false "present" costs a confusing failure later, while a false
+"absent" costs a wrong bug report and the credibility that goes with it.
 
 ## 2c. Bulk data-generation specs (tools, not coverage)
 

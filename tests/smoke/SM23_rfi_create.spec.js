@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
 const { resolveRfiFixture } = require('../utils/smoke-rfi-fixture');
 const {
@@ -64,7 +65,13 @@ test.describe('Smoke stage SM23 - CI-side RFI creation depth', () => {
     expect(area, `Profile "${profile.key}" declares no featureGround.rfiCreate area`).toBeTruthy();
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-    ci = resolveSmokeUsers(profile, ['CI']).CI;
+    // Own prerequisite: CI (creator) and EE/QI (who the RFI routes to) must
+    // hold this area in WAM. No-op when they already do. See smoke-prereqs.js.
+    const actors = await ensureSmokeUsers(browser, profile, ['CI', 'EE', 'QI']);
+    await ensureWorkAreaMapping(browser, profile, actors, {
+      roles: ['CI', 'EE', 'QI'], areas: [area], label: 'SM23 prereq',
+    });
+    ci = actors.CI;
     fixture = resolveRfiFixture(profile, { workArea: area });
 
     context = await browser.newContext({

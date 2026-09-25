@@ -1,317 +1,1229 @@
 {
-  "CISL": {
-    "name": "CISLfdwUser116",
-    "email": "CISLfdwUser116@adani.com",
-    "phone": "6499048360",
-    "number": 116,
-    "role": "Contractor Incharge",
-    "userType": "VENDOR",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": "M S CHOUHAN INFRAVENTURES"
+  "version": 2,
+  "environments": {
+    "test": {
+      "CISL": {
+        "name": "CISLpjuUser165",
+        "email": "CISLpjuUser165@adani.com",
+        "phone": "6224485299",
+        "number": 165,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSL": {
+        "name": "CMSLjhpUser165",
+        "email": "CMSLjhpUser165@adani.com",
+        "phone": "7367748895",
+        "number": 165,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "QISL": {
+        "name": "QISLeuwUser166",
+        "email": "QISLeuwUser166@adani.com",
+        "phone": "7956328986",
+        "number": 166,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSL": {
+        "name": "ELSLqulUser166",
+        "email": "ELSLqulUser166@adani.com",
+        "phone": "9118144470",
+        "number": 166,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSL": {
+        "name": "QLSLjnhUser166",
+        "email": "QLSLjnhUser166@adani.com",
+        "phone": "6108599203",
+        "number": 166,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSL": {
+        "name": "PMSLwccUser166",
+        "email": "PMSLwccUser166@adani.com",
+        "phone": "8279640391",
+        "number": 166,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSL": {
+        "name": "PADSLqdiUser166",
+        "email": "PADSLqdiUser166@adani.com",
+        "phone": "7696758899",
+        "number": 166,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSL": {
+        "name": "SADSLpsvUser166",
+        "email": "SADSLpsvUser166@adani.com",
+        "phone": "9940329427",
+        "number": 166,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSL": {
+        "name": "CADSLncwUser166",
+        "email": "CADSLncwUser166@adani.com",
+        "phone": "6322833025",
+        "number": 166,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "EESM": {
+        "name": "EESMgjuUser167",
+        "email": "EESMgjuUser167@adani.com",
+        "phone": "7284234275",
+        "number": 167,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISM": {
+        "name": "QISMdfjUser167",
+        "email": "QISMdfjUser167@adani.com",
+        "phone": "8601346119",
+        "number": 167,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSM": {
+        "name": "ELSMjlmUser167",
+        "email": "ELSMjlmUser167@adani.com",
+        "phone": "9771449449",
+        "number": 167,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSM": {
+        "name": "QLSMturUser167",
+        "email": "QLSMturUser167@adani.com",
+        "phone": "6002774249",
+        "number": 167,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSM": {
+        "name": "PMSMcthUser167",
+        "email": "PMSMcthUser167@adani.com",
+        "phone": "8352763395",
+        "number": 167,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSM": {
+        "name": "PADSMqslUser167",
+        "email": "PADSMqslUser167@adani.com",
+        "phone": "8868099250",
+        "number": 167,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSM": {
+        "name": "SADSMdepUser167",
+        "email": "SADSMdepUser167@adani.com",
+        "phone": "9588365174",
+        "number": 167,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSM": {
+        "name": "CADSMuhdUser167",
+        "email": "CADSMuhdUser167@adani.com",
+        "phone": "9167641426",
+        "number": 167,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ADMSM": {
+        "name": "ADMSMmddUser167",
+        "email": "ADMSMmddUser167@adani.com",
+        "phone": "8590461595",
+        "number": 167,
+        "role": "Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CICSM": {
+        "name": "CICSMjbsUser167",
+        "email": "CICSMjbsUser167@adani.com",
+        "phone": "6759809649",
+        "number": 167,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSM": {
+        "name": "CMSMrepUser167",
+        "email": "CMSMrepUser167@adani.com",
+        "phone": "8568455805",
+        "number": 167,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "EESL": {
+        "name": "EESLtmgUser160",
+        "email": "EESLtmgUser160@adani.com",
+        "phone": "6652182068",
+        "number": 160,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      }
+    },
+    "uat": {
+      "CISL": {
+        "name": "CISLfdwUser116",
+        "email": "CISLfdwUser116@adani.com",
+        "phone": "6499048360",
+        "number": 116,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSL": {
+        "name": "CMSLcamUser116",
+        "email": "CMSLcamUser116@adani.com",
+        "phone": "6564362861",
+        "number": 116,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "EESL": {
+        "name": "EESLicwUser116",
+        "email": "EESLicwUser116@adani.com",
+        "phone": "6514796813",
+        "number": 116,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISL": {
+        "name": "QISLnykUser116",
+        "email": "QISLnykUser116@adani.com",
+        "phone": "9507335512",
+        "number": 116,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSL": {
+        "name": "ELSLpqlUser116",
+        "email": "ELSLpqlUser116@adani.com",
+        "phone": "7594653903",
+        "number": 116,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSL": {
+        "name": "QLSLmjvUser116",
+        "email": "QLSLmjvUser116@adani.com",
+        "phone": "9458864667",
+        "number": 116,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSL": {
+        "name": "PMSLfhdUser116",
+        "email": "PMSLfhdUser116@adani.com",
+        "phone": "9613982172",
+        "number": 116,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSL": {
+        "name": "PADSLspyUser116",
+        "email": "PADSLspyUser116@adani.com",
+        "phone": "9350330210",
+        "number": 116,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSL": {
+        "name": "SADSLisqUser116",
+        "email": "SADSLisqUser116@adani.com",
+        "phone": "9617832246",
+        "number": 116,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSL": {
+        "name": "CADSLogcUser116",
+        "email": "CADSLogcUser116@adani.com",
+        "phone": "6076091079",
+        "number": 116,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "EESM": {
+        "name": "EESMzzfUser117",
+        "email": "EESMzzfUser117@adani.com",
+        "phone": "9943786531",
+        "number": 117,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISM": {
+        "name": "QISMnmbUser117",
+        "email": "QISMnmbUser117@adani.com",
+        "phone": "9196117199",
+        "number": 117,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSM": {
+        "name": "ELSMluuUser117",
+        "email": "ELSMluuUser117@adani.com",
+        "phone": "6484827993",
+        "number": 117,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSM": {
+        "name": "QLSMbosUser117",
+        "email": "QLSMbosUser117@adani.com",
+        "phone": "7341463244",
+        "number": 117,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSM": {
+        "name": "PMSMrebUser117",
+        "email": "PMSMrebUser117@adani.com",
+        "phone": "9553291417",
+        "number": 117,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSM": {
+        "name": "PADSMnfdUser117",
+        "email": "PADSMnfdUser117@adani.com",
+        "phone": "8492005963",
+        "number": 117,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSM": {
+        "name": "SADSMydnUser117",
+        "email": "SADSMydnUser117@adani.com",
+        "phone": "8548387846",
+        "number": 117,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSM": {
+        "name": "CADSMuxpUser117",
+        "email": "CADSMuxpUser117@adani.com",
+        "phone": "8612189656",
+        "number": 117,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ADMSM": {
+        "name": "ADMSMklxUser117",
+        "email": "ADMSMklxUser117@adani.com",
+        "phone": "9639510737",
+        "number": 117,
+        "role": "Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      }
+    },
+    "qa": {
+      "CISL": {
+        "name": "CISLcliUser151",
+        "email": "CISLcliUser151@adani.com",
+        "phone": "9557653708",
+        "number": 151,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSL": {
+        "name": "CMSLwceUser151",
+        "email": "CMSLwceUser151@adani.com",
+        "phone": "9176212696",
+        "number": 151,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "EESL": {
+        "name": "EESLwqwUser151",
+        "email": "EESLwqwUser151@adani.com",
+        "phone": "8499927655",
+        "number": 151,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISL": {
+        "name": "QISLplhUser151",
+        "email": "QISLplhUser151@adani.com",
+        "phone": "9245112642",
+        "number": 151,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSL": {
+        "name": "ELSLbojUser151",
+        "email": "ELSLbojUser151@adani.com",
+        "phone": "7882905512",
+        "number": 151,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSL": {
+        "name": "QLSLbnbUser151",
+        "email": "QLSLbnbUser151@adani.com",
+        "phone": "8308027782",
+        "number": 151,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSL": {
+        "name": "PMSLlmtUser151",
+        "email": "PMSLlmtUser151@adani.com",
+        "phone": "7168767499",
+        "number": 151,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSL": {
+        "name": "PADSLsneUser151",
+        "email": "PADSLsneUser151@adani.com",
+        "phone": "9943254472",
+        "number": 151,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSL": {
+        "name": "SADSLsifUser187",
+        "email": "SADSLsifUser187@adani.com",
+        "phone": "9441384394",
+        "number": 187,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSL": {
+        "name": "CADSLxlcUser187",
+        "email": "CADSLxlcUser187@adani.com",
+        "phone": "6497775043",
+        "number": 187,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "EESM": {
+        "name": "EESMcvwUser152",
+        "email": "EESMcvwUser152@adani.com",
+        "phone": "9944525733",
+        "number": 152,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISM": {
+        "name": "QISMhlaUser152",
+        "email": "QISMhlaUser152@adani.com",
+        "phone": "6099374045",
+        "number": 152,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSM": {
+        "name": "QLSMadtUser153",
+        "email": "QLSMadtUser153@adani.com",
+        "phone": "8957667392",
+        "number": 153,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSM": {
+        "name": "PMSMosdUser153",
+        "email": "PMSMosdUser153@adani.com",
+        "phone": "7097623263",
+        "number": 153,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSM": {
+        "name": "PADSMrtlUser153",
+        "email": "PADSMrtlUser153@adani.com",
+        "phone": "9430340807",
+        "number": 153,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSM": {
+        "name": "SADSMmtrUser194",
+        "email": "SADSMmtrUser194@adani.com",
+        "phone": "9458147025",
+        "number": 194,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSM": {
+        "name": "CADSMymkUser194",
+        "email": "CADSMymkUser194@adani.com",
+        "phone": "7876310651",
+        "number": 194,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ADMSM": {
+        "name": "ADMSMycnUser194",
+        "email": "ADMSMycnUser194@adani.com",
+        "phone": "9130823381",
+        "number": 194,
+        "role": "Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CICSM": {
+        "name": "CICSMjzlUser153",
+        "email": "CICSMjzlUser153@adani.com",
+        "phone": "8694702766",
+        "number": 153,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSM": {
+        "name": "CMSMrmqUser153",
+        "email": "CMSMrmqUser153@adani.com",
+        "phone": "6440864127",
+        "number": 153,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-qa.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      }
+    },
+    "dev": {
+      "CISL": {
+        "name": "CISLrdbUser175",
+        "email": "CISLrdbUser175@adani.com",
+        "phone": "7981666819",
+        "number": 175,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSL": {
+        "name": "CMSLtlpUser175",
+        "email": "CMSLtlpUser175@adani.com",
+        "phone": "9367952562",
+        "number": 175,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "EESL": {
+        "name": "EESLumgUser175",
+        "email": "EESLumgUser175@adani.com",
+        "phone": "9498502299",
+        "number": 175,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISL": {
+        "name": "QISLftfUser175",
+        "email": "QISLftfUser175@adani.com",
+        "phone": "6985719825",
+        "number": 175,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSL": {
+        "name": "ELSLjcjUser175",
+        "email": "ELSLjcjUser175@adani.com",
+        "phone": "7016425679",
+        "number": 175,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSL": {
+        "name": "QLSLcjhUser175",
+        "email": "QLSLcjhUser175@adani.com",
+        "phone": "6391375385",
+        "number": 175,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSL": {
+        "name": "PMSLzojUser175",
+        "email": "PMSLzojUser175@adani.com",
+        "phone": "8234786963",
+        "number": 175,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSL": {
+        "name": "PADSLpqkUser175",
+        "email": "PADSLpqkUser175@adani.com",
+        "phone": "8472808486",
+        "number": 175,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSL": {
+        "name": "SADSLcjeUser175",
+        "email": "SADSLcjeUser175@adani.com",
+        "phone": "9351544504",
+        "number": 175,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSL": {
+        "name": "CADSLionUser175",
+        "email": "CADSLionUser175@adani.com",
+        "phone": "6280038857",
+        "number": 175,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "EESM": {
+        "name": "EESMysaUser176",
+        "email": "EESMysaUser176@adani.com",
+        "phone": "6891071766",
+        "number": 176,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QISM": {
+        "name": "QISMalpUser176",
+        "email": "QISMalpUser176@adani.com",
+        "phone": "8691816057",
+        "number": 176,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ELSM": {
+        "name": "ELSMqfxUser176",
+        "email": "ELSMqfxUser176@adani.com",
+        "phone": "9013365849",
+        "number": 176,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "QLSM": {
+        "name": "QLSMpgcUser176",
+        "email": "QLSMpgcUser176@adani.com",
+        "phone": "8301253453",
+        "number": 176,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PMSM": {
+        "name": "PMSMukuUser176",
+        "email": "PMSMukuUser176@adani.com",
+        "phone": "9941877871",
+        "number": 176,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "PADSM": {
+        "name": "PADSMbwwUser176",
+        "email": "PADSMbwwUser176@adani.com",
+        "phone": "6327906877",
+        "number": 176,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "SADSM": {
+        "name": "SADSMyogUser178",
+        "email": "SADSMyogUser178@adani.com",
+        "phone": "8883689265",
+        "number": 178,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CADSM": {
+        "name": "CADSMzilUser177",
+        "email": "CADSMzilUser177@adani.com",
+        "phone": "7607429071",
+        "number": 177,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "ADMSM": {
+        "name": "ADMSMcygUser177",
+        "email": "ADMSMcygUser177@adani.com",
+        "phone": "6778946783",
+        "number": 177,
+        "role": "Admin",
+        "userType": "AGEL",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": null
+      },
+      "CICSM": {
+        "name": "CICSMnnfUser177",
+        "email": "CICSMnnfUser177@adani.com",
+        "phone": "8591454769",
+        "number": 177,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      },
+      "CMSM": {
+        "name": "CMSMhqcUser177",
+        "email": "CMSMhqcUser177@adani.com",
+        "phone": "6593208006",
+        "number": 177,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "solar-e2e",
+        "baseUrl": "https://pulse-dev.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "S05b"
+        ],
+        "vendor": "M S CHOUHAN INFRAVENTURES"
+      }
+    }
   },
-  "CMSL": {
-    "name": "CMSLcamUser116",
-    "email": "CMSLcamUser116@adani.com",
-    "phone": "6564362861",
-    "number": 116,
-    "role": "Contractor Manager",
-    "userType": "VENDOR",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": "M S CHOUHAN INFRAVENTURES"
-  },
-  "EESL": {
-    "name": "EESLicwUser116",
-    "email": "EESLicwUser116@adani.com",
-    "phone": "6514796813",
-    "number": 116,
-    "role": "Execution Engineer",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "QISL": {
-    "name": "QISLnykUser116",
-    "email": "QISLnykUser116@adani.com",
-    "phone": "9507335512",
-    "number": 116,
-    "role": "Quality Inspector",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "ELSL": {
-    "name": "ELSLpqlUser116",
-    "email": "ELSLpqlUser116@adani.com",
-    "phone": "7594653903",
-    "number": 116,
-    "role": "Execution Lead",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "QLSL": {
-    "name": "QLSLmjvUser116",
-    "email": "QLSLmjvUser116@adani.com",
-    "phone": "9458864667",
-    "number": 116,
-    "role": "Quality Lead",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "PMSL": {
-    "name": "PMSLfhdUser116",
-    "email": "PMSLfhdUser116@adani.com",
-    "phone": "9613982172",
-    "number": 116,
-    "role": "Project Manager",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "PADSL": {
-    "name": "PADSLspyUser116",
-    "email": "PADSLspyUser116@adani.com",
-    "phone": "9350330210",
-    "number": 116,
-    "role": "Plot Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "SADSL": {
-    "name": "SADSLisqUser116",
-    "email": "SADSLisqUser116@adani.com",
-    "phone": "9617832246",
-    "number": 116,
-    "role": "Site Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "CADSL": {
-    "name": "CADSLogcUser116",
-    "email": "CADSLogcUser116@adani.com",
-    "phone": "6076091079",
-    "number": 116,
-    "role": "Cluster Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "EESM": {
-    "name": "EESMzzfUser117",
-    "email": "EESMzzfUser117@adani.com",
-    "phone": "9943786531",
-    "number": 117,
-    "role": "Execution Engineer",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "QISM": {
-    "name": "QISMnmbUser117",
-    "email": "QISMnmbUser117@adani.com",
-    "phone": "9196117199",
-    "number": 117,
-    "role": "Quality Inspector",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "ELSM": {
-    "name": "ELSMluuUser117",
-    "email": "ELSMluuUser117@adani.com",
-    "phone": "6484827993",
-    "number": 117,
-    "role": "Execution Lead",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "QLSM": {
-    "name": "QLSMbosUser117",
-    "email": "QLSMbosUser117@adani.com",
-    "phone": "7341463244",
-    "number": 117,
-    "role": "Quality Lead",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "PMSM": {
-    "name": "PMSMrebUser117",
-    "email": "PMSMrebUser117@adani.com",
-    "phone": "9553291417",
-    "number": 117,
-    "role": "Project Manager",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "PADSM": {
-    "name": "PADSMnfdUser117",
-    "email": "PADSMnfdUser117@adani.com",
-    "phone": "8492005963",
-    "number": 117,
-    "role": "Plot Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "SADSM": {
-    "name": "SADSMydnUser117",
-    "email": "SADSMydnUser117@adani.com",
-    "phone": "8548387846",
-    "number": 117,
-    "role": "Site Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "CADSM": {
-    "name": "CADSMuxpUser117",
-    "email": "CADSMuxpUser117@adani.com",
-    "phone": "8612189656",
-    "number": 117,
-    "role": "Cluster Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "ADMSM": {
-    "name": "ADMSMklxUser117",
-    "email": "ADMSMklxUser117@adani.com",
-    "phone": "9639510737",
-    "number": 117,
-    "role": "Admin",
-    "userType": "AGEL",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": null
-  },
-  "CICSM": {
-    "name": "CICSMzcdUser115",
-    "email": "CICSMzcdUser115@adani.com",
-    "phone": "6345348323",
-    "number": 115,
-    "role": "Contractor Incharge",
-    "userType": "VENDOR",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": "M S CHOUHAN INFRAVENTURES"
-  },
-  "CMSM": {
-    "name": "CMSMyslUser115",
-    "email": "CMSMyslUser115@adani.com",
-    "phone": "6150350588",
-    "number": 115,
-    "role": "Contractor Manager",
-    "userType": "VENDOR",
-    "profileKey": "solar-e2e",
-    "baseUrl": "https://pulse-test.cfapps.ap11.hana.ondemand.com",
-    "projectType": "SOLAR",
-    "workLocations": [
-      "S05b"
-    ],
-    "vendor": "M S CHOUHAN INFRAVENTURES"
-  }
+  "shared": {}
 }

@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { smokeMappedWorkAreas } = require('../config/projects');
 const WAMPage = require('../pages/WAMPage');
 
@@ -50,11 +50,11 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
   test.beforeAll(async ({ browser, profile: p }) => {
     profile = p;
 
-    // Resolve the users stage 1 created/reused, checking both that they belong
-    // to this profile AND that they were created against THIS deployment — an
-    // undefined or foreign-environment name reaching a dropdown search fails
-    // with nothing readable to explain why. See smoke-users.js.
-    users = resolveSmokeUsers(profile, FLOW_ROLES);
+    // Resolve the users stage 1 created/reused for THIS deployment — the record
+    // is partitioned per deployment, so a name from another host can never reach
+    // a dropdown search here (it would fail as an inscrutable timeout). Anything
+    // this profile has not created here yet is created now. See smoke-users.js.
+    users = await ensureSmokeUsers(browser, profile, FLOW_ROLES);
 
     // The profile's declared flow roles must match what this stage generates
     // tests for, or a role it expects mapped would never be mapped.

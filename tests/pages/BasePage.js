@@ -181,6 +181,118 @@ class BasePage {
     throw new Error(`None of the candidate options [${candidates.join(', ')}] were found in this dropdown`);
   }
 
+  // A single-select dropdown whose OPTION LIST IS COMPUTED BY THE APP from the
+  // other fields already chosen on the same form, and which therefore also
+  // carries its own in-listbox "Search..." box because the list can be long.
+  //
+  // NC's "Defect Type" is the case this was written for (app change seen
+  // 2026-09-17 — it used to be a free-text input): the defects offered depend
+  // on the Work Location / Work Area / Package / Activity chosen above it, so
+  // NO FIXED LITERAL CAN BE GUARANTEED TO BE IN THE LIST. That is why this
+  // method is preference-based rather than exact-match:
+  //
+  //   * `preferred` (a string, or candidates tried in order) is typed into the
+  //     search box when there is one, then matched as a case-insensitive
+  //     substring against the options actually offered;
+  //   * if none of them is on offer, the FIRST available option is taken, so a
+  //     data-dependent list can never fail a test over the label it happens to
+  //     use — pass `allowFirstFallback: false` where the exact value matters;
+  //   * the label ACTUALLY PICKED is returned, so a caller reports/asserts the
+  //     real value instead of the one it asked for.
+  //
+  // Always returns a label or throws — it never reports a pick it did not make.
+  async selectSearchableOption(dropdown, { preferred = [], allowFirstFallback = true } = {}) {
+    const wanted = (Array.isArray(preferred) ? preferred : [preferred])
+      .filter(v => v != null && v !== '' && v !== '__first__');
+
+    const listbox = await this.openDropdown(dropdown);
+
+    // The search box. Ark UI mounts the listbox content and its filter input
+    // together, but which of them is the DOM ancestor is version-dependent —
+    // so look inside the listbox first and fall back to whichever "Search..."
+    // input is currently visible on the page (only an open listbox has one).
+    //
+    // The two patterns differ on purpose. Scoped to the listbox a loose prefix
+    // match is safe. Page-wide it is NOT: this app has other search boxes
+    // (UserManagementPage's "Search by name or email", the task-list filters),
+    // and typing a defect name into one of those would filter a grid behind
+    // the dropdown while the dropdown itself stayed untouched — a silent wrong
+    // answer of exactly the kind this suite keeps finding. So the fallback
+    // only accepts a placeholder that is nothing but "Search" plus dots.
+    let search = listbox.getByPlaceholder(/^\s*search/i).first();
+    if (!(await search.count().then(c => c > 0).catch(() => false))) {
+      search = this.page.getByPlaceholder(/^\s*search[\s.…]*$/i).first();
+    }
+    const hasSearch = await search
+      .waitFor({ state: 'visible', timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
+
+    // NOTE: a filter box that is present but NOT typed into leaves the list
+    // unfiltered, which is exactly what the first-option fallback wants.
+    const typeSearch = async (text) => {
+      if (!hasSearch) return;
+      await search.fill('');
+      if (text) await search.pressSequentially(String(text), { delay: 20 });
+      // The list re-renders per keystroke; give it a beat before reading it.
+      await this.page.waitForTimeout(400);
+    };
+
+    const labelOf = async (option) =>
+      (await option.innerText()).replace(/\s*✓\s*$/, '').trim();
+
+    // A single-select listbox closes itself on pick, but if this one does not
+    // (or the pick was into a filtered list that re-rendered), the floating
+    // positioner sits on top of the fields BELOW it and blocks every later
+    // click in that area — the failure mode closeAnyOpenListbox was written
+    // for. Guarded, never a blind Escape: pressing it with nothing open
+    // bubbles up and closes the surrounding dialog (documented in
+    // selectDropdownOption).
+    const closeIfStillOpen = async () => {
+      if (await listbox.isVisible().catch(() => false)) {
+        await this.page.keyboard.press('Escape').catch(() => {});
+        await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      }
+    };
+
+    for (const candidate of wanted) {
+      await typeSearch(candidate);
+      const option = listbox.locator('[role="option"]').filter({ hasText: candidate }).first();
+      const found = await option
+        .waitFor({ state: 'visible', timeout: 3000 })
+        .then(() => true)
+        .catch(() => false);
+      if (found) {
+        const label = await labelOf(option);
+        await option.click();
+        await this.page.waitForTimeout(200);
+        await closeIfStillOpen();
+        return label;
+      }
+    }
+
+    if (!allowFirstFallback) {
+      await closeIfStillOpen();
+      throw new Error(
+        `None of [${wanted.join(', ')}] is offered by this dropdown, and the ` +
+        `first-option fallback was disabled`
+      );
+    }
+
+    // Clear the search so the FULL list is back before taking the first
+    // option — otherwise "first" would mean "first match of the last
+    // candidate typed", which for a candidate that matched nothing is nothing
+    // at all.
+    await typeSearch('');
+    const first = listbox.locator('[role="option"]').first();
+    await first.waitFor({ state: 'visible', timeout: 15000 });
+    const label = await labelOf(first);
+    await first.click();
+    await this.page.waitForTimeout(200);
+    await closeIfStillOpen();
+    return label;
+  }
+
   // Ark UI selects auto-close their listbox right after a pick when
   // single-select, but leave it open when multi-select (confirmed live on
   // the Add User dialog's Project Type/Work Locations fields) — that's the

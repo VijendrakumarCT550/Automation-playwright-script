@@ -54,7 +54,13 @@ const NC_DATA = {
   workSectionCount: 2,
   ncQuantity:       2,
   unit:             'EA',
-  defectType:       'Workmanship defect',
+  // Defect Type is a DROPDOWN since the 2026-09-17 app change, and the app
+  // derives its options from the fields above — "Workmanship defect" (the old
+  // free-text value) is not in any list. '__first__' takes whatever this
+  // activity offers; put a real label here to prefer one, it falls back to the
+  // first option when that label is not on offer. See
+  // NCCreatePage.selectDefectType.
+  defectType:       '__first__',
   category:         'Critical',
   // Newly mandatory field (per app change) — see AskUserQuestion answer:
   // 14 days from today.

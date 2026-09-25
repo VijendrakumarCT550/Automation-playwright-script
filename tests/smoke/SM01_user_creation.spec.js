@@ -1,8 +1,8 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { nextBatchNumber, generateUserIdentity, recordLastCreatedUser, loadLastCreatedUsers } =
-  require('../utils/user-counter-utils');
-const UserManagementPage = require('../pages/UserManagementPage');
+const { nextBatchNumber } = require('../utils/user-counter-utils');
+const { inspectSmokeUsers } = require('../utils/smoke-users');
+const { createSmokeUser } = require('../utils/smoke-user-factory');
 
 // Stage 1 of the E2E smoke chain: create the four flow roles for ONE project
 // type, scoped to that project type's work locations.
@@ -128,31 +128,20 @@ function resolveUserMode() {
 }
 
 function existingUsersFor(profile) {
-  const recorded = loadLastCreatedUsers();
-  const found = {};
-  const missing = [];
-  for (const roleKey of roleOrderFor(profile)) {
-    const prefix = profile.users.prefixes[roleKey];
-    const entry = recorded[prefix];
-    // Must belong to THIS profile — a prefix could in principle be reused by
-    // another profile later, and silently inheriting its user would scope the
-    // whole chain to the wrong project type.
-    if (!entry || entry.profileKey !== profile.key) { missing.push(roleKey); continue; }
-    // AND the same deployment. This file has no environment dimension, so a
-    // user recorded against pulse-dev stays recorded when the suite is pointed
-    // at pulse-qa, where it does not exist. Found live 2026-09-03: this stage
-    // was pointed at pulse-qa, found four solar users from an earlier run,
-    // decided they already existed, SKIPPED all four tests and exited 0 — a
-    // clean-looking run that created nothing and left the chain pointing at
-    // users the target deployment had never heard of.
-    //
-    // Entries created before baseUrl was tracked carry undefined and so force
-    // one re-creation. That is the safe direction: re-creating costs minutes,
-    // trusting a phantom user fails much later at a dropdown search.
-    if (entry.baseUrl !== process.env.BASE_URL) { missing.push(roleKey); continue; }
-    found[roleKey] = entry;
-  }
-  return { found, missing };
+  // ONE implementation of "which of this profile's users exist here", shared
+  // with the stages that consume them (smoke-users.js). It used to be a copy
+  // living in this file, with its own environment check against each entry's
+  // recorded baseUrl.
+  //
+  // That check is gone because it is now structural: the record is PARTITIONED
+  // BY DEPLOYMENT (user-counter-utils.js), so what comes back already exists on
+  // the host this run targets. The bug the check was written for on 2026-09-03
+  // — this stage finding four pulse-test users while pointed at pulse-qa,
+  // skipping all four creations and exiting 0 — is prevented by the file shape
+  // instead, and without the side effect that switching deployments invalidated
+  // the other one's whole batch.
+  const { users, missing } = inspectSmokeUsers(profile, roleOrderFor(profile));
+  return { found: users, missing };
 }
 
 test.describe('Smoke stage 1 - create flow users for a project type', () => {
@@ -226,110 +215,21 @@ test.describe('Smoke stage 1 - create flow users for a project type', () => {
       test.skip(!toCreate.has(roleKey), `${roleKey} already exists on this deployment — reusing it`);
       const { role, userType } = profile.users.roles[prefix];
 
-      const users = new UserManagementPage(page);
-      await users.goto(dashboard);
-      await users.openAddUserDialog();
-
-      await users.selectUserType(userType);
-      if (userType === 'VENDOR') {
-        await users.selectVendorCategory(profile.vendor.category);
-        await users.selectVendor(profile.vendor.name);
-      }
-      await users.selectUserRole(role);
-
-      // Pin Project type to THIS profile's type — not a count-based pick.
-      // Seven types exist live (SOLAR/WIND/INFRA/PSS/ADMIN/BESS/
-      // TRANSMISSION_LINE), so "first two options" would scope a wind user
-      // to the wrong thing entirely.
-      const picked = await users.fillLocationCascade({
-        cluster: profile.cluster,
-        site: [profile.site],
-        projectTypes: [profile.projectType],
-        projectTypeCount: 1,
-        workLocations: profile.workLocations,
-        workLocationCount: profile.workLocations.length,
-      });
-
-      // Assert the cascade actually landed on the intended project type /
-      // work locations rather than silently falling back. fillLocationCascade
-      // fills only the fields a given role renders (it is a clean prefix of
-      // Cluster/Sites/Project type/Work Locations, and which prefix varies by
-      // role) — so only check a field when the role actually showed it.
-      // CLUSTER AND SITE FIRST, because they scope everything below them and
-      // because selectMultiAware FALLS BACK SILENTLY: when none of the preferred
-      // candidates match an option, it clicks the FIRST option instead. Found
-      // live 2026-09-04 — a wind run asking for cluster "Gujarat" / site "Mandvi"
-      // came back with "Rajasthan" / "Baiya", and the only symptom was an empty
-      // Work Locations list three fields later, which reads like a data problem
-      // at the wrong field entirely.
-      //
-      // Asserted in cascade order so the FIRST wrong field is the one that
-      // fails, rather than its downstream consequence.
-      if (picked.cluster) {
-        expect(
-          picked.cluster.join(','),
-          `${role}: cluster should be one of ${JSON.stringify(profile.cluster)} but the ` +
-          `dropdown gave "${picked.cluster.join(',')}" — that is selectMultiAware's ` +
-          `first-option fallback, i.e. none of those candidates were offered`
-        ).toMatch(new RegExp(`(${[].concat(profile.cluster).join('|')})`, 'i'));
-      }
-      if (picked.sites) {
-        expect(
-          picked.sites.join(','),
-          `${role}: site should be "${profile.site}" but the dropdown gave ` +
-          `"${picked.sites.join(',')}" — check the cluster selected above it first, ` +
-          `since Sites is scoped to the chosen Cluster`
-        ).toContain(profile.site);
-      }
-      if (picked.projectType) {
-        expect(
-          picked.projectType.join(','),
-          `${role} should be scoped to ${profile.projectType}`
-        ).toContain(profile.projectType);
-      }
-      if (picked.workLocations) {
-        for (const wl of profile.workLocations) {
-          expect(
-            picked.workLocations.join(','),
-            `${role} should be scoped to work location ${wl}`
-          ).toContain(wl);
-        }
-      }
-
-      const identity = generateUserIdentity(prefix, batchNumber);
-      await users.fillIdentity(identity);
-
-      const toastText = await users.submit();
-      expect(
-        toastText,
-        `Expected a success toast after creating ${role} "${identity.name}"`
-      ).toMatch(/success/i);
-
-      const found = await users.waitForUserSearchResult(identity.name);
-      expect(
-        found,
-        `Newly created user "${identity.name}" should be findable via search afterward`
-      ).toBe(true);
-
-      // Keyed by the project-scoped prefix (CIWTG/CISL/...), so the later
-      // stages (WAM, RFI flow) can resolve "the current wind CI" without
-      // hardcoding a generated name, and without colliding with the 11-role
-      // batch spec's own keys.
-      recordLastCreatedUser(prefix, {
-        ...identity, role, userType,
-        profileKey: profile.key,
-        // WHICH DEPLOYMENT this user actually exists on. Without it a later
-        // stage cannot tell a usable user from one created against a different
-        // environment — see the reuse guard above.
-        baseUrl: process.env.BASE_URL,
-        projectType: profile.projectType,
-        workLocations: profile.workLocations,
-        vendor: userType === 'VENDOR' ? profile.vendor.name : null,
-      });
+      // The creation itself — form cascade, project-type/work-location
+      // assertions, success toast, search-back check and the record write —
+      // lives in smoke-user-factory.js as of 2026-09-09. It moved out of this
+      // file unchanged so that the stages which now create a user they find
+      // missing (ensureSmokeUsers) create it EXACTLY as this stage does; two
+      // copies would be two chances to disagree about project-type scoping,
+      // which produces a user that logs in fine and then cannot see the work
+      // area.
+      const { identity, picked } = await createSmokeUser(
+        page, dashboard, profile, roleKey, batchNumber
+      );
 
       console.log(
-        `  Created ${role} (${userType}) "${identity.name}" <${identity.email}> ${identity.phone}\n` +
-        `    scoped: ${JSON.stringify(picked)}`
+        `  Created ${role} (${userType}) "${identity.name}" <${identity.email}> ${identity.phone}` +
+        `\n    scoped: ${JSON.stringify(picked)}`
       );
     });
   }

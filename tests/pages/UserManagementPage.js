@@ -167,6 +167,23 @@ class UserManagementPage extends BasePage {
   // "first option, then fill to 2" — exactly what it did before this
   // parameter existed. Verified against 12_user_management.spec.js, which
   // calls fillLocationCascade() with no arguments at all.
+  //
+  // EACH FIELD IS WAITED FOR, NOT PROBED. Found live 2026-09-25 (SM10, "Admin
+  // can create a new Site Admin user"): the Cluster field was rendered, required
+  // and EMPTY in the failure screenshot, the submit produced no toast, and the
+  // cluster assertion in the spec never ran because `picked.cluster` was
+  // undefined. The old guard was `isVisible({ timeout: 1000 })`, which is a
+  // single immediate check (the timeout is ignored — see the isVisible-does-not-
+  // poll gotcha), so a Cluster field still rendering after the UserRole fetch
+  // was read as "this role has no Cluster" and skipped. Site Admin's Cluster is
+  // a MULTI-select, which selectMultiAware already handles; the pick itself was
+  // never the problem, it simply never happened.
+  //
+  // Stops at the first field that does not appear, because the cascade is a
+  // clean prefix — so a role with no cascade at all pays one wait, not four.
+  // A final sweep then catches a field that rendered after its wait expired,
+  // and a field that is on screen but ended up with nothing picked is a hard
+  // error here rather than an empty toast three steps later.
   async fillLocationCascade({
     cluster = ['Gujarat', 'Khavda'],
     site = ['Khavda'],
@@ -176,26 +193,39 @@ class UserManagementPage extends BasePage {
     workLocationCount = 2,
   } = {}) {
     const picked = {};
+    const fields = [
+      { key: 'cluster', label: 'Cluster', dropdown: this.clusterDropdown, preferred: cluster, count: 1, wait: 6000 },
+      { key: 'sites', label: 'Sites', dropdown: this.sitesDropdown, preferred: site, count: 1, wait: 4000 },
+      { key: 'projectType', label: 'Project type', dropdown: this.projectTypeDropdown, preferred: projectTypes, count: projectTypeCount, wait: 4000 },
+      { key: 'workLocations', label: 'Work Locations', dropdown: this.workLocationsDropdown, preferred: workLocations, count: workLocationCount, wait: 4000 },
+    ];
 
-    if (await this.clusterDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
-      picked.cluster = await this.selectMultiAware(this.clusterDropdown, { preferred: cluster, count: 1 });
+    const fill = async (f) => {
+      picked[f.key] = await this.selectMultiAware(f.dropdown, { preferred: f.preferred, count: f.count });
       await this._settleAfterCascadeChange();
+      if (!picked[f.key].length) {
+        throw new Error(
+          `Add User: the "${f.label}" field is on screen but nothing could be selected in it ` +
+          `(wanted ${JSON.stringify(f.preferred)}). Submitting now would fail with an empty ` +
+          `toast, so this stops here instead.`
+        );
+      }
+    };
+
+    for (const f of fields) {
+      const appeared = await f.dropdown.waitFor({ state: 'visible', timeout: f.wait })
+        .then(() => true).catch(() => false);
+      if (!appeared) break;
+      await fill(f);
     }
-    if (await this.sitesDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
-      picked.sites = await this.selectMultiAware(this.sitesDropdown, { preferred: site, count: 1 });
-      await this._settleAfterCascadeChange();
-    }
-    if (await this.projectTypeDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
-      picked.projectType = await this.selectMultiAware(
-        this.projectTypeDropdown, { preferred: projectTypes, count: projectTypeCount }
-      );
-      await this._settleAfterCascadeChange();
-    }
-    if (await this.workLocationsDropdown.isVisible({ timeout: 1000 }).catch(() => false)) {
-      picked.workLocations = await this.selectMultiAware(
-        this.workLocationsDropdown, { preferred: workLocations, count: workLocationCount }
-      );
-      await this._settleAfterCascadeChange();
+
+    // Late renders: anything on screen now that was never filled.
+    for (const f of fields) {
+      if (picked[f.key]) continue;
+      if (await f.dropdown.isVisible().catch(() => false)) {
+        console.log(`    (Add User: "${f.label}" rendered late — filling it now)`);
+        await fill(f);
+      }
     }
 
     return picked;

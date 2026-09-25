@@ -18,6 +18,7 @@ is linked, not duplicated:
 | Work Region hierarchy | [work-region-hierarchy.md](work-region-hierarchy.md) |
 | Wind activity/checklist reference | [wind-activity-checklist-reference.md](wind-activity-checklist-reference.md) |
 | Mobile-view RFI flow | [mobile-view-rfi-flow.md](mobile-view-rfi-flow.md) |
+| RFI/NC reassignment rules and scenarios | [reassignment-scenarios.md](reassignment-scenarios.md) |
 
 ---
 
@@ -44,6 +45,23 @@ More project types are coming (the app offers SOLAR, WIND, INFRA, PSS, BESS,
 TRANSMISSION_LINE and ADMIN), and DRS can host pilot projects of every kind. The
 cost of keeping the seams is a little indirection; the cost of removing them is
 rebuilding the whole parameterisation later.
+
+**Every date picker in this app needs `:not([data-outside-range])`.** Ark's day
+grid pads the month with the tail of the previous one and the head of the next,
+and those padding cells are real DOM, "visible" to Playwright, and *disabled*.
+So a cell for `today + 14` exists a month before it is clickable, and clicking
+it spins on *"element is not enabled"* for the full 30s instead of failing.
+
+> Found on 2026-09-05 in `DashboardFilterPage` (the first DOM match for an
+> unqualified day cell was 31 August, greyed out) — and then hit AGAIN on
+> 2026-09-17, because that fix never reached `NCCreatePage.selectTargetDate` or
+> `RFIReviewPage.selectLinkedNcTargetDate`. A 14-day target from the 17th is
+> 1 October, so NC creation broke for every run from the 17th of any month
+> onwards while passing all month. **Any `today + N` date in this suite is
+> date-dependent: it works for two weeks and then does not.** Exclude
+> `data-outside-range`, `data-disabled` and `aria-disabled="true"` in the cell
+> locator, navigate months until an ENABLED cell appears, and make the failure
+> message say whether the cell was absent or merely disabled.
 
 **One run at a time.** Never overlap flow-test invocations. Confirm the previous
 one has fully exited before launching the next.
@@ -84,6 +102,41 @@ each viewport) are roughly **57 of the ~120 minutes**. Iterate without them, the
 prove the whole thing together once. Concretely, that means running the specific
 `--project` under development with `--no-deps`, and reserving `npm run smoke:full`
 for the confirmation pass.
+
+**Every stage provisions its own prerequisites.** App owner, 2026-09-25: *"if
+spec will not fulfill its prerequisite who the hell will do for you???"* Two
+failures on one full run on dev prompted it:
+
+* **SM24's CI could not create an RFI** because its own WAM did not cover the
+  area. `ensureSmokeUsers()` only WAMs a user it has just *created*; an existing
+  user was trusted to be mapped, which holds only if SM03 ran, passed and nothing
+  later moved the row — and `--no-deps` skips SM03 entirely.
+* **EL and QL dashboards read TOTAL 0 / "No records found".** SM04 maps them on
+  BL06, SM13 on BL08/BL09, and nothing raised an RFI or NC on any of those before
+  SM15-SM18 looked. The dashboard checks were proving that an empty screen
+  renders.
+
+Encoded as:
+
+| What | Where |
+|---|---|
+| `ensureWorkAreaMapping(browser, profile, users, { roles, areas })` — Admin reads each role's work-area rows and assigns only what is missing (a read on a healthy chain) | [tests/utils/smoke-prereqs.js](../tests/utils/smoke-prereqs.js) |
+| Called by every RFI/NC-creating stage for its own actors on its own ground: SM05, SM06, SM07, SM08, SM09, SM23, SM24, SM25, SM26, SM28 | each spec's setup |
+| **SM29 `dashboard-seed`**, a setup stage straight after SM03: maps CI/EE/QI/CM/EL/QL on `featureGround.dashboardSeed` (BL11), raises one RFI and one NC there only if EL's or QL's dashboard shows 0, and hard-asserts both totals > 0 | [tests/smoke/SM29_dashboard_seed.spec.js](../tests/smoke/SM29_dashboard_seed.spec.js) |
+| SM17 hard-asserts EL/QL RFI and NC totals > 0; logs them for the other roles | SM17 |
+
+`SMOKE_GROUND_GUARD=0` turns the WAM guard off. BL11 rather than BL08/BL09
+because in a laned run the `wam-sweep` lane re-assigns BL08/BL09 while the
+`readonly` lane reads dashboards; SM23/SM24 only ever *add* RFIs to BL11. The
+admin tiers (CAD/SAD/PAD/PM) are deliberately NOT mapped by SM29 — pre-filling
+their rows would turn each SM04 cascade step into a no-op.
+
+**A cascade field that is rendered must be waited for, not probed.** Same run:
+SM10's Site Admin create failed with an empty toast because `fillLocationCascade`
+checked Cluster with `isVisible({timeout})` — a single instant check — right
+after the UserRole fetch, read it as absent, and skipped it. Site Admin's Cluster
+is a multi-select (which `selectMultiAware` already handles); it simply never got
+picked. Each field is now `waitFor`'d, and a rendered field left unpicked throws.
 
 **No automatic commits.** Do not `git add`/`commit` unprompted. The app owner
 stages and commits, or says explicitly when to.
@@ -333,6 +386,46 @@ smoke chain must stay off the regression's work areas — otherwise it strips th
 Standing instruction: NC work stays in its own files even where the logic looks
 reusable. See the decision log for how this was resolved for the smoke chain (option C).
 
+### 3.8a NC's Defect Type is a data-dependent dropdown — app change 2026-09-17
+
+**Reported by the app owner, with a screenshot of the QI's Create NC form:**
+*"there is slight change in NC creation form, everywhere now we need to select
+defect type from dropdown and defect list will appear based on other selected
+details in NC form."*
+
+What changed, and what it costs the automation:
+
+| Before | After |
+|---|---|
+| Free-text input, placeholder `Enter Defect Type` | Searchable single-select, trigger reads `Select Defect Type`, with its own in-listbox `Search...` box |
+| Any string was accepted — `'Workmanship defect'` was used everywhere | Only the app's own list is accepted, and **the list is derived from the fields chosen above it** (Work Location / Work Area / Package / Activity / Sub-Activity) |
+
+Two consequences that are now baked into the page objects:
+
+1. **Defect Type must be filled AFTER the cascade**, never before — the options
+   do not exist until the app knows the activity. `NCCreatePage.fillForm`
+   already filled it in form order, so the order is unchanged, but it is now
+   load-bearing rather than cosmetic.
+2. **No fixed literal can be guaranteed to be on offer.** So `defectType` in
+   every data block is a **preference**, not a value to type:
+   `'__first__'` (the sentinel the other dropdowns already use) means *whatever
+   this activity offers*, and a real label is tried first and falls back to the
+   first option, logging that it did. `NCCreatePage.selectDefectType` returns
+   and caches the label ACTUALLY picked (`lastDefectType`) — that, not the
+   requested string, is what a test may assert on. Shared mechanics live in
+   `BasePage.selectSearchableOption`.
+
+The old free-text value `'Workmanship defect'` is in no list and has been
+removed from `projects.js` (`nc`, `ncBlock`), `nc-flow-turns.js`, specs 14 / 32 /
+35 / 39 and `RFIReviewPage.fillLinkedNc`'s defaults.
+
+**Still unconfirmed:** whether the linked-NC panel inside an RFI review (the
+"Raise NC" path) changed too. The app owner said "everywhere", so it is assumed
+to have, and `RFIReviewPage.setLinkedNcDefectType` handles **both** shapes —
+dropdown when the field carries a combobox, the old text input otherwise — so
+that path cannot break either way. Confirm it on the next linked-NC run and
+delete whichever half is dead.
+
 ### 3.9 SO Mapping hands off to DRS — all landing pages are correct
 
 **App owner, 2026-09-06. This is a NOT-A-BUG rule.** Following PULSE's
@@ -392,7 +485,13 @@ outcome instead of only recognising the migration notice).
 - `S05b / BL01 / Piling - MMS / Pre Pour Inspection - Pile` reports **264** work
   sections, named `R0x-T0x`.
 - `A-06c` is the app owner's **manual-testing ground** — the smoke chain must not
-  touch it.
+  touch it. **ONE EXPLICIT EXCEPTION (app owner, 2026-09-16): the RFI/NC
+  REASSIGNMENT work may use `A-06c`, including once its specs move into
+  `tests/smoke/`** — *"no issue for reassignment u can use a06c"*. It sits on
+  `A-06c / BL07+`, the band the app owner confirmed unused in both `A-06c` and
+  `S05b`. Do not "fix" that by re-basing it onto `S05b`: the exception is
+  deliberate, and S05b has only one free area anyway (see
+  [reassignment-scenarios.md](reassignment-scenarios.md) §6.2).
 - Smoke solar sits on `S05b`, areas `BL03`-`BL06`. Detail and reasoning in
   [smoke-e2e-framework.md](smoke-e2e-framework.md) §4.2.
 
@@ -538,6 +637,7 @@ section.
 | 2026-09-03 | **Wind is setup-only for now** — do not run wind RFI/NC flows, because RFIs already exist on the WTG work areas |
 | 2026-09-04 | **Smoke specs renamed** `s0*` -> `SM0*`; the 31 `00_inspect_*` recon specs moved into `tests/specs/inspection/` |
 | 2026-09-04 | **Commit shape**: split the mechanical rename/move from the framework work. Recon captures and smoke tracker state **are** tracked in git |
+| 2026-09-25 | **Stages provision their own prerequisites** — per-stage WAM guard + SM29 dashboard-seed setup stage on BL11 (see §1) |
 
 ---
 

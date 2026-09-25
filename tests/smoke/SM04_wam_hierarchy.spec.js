@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { openDialogWithInteractiveRow } = require('../utils/smoke-wam');
 const DashboardPage = require('../pages/DashboardPage');
 const WAMPage = require('../pages/WAMPage');
@@ -101,7 +101,9 @@ test.describe('Smoke stage 6 - WAM hierarchy cascade, each tier assigns the tier
 
     // All ten roles, checked for profile AND deployment. The hierarchy tiers are
     // AGEL/online accounts, so unlike the flow users they log in in seconds.
-    users = resolveSmokeUsers(profile, ['CI', 'CM', 'EE', 'QI', 'EL', 'QL', 'PM', 'PAD', 'SAD', 'CAD']);
+    users = await ensureSmokeUsers(
+      browser, profile, ['CI', 'CM', 'EE', 'QI', 'EL', 'QL', 'PM', 'PAD', 'SAD', 'CAD']
+    );
 
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
     expect(

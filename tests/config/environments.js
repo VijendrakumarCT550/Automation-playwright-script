@@ -83,6 +83,63 @@ function resolveEnvironment() {
   return known || { key: 'custom', baseUrl: fromEnvFile, description: 'from .env BASE_URL' };
 }
 
+// ---------------------------------------------------------------------------
+// THE ENVIRONMENT KEY — a short, stable, filesystem-safe name for a deployment
+// ---------------------------------------------------------------------------
+// 'qa' | 'test' | 'dev' | 'uat' | 'host-<first label>' | 'unknown'.
+//
+// This used to live in tests/utils/smoke-tracker.js as envKey(), where it keyed
+// tracker FILENAMES. It moved here on 2026-09-09 because a second store needed
+// the identical notion: fixtures/last-created-users.json is now partitioned by
+// environment too (see user-counter-utils.js). Two definitions of "which
+// deployment is this?" that could drift is exactly how the users file and the
+// trackers ended up disagreeing about environments in the first place.
+//
+// THE HOST-DERIVED CASE IS NOT COSMETIC, and it was found the hard way on
+// 2026-09-08. resolveEnvironment() returns the literal key `custom` for ANY
+// deployment with no entry in ENVIRONMENTS — so a full chain run against
+// pulse-uat (unnamed at the time) wrote `rfi-tracker.solar-e2e.custom.*.json`.
+// `custom` is shared by every unnamed deployment, so pointing the suite at a
+// second unknown host would silently resume the first one's state. Naming
+// pulse-uat fixed that day; deriving the key from the HOSTNAME fixes the class.
+//
+// The first label of the hostname is enough to be readable and unique
+// ('pulse-uat.cfapps...' -> 'pulse-uat'), and it is sanitised because it lands
+// in filenames and JSON keys.
+function environmentKeyFor(baseUrl) {
+  const url = String(baseUrl || '').replace(/\/+$/, '');
+  if (!url) return 'unknown';
+
+  // Case-insensitive, because a hostname is case-insensitive but a bucket key
+  // is not: "https://PULSE-QA..." matching nothing would file its users under
+  // `host-pulse-qa` while every other run used `qa`, and neither would see the
+  // other's. (Scheme and an explicit :443 are NOT normalised — same limitation
+  // resolveEnvironment() has always had, so the two stay consistent.)
+  const known = Object.values(ENVIRONMENTS).find(
+    (e) => e.baseUrl.toLowerCase() === url.toLowerCase()
+  );
+  if (known) return known.key;
+
+  try {
+    const host = new URL(url).hostname.split('.')[0].toLowerCase();
+    const safe = host.replace(/[^a-z0-9-]/g, '');
+    return safe ? `host-${safe}` : 'custom';
+  } catch (e) {
+    return 'custom';
+  }
+}
+
+// The key for whatever THIS run targets. Never throws: a filename or a store
+// key is not the right place to surface "no environment configured" — the run
+// fails with a far clearer message the moment it tries to navigate.
+function environmentKey() {
+  try {
+    return environmentKeyFor(resolveEnvironment().baseUrl);
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
 // Resolves the target and writes it back to process.env.BASE_URL so the
 // direct-process.env.BASE_URL readers across the suite see the same host
 // Playwright's baseURL points at. Returns the resolved environment.
@@ -157,4 +214,8 @@ function isPulseUrl(url) {
   }
 }
 
-module.exports = { ENVIRONMENTS, resolveEnvironment, applyEnvironment, isDrsUrl, isPulseUrl };
+module.exports = {
+  ENVIRONMENTS, resolveEnvironment, applyEnvironment,
+  environmentKey, environmentKeyFor,
+  isDrsUrl, isPulseUrl,
+};

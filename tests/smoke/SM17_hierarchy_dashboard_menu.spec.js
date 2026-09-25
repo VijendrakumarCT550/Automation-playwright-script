@@ -1,7 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsUser, returnToPulse } = require('../utils/helpers');
 const { isDrsUrl } = require('../config/environments');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 
 // Feature stage SM17: the smoke replica of
@@ -37,6 +37,9 @@ const { requireFeatureGround } = require('../config/projects');
 // skip the other six. Inside a `serial` describe it would.
 const ROLES = ['CAD', 'SAD', 'PAD', 'PM', 'EL', 'QL', 'CM'];
 
+// Roles whose dashboard data SM29 provisions — see the totals check below.
+const DATA_GUARANTEED = new Set(['EL', 'QL']);
+
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
 // Plain console.log, NOT expect() and NOT expect.soft().
@@ -64,7 +67,7 @@ test.describe('Smoke stage SM17 - hierarchy roles: dashboard load + menu sweep',
       requireFeatureGround(profile);
       expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-      const user = resolveSmokeUsers(profile, [roleKey])[roleKey];
+      const user = (await ensureSmokeUsers(browser, profile, [roleKey]))[roleKey];
       console.log(`\n${roleKey} (${user.role}): ${user.name} <${user.email}>`);
 
       const context = await browser.newContext({
@@ -93,6 +96,31 @@ test.describe('Smoke stage SM17 - hierarchy roles: dashboard load + menu sweep',
         };
         for (const [label, locator] of Object.entries(widgets)) {
           logWidgetVisibility(roleKey, label, await locator.isVisible().catch(() => false));
+        }
+
+        // THE DASHBOARD MUST HAVE SOMETHING ON IT. App owner, 2026-09-25, with
+        // EL's dashboard reading TOTAL 0 / "No records found": a dashboard with
+        // nothing to show proves only that an empty screen renders.
+        //
+        // HARD for EL/QL, because SM29 guarantees their data (it maps them on
+        // featureGround.dashboardSeed and raises an RFI and an NC there). LOGGED
+        // for the rest: CAD/SAD/PAD/PM get their scope from SM04's cascade, and
+        // a failure there is already reported as SM04's own failure; CM is
+        // mapped by SM03 over every smoke area.
+        const totals = {
+          rfi: await dashboard.getDistributionTotal('RFI Distribution', { wantNonZero: true }),
+          nc: await dashboard.getDistributionTotal('NC Distribution', { wantNonZero: true }),
+        };
+        console.log(`  ${roleKey} dashboard totals: RFI ${totals.rfi}, NC ${totals.nc}`);
+        if (DATA_GUARANTEED.has(roleKey)) {
+          for (const [kind, n] of Object.entries(totals)) {
+            expect(
+              n,
+              `${roleKey}: ${kind.toUpperCase()} Distribution reads ${n}. SM29 (dashboard-seed) is ` +
+              `supposed to have mapped this user on featureGround.dashboardSeed and raised a ` +
+              `${kind.toUpperCase()} there — run --project=smoke-solar-dashboard-seed and check its log.`
+            ).toBeGreaterThan(0);
+          }
         }
 
         await page.screenshot({ path: `test-results/sm17_${roleKey}_dashboard.png`, fullPage: true });

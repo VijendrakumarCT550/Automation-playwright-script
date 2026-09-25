@@ -75,6 +75,7 @@ const STAGE_GROUND = {
   // --- setup prefix ---
   'users':            [],                      // creates users; no work area
   'wam':              ['global'],              // maps the flow users across every area
+  'dashboard-seed':   ['featureGround.dashboardSeed'], // EL/QL mapping + one RFI/NC (SM29)
 
   // --- flow ground ---
   'draft-autosave':   [{ flow: 'rfi', viewport: 'desktop' }],
@@ -121,6 +122,12 @@ const STAGE_GROUND = {
 // The stages that WRITE fixtures/user-creation-counter.json and
 // fixtures/last-created-users.json. See the header — all of these must end up
 // in the same place, and the validator enforces it.
+//
+// This list stays exhaustive by construction: since 2026-09-09 ANY stage can
+// create a user it finds missing (ensureSmokeUsers), which the validator here
+// cannot see — so that code refuses to create whenever SMOKE_LANE is set, i.e.
+// whenever it is running inside a lane. Creation therefore still only ever
+// happens in the stages named below, or in a plain unlaned run.
 const USER_CREATING_STAGES = ['users', 'users-batch'];
 
 // ---------------------------------------------------------------------------
@@ -134,7 +141,11 @@ const USER_CREATING_STAGES = ['users', 'users-batch'];
 const LAYOUT = {
   // Serial, before any lane. Everything downstream needs the users to exist and
   // to be mapped, and both stages here are global or fixture-writing.
-  prefix: ['users', 'wam'],
+  //
+  // dashboard-seed (SM29) is here rather than in the readonly lane because the
+  // dashboards in that lane CONSUME what it creates — in a lane of its own it
+  // would race them.
+  prefix: ['users', 'wam', 'dashboard-seed'],
 
   lanes: {
     // BL03 + BL07. RFI-only now that NC has its own area again.

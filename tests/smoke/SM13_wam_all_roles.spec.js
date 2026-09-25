@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { openAssignmentDialog, assignAndProve } = require('../utils/smoke-wam');
 const WAMPage = require('../pages/WAMPage');
@@ -71,7 +71,7 @@ test.describe('Smoke stage SM13 - WAM assignment for every created role', () => 
       `Profile "${profile.key}" declares no featureGround.wamSweep areas.`
     ).toBeGreaterThan(0);
 
-    users = resolveSmokeUsers(profile, ALL_ROLES);
+    users = await ensureSmokeUsers(browser, profile, ALL_ROLES);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     console.log(

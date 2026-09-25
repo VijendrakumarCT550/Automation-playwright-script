@@ -50,6 +50,12 @@ const SMOKE_SETUP_STAGES = [
   // drive. (The "SO Mapping app bug" recorded a day earlier was this feature being
   // taken out.) The spec file is kept as documentation of how the screen behaved.
   { id: 'wam', file: 'SM03_wam_admin.spec.js' },
+  // SM29: guarantees EL/QL are mapped onto featureGround.dashboardSeed and can
+  // see at least one RFI and one NC there, so the dashboard stages are not
+  // looking at an empty screen (app owner, 2026-09-25). Setup, because it is
+  // Admin-driven data preparation that later stages consume, and it must be in
+  // place before the readonly lane starts. Solar-only: it needs featureGround.
+  { id: 'dashboard-seed', file: 'SM29_dashboard_seed.spec.js', requiresFeatureGround: true },
 ];
 
 // FLOW stages run once per VIEWPORT. Per the app owner: the RFI and NC flows
@@ -120,9 +126,10 @@ const SMOKE_TAIL_STAGES = [
 // report of all specs nothing should be escaped."
 //
 // So tests/specs/ is now EXPLORATION ONLY and no smoke project references it.
-// Each replica resolves its users through resolveSmokeUsers() (i.e. whoever SM01
-// created for THIS run) and its ground through profile.featureGround, so the
-// whole tier is self-contained and the regression tier is untouched.
+// Each replica resolves its users through ensureSmokeUsers() (i.e. whoever SM01
+// created for THIS run and THIS deployment — creating them if this deployment
+// has none) and its ground through profile.featureGround, so the whole tier is
+// self-contained and the regression tier is untouched.
 //
 // ---------------------------------------------------------------------------
 // WHY THESE ARE SIBLING LEAVES AND NOT A CHAIN — this is the "68 did not run" fix
@@ -342,8 +349,9 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // THIS DOES NOT MAKE A MISSING PRECONDITION SILENT
   // ===========================================================================
   // Every downstream stage still fails LOUDLY and SPECIFICALLY when something
-  // it truly needed is missing — resolveSmokeUsers() names exactly which role
-  // couldn't be resolved and why, requireFeatureGround() names the missing
+  // it truly needed is missing — ensureSmokeUsers() creates a user this
+  // deployment has never had and otherwise names exactly which role could not
+  // be resolved and why, requireFeatureGround() names the missing
   // config, smokeMappedWorkAreas()-driven WAM steps fail at a named row. A
   // stage that genuinely cannot proceed without its precondition still reports
   // that clearly; it just does so as ONE localised failure instead of erasing
@@ -374,6 +382,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
 
   // Setup: strictly sequential, each depending on the previous.
   for (const stage of SMOKE_SETUP_STAGES) {
+    if (stage.requiresFeatureGround && !getProfile(profileKey).featureGround) continue;
     if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 

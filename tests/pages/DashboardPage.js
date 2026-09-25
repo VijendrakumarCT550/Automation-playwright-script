@@ -192,6 +192,41 @@ class DashboardPage extends BasePage {
     return result;
   }
 
+  // The "TOTAL <n>" figure in the centre of the RFI Distribution / NC
+  // Distribution donut cards. Returns the number, or null if the card never
+  // rendered a readable total.
+  //
+  // Polls rather than reading once, for the same pre-paint race
+  // waitForStableChartFingerprint documents: the card can render "TOTAL 0"
+  // before its data arrives. With `wantNonZero` it keeps polling until the
+  // total is above zero or the timeout expires, so "0" is only returned once it
+  // has held for the whole window.
+  //
+  // The card is looked up by its title text rather than chartCard()'s class
+  // anchor, which was confirmed for TAT Summary / Trend Analysis but not for
+  // the distribution cards; the smallest element carrying both the title and a
+  // TOTAL label is the card.
+  async getDistributionTotal(title, { timeout = 30000, wantNonZero = false, intervalMs = 1000 } = {}) {
+    const card = this.page.locator('div')
+      .filter({ has: this.page.getByText(title, { exact: true }) })
+      .filter({ hasText: /TOTAL/i })
+      .last();
+    const read = async () => {
+      const text = await card.innerText({ timeout: 2000 }).catch(() => '');
+      const m = text.match(/TOTAL\s*([\d,]+)/i);
+      return m ? Number(m[1].replace(/,/g, '')) : null;
+    };
+
+    const deadline = Date.now() + timeout;
+    let value = await read();
+    while (Date.now() < deadline) {
+      if (value !== null && (!wantNonZero || value > 0)) return value;
+      await this.page.waitForTimeout(intervalMs);
+      value = await read();
+    }
+    return value;
+  }
+
   // A sidebar/drawer nav entry by its visible name, on either viewport.
   navItem(name) {
     return this.page.getByRole('treeitem', { name, exact: true }).first();

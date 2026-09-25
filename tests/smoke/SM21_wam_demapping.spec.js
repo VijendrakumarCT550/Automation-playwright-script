@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { openAssignmentDialog, ensureDialogOpen, reopenWithFilters } = require('../utils/smoke-wam');
 
@@ -43,7 +43,7 @@ test.describe('Smoke stage SM21 - WAM demapping (Clear value)', () => {
     mutateArea = ground.wamMutate;
     expect(mutateArea, `Profile "${profile.key}" declares no featureGround.wamMutate`).toBeTruthy();
 
-    users = resolveSmokeUsers(profile, ['EE', 'PAD']);
+    users = await ensureSmokeUsers(browser, profile, ['EE', 'PAD']);
 
     ({ context, page, dashboard } = await adminFreshLogin(browser));
     console.log(

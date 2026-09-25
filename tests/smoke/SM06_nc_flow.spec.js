@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginFreshUserSession } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { resolveFlowWorkAreas } = require('../config/projects');
 const { createSmokeNcTracker, prepareRun, printRunSummary } = require('../utils/smoke-tracker');
 const { makeNcContext, runCITurn, runEETurn, runQITurn } = require('../utils/smoke-nc-turns');
@@ -71,8 +72,13 @@ test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMo
   expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
   const viewport = isMobileViewport ? 'mobile' : 'desktop';
-  const users = resolveSmokeUsers(profile, ROLES);
+  const users = await ensureSmokeUsers(browser, profile, ROLES);
   const workArea = resolveFlowWorkAreas(profile, { flow: 'nc', viewport })[0];
+  // Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold this stage's
+  // ground in WAM. No-op when they already do — see smoke-prereqs.js.
+  await ensureWorkAreaMapping(browser, profile, users, {
+    roles: ROLES, areas: [workArea], label: `SM06 ${viewport} prereq`,
+  });
   const { tracker, tcSet, file } = createSmokeNcTracker({ profileKey: profile.key, viewport });
 
   console.log(

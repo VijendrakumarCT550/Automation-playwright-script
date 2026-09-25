@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
 const { resolveRfiFixture } = require('../utils/smoke-rfi-fixture');
 const { createAndSubmitCheckpoint, resetToMyTasks } = require('../utils/rfi-dependency-flow');
@@ -44,7 +45,14 @@ test.describe('Smoke stage SM24 - bulk RFI creation in one session', () => {
     expect(area, `Profile "${profile.key}" declares no featureGround.rfiCreate area`).toBeTruthy();
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-    const ci = resolveSmokeUsers(profile, ['CI']).CI;
+    // The CI creates; EE and QI are who the RFI routes to. All three must hold
+    // this area in WAM — a CI whose own WAM did not cover it is exactly how
+    // this stage failed (app owner, 2026-09-25). No-op when already mapped.
+    const actors = await ensureSmokeUsers(browser, profile, ['CI', 'EE', 'QI']);
+    await ensureWorkAreaMapping(browser, profile, actors, {
+      roles: ['CI', 'EE', 'QI'], areas: [area], label: 'SM24 prereq',
+    });
+    const ci = actors.CI;
     const fixture = resolveRfiFixture(profile, { workArea: area });
 
     const context = await browser.newContext({

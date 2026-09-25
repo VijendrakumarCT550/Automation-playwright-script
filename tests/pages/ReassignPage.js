@@ -52,13 +52,26 @@ class ReassignPage extends BasePage {
     // and burned its full 20s timeout while the real RFI grid was on the page.
     this.grid = page.locator('[role="grid"]:not([data-scope="date-picker"])').first();
 
-    this.dialog = page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
-      .filter({ hasText: 'Reassign User' }).first();
-    this.assigneeTypeDropdown = this.dialog.locator('[role="combobox"]').first();
-    this.assignToDropdown = this.dialog.getByRole('combobox', { name: /Assign to/i });
-    this.assignUserButton = this.dialog.getByRole('button', { name: 'Assign User' });
-    this.closeButton = this.dialog.locator('[data-part="close-trigger"]');
+    // Bound to the .first() matching dialog here, and RE-BOUND in openReassign()
+    // to the exact dialog the clicked row owns — see _bindDialog and the long
+    // note in openReassign for why .first() is wrong once the grid has more than
+    // one row.
+    this._bindDialog(
+      page.locator('[role="dialog"], [data-scope="dialog"][data-part="content"]')
+        .filter({ hasText: 'Reassign User' }).first()
+    );
     this.toast = page.locator('[data-scope="toast"]').first();
+  }
+
+  // Every locator inside the dialog is derived from `this.dialog`, so switching
+  // dialogs means re-deriving all of them — a bare `this.dialog = x` would leave
+  // assigneeTypeDropdown and friends pointing at the previous one.
+  _bindDialog(dialog) {
+    this.dialog = dialog;
+    this.assigneeTypeDropdown = dialog.locator('[role="combobox"]').first();
+    this.assignToDropdown = dialog.getByRole('combobox', { name: /Assign to/i });
+    this.assignUserButton = dialog.getByRole('button', { name: 'Assign User' });
+    this.closeButton = dialog.locator('[data-part="close-trigger"]');
   }
 
   async waitForGrid() {
@@ -170,6 +183,137 @@ class ReassignPage extends BasePage {
     return ids;
   }
 
+  // Every row id in the list, by SCROLLING DOWN THROUGH IT — the answer
+  // `listRowIds` cannot give, and the one to use whenever an id's ABSENCE is
+  // the thing being concluded.
+  //
+  // WHY THIS EXISTS — a real failure, pulse-test 2026-09-20.
+  // 41_reassign_eligibility.spec.js's step 0 searched `listRowIds()` for a
+  // pending RFI in A-06c, found only S05b codes and reported that the
+  // deployment had none. It had ELEVEN; they were simply below the fold, since
+  // only rows near the current scrollTop are mounted. The test failed with a
+  // message telling us to go and create data that already existed — the
+  // expensive kind of wrong answer, because acting on it would have written
+  // real records to a shared environment for no reason.
+  //
+  // Steps down by roughly a viewport at a time rather than jumping to the
+  // bottom: a jump mounts the last page and skips everything between, which is
+  // the same trap recorded for RFIListPage.scrollToRowByCode in
+  // docs/automation-coverage-and-gaps.md §2b. Stops when scrollTop stops
+  // moving. Leaves the grid scrolled to the bottom; call scrollGridToStart()
+  // (which resets scrollLeft) or re-navigate if the caller needs the top.
+  // Waits until the grid stops GROWING, not just until it exists.
+  //
+  // waitForGrid resolves as soon as the grid element is visible, which happens
+  // while it still holds its first row or two. Reading then yields a list that
+  // is real but INCOMPLETE — and an incomplete list is indistinguishable from a
+  // short one, so "the record is not here" comes back with total confidence.
+  //
+  // Live on pulse-test 2026-09-20: EE_D's "Pending with me" read as ONE row
+  // across five separate navigations inside a long-running spec, while a fresh
+  // session read SEVEN — all seven pool records, including the one the run had
+  // just declared missing. Re-navigating does not help when the read after each
+  // navigation is equally early; only waiting for the count to settle does.
+  // networkidle does not cover it either: the rows arrive after it resolves.
+  async waitForGridToSettle({ timeout = 15000, quietMs = 900 } = {}) {
+    const rows = this.grid.locator('.rdg-row[role="row"]');
+    const deadline = Date.now() + timeout;
+    let last = -1;
+
+    while (Date.now() < deadline) {
+      const count = await rows.count().catch(() => 0);
+      if (count > 0 && count === last) return count;   // unchanged across one quiet period
+      last = count;
+      await this.page.waitForTimeout(quietMs);
+    }
+    return last;
+  }
+
+  async collectAllRowIds({ maxPasses = 60 } = {}) {
+    const seen = new Set();
+    let prevTop = -1;
+
+    // Let the first screenful settle before reading anything — otherwise this
+    // starts scrolling a list that is still arriving, and the early passes read
+    // rows that are about to be replaced.
+    await this.waitForGridToSettle();
+
+    for (let pass = 0; pass < maxPasses; pass++) {
+      for (const id of await this.listRowIds(60)) seen.add(id);
+
+      const top = await this.grid.evaluate((el) => {
+        const step = Math.max(el.clientHeight - 60, 120);
+        el.scrollTop += step;
+        return el.scrollTop;
+      });
+      await this.page.waitForTimeout(350);
+      if (top === prevTop) break;
+      prevTop = top;
+    }
+    for (const id of await this.listRowIds(60)) seen.add(id);
+
+    return [...seen];
+  }
+
+  // Scrolls DOWN until the row with this id is mounted, and returns it.
+  //
+  // The companion to collectAllRowIds, and needed for the same reason: a row
+  // the list genuinely contains is not in the DOM until its neighbourhood is
+  // scrolled into range, so `getRowById(id).waitFor({state:'visible'})` on a
+  // row below the fold waits out its whole timeout and then reports the row as
+  // missing (pulse-test 2026-09-20, every Family E case in turn).
+  //
+  // Returns immediately if the row is already mounted, so it costs nothing on
+  // a short list. Throws with the row count it searched — "not found among 44
+  // rows" is a real finding, while a bare timeout is ambiguous between "absent"
+  // and "not scrolled to".
+  async scrollToRowById(id, { maxPasses = 60 } = {}) {
+    const row = this.getRowById(id);
+    if (await row.count()) {
+      await row.first().scrollIntoViewIfNeeded().catch(() => {});
+      return row.first();
+    }
+
+    // START FROM THE TOP. This scans DOWNWARD, so it can only find rows below
+    // wherever the grid happens to be sitting — and a caller that has just run
+    // collectAllRowIds() leaves it at the BOTTOM, where there is nothing below
+    // anything. Live on pulse-test 2026-09-20: a probe listed all seven pool
+    // records successfully and then failed to locate a single one of them,
+    // reporting "0/7 accounted for" about rows it had just printed. Resetting
+    // costs one scroll and removes the ordering dependency entirely.
+    await this.grid.evaluate((el) => { el.scrollTop = 0; });
+    await this.page.waitForTimeout(250);
+    if (await row.count()) {
+      await row.first().scrollIntoViewIfNeeded().catch(() => {});
+      return row.first();
+    }
+
+    let prevTop = -1;
+    let scanned = 0;
+    for (let pass = 0; pass < maxPasses; pass++) {
+      const top = await this.grid.evaluate((el) => {
+        const step = Math.max(el.clientHeight - 60, 120);
+        el.scrollTop += step;
+        return el.scrollTop;
+      });
+      await this.page.waitForTimeout(350);
+      scanned = await this.grid.locator('.rdg-row[role="row"]').count();
+
+      if (await row.count()) {
+        await row.first().scrollIntoViewIfNeeded().catch(() => {});
+        return row.first();
+      }
+      if (top === prevTop) break;
+      prevTop = top;
+    }
+
+    throw new Error(
+      `Row "${id}" not found in the grid after scrolling to the bottom ` +
+      `(${scanned} rows mounted at the end of the scan). It is absent from this list, ` +
+      `not merely unmounted.`
+    );
+  }
+
   // Resolves a column's aria-colindex by its HEADER TEXT, scrolling as needed.
   //
   // WHY THIS EXISTS — a real failure, 2026-09-04. 11_reassign_rfi_nc.spec.js
@@ -266,41 +410,100 @@ class ReassignPage extends BasePage {
       await reassignButton.waitFor({ state: 'visible', timeout: 10000 });
     }
 
-    // DISMISS ANY LINGERING TOAST BEFORE CLICKING, and retry the open once.
+    // ---------------------------------------------------------------------
+    // EVERY GRID ROW OWNS ITS OWN DIALOG, so `.first()` is the wrong one
+    // ---------------------------------------------------------------------
+    // Found live on pulse-uat, 2026-09-08, and it took two runs to read
+    // correctly — the first diagnosis was wrong and is worth recording as such.
     //
-    // Added 2026-09-08 after the first pulse-uat full chain. The RFI half of
-    // SM14 passed and the NC half — which runs immediately after it — failed
-    // with the dialog never opening:
+    // The NC half of SM14 failed with the dialog never becoming visible:
     //
     //   waiting for ...filter({ hasText: 'Reassign User' }) to be visible
     //   23 x locator resolved to hidden <div ... data-state="closed">
     //
-    // Note what that says: the button was FOUND and CLICKED (the scroll loop
-    // above raised no error), and the dialog element exists in the DOM but never
-    // left `data-state="closed"`. So the click did not reach the button.
+    // FIRST (WRONG) READING: the click never landed, because a lingering toast
+    // from the RFI half intercepted it — a real, documented failure mode in this
+    // app. A dismiss-and-retry was added on that basis. It did not help, and the
+    // retry's own log gave the actual answer:
     //
-    // A lingering toast intercepting a click is a known failure mode in this app
-    // — it is one of the four bugs fixed during the NC UI-navigation work, and
-    // BasePage.dismissToastIfPresent() exists for exactly this. The preceding
-    // RFI reassign ends with a success toast, which makes the NC half the most
-    // likely place for it to bite.
+    //   locator resolved to <button data-state="open" aria-expanded="true"
+    //     aria-haspopup="dialog" aria-controls="dialog::r3n::content" ...>
+    //   <html> intercepts pointer events
     //
-    // Retried ONCE and then thrown, deliberately: a dialog that will not open
-    // for any other reason still fails, and says so.
+    // The trigger was ALREADY `open` and a modal backdrop was already blocking
+    // the page. So the first click had worked perfectly — a dialog *was* open.
+    // Just not the one being waited on: `this.dialog` is `.first()` of every
+    // dialog containing "Reassign User", and this grid renders ONE TRIGGER AND
+    // ONE DIALOG PER ROW. Clicking row 3's trigger opens row 3's dialog while
+    // `.first()` keeps watching row 1's, which is correctly still closed.
+    //
+    // This is exactly the Ark UI hazard already recorded for this codebase:
+    // never `.first()` a bare dialog selector, because several dialog elements
+    // are present at once and only `data-part=content` reflects open state. The
+    // RFI half passes only because it happens to target the first row.
+    //
+    // The trigger names its own dialog in `aria-controls`, so that is what gets
+    // waited on. The blind retry is gone: re-clicking while the first dialog is
+    // open is worse than useless, since its backdrop swallows the click (which
+    // is what "<html> intercepts pointer events" was).
+    //
+    // The toast dismiss stays. It is cheap, toasts genuinely do intercept clicks
+    // here, and it is not what was wrong this time.
     await this.dismissToastIfPresent().catch(() => {});
     await reassignButton.click();
 
-    const opened = await this.dialog
-      .waitFor({ state: 'visible', timeout: 10000 })
-      .then(() => true)
-      .catch(() => false);
-    if (opened) return;
-
-    await this.dismissToastIfPresent().catch(() => {});
-    await this.closeAnyOpenListbox().catch(() => {});
-    await this.page.waitForTimeout(500);
-    await reassignButton.click();
+    // An ATTRIBUTE selector, not `#id`. These ids are Ark UI's own generated
+    // form — `dialog::r3n::content` — and in a CSS selector those colons parse
+    // as pseudo-elements, so `#dialog::r3n::content` matches nothing (and
+    // CSS.escape is a browser API, not available here in Node). `[id="..."]`
+    // needs no escaping.
+    const dialogId = await reassignButton.getAttribute('aria-controls').catch(() => null);
+    if (dialogId) this._bindDialog(this.page.locator(`[id="${dialogId}"]`));
     await this.dialog.waitFor({ state: 'visible', timeout: 15000 });
+  }
+
+  // Enumerates EVERY combobox in the open dialog, with its label and options.
+  //
+  // WHY EVERY ONE, rather than reading `[role="combobox"].first()`. The modal
+  // ADAPTS TO THE REASSIGNER: Admin gets two dropdowns (type, then Assign to),
+  // while a role permitted exactly one type — Contractor Manager, Execution
+  // Lead, Quality Lead — gets ONE, and that one holds PEOPLE, not types. So
+  // `.first()` reads types for Admin and people for the others, and comparing
+  // those people against a list of expected role names reports a permission
+  // leak that does not exist. That happened on the first pass of the 2026-09-16
+  // recon.
+  //
+  // The caller decides which box is which by looking at the OPTIONS (role names
+  // => the type picker), never by position.
+  async dumpDialogComboboxes() {
+    const boxes = this.dialog.locator('[role="combobox"]');
+    const count = await boxes.count();
+    const out = [];
+
+    for (let i = 0; i < count; i += 1) {
+      const box = boxes.nth(i);
+      const entry = { index: i, label: null, options: [] };
+
+      // Several of this app's dropdowns have broken label associations, so fall
+      // back to the field root's own text.
+      entry.label = (await box.getAttribute('aria-label').catch(() => null))
+        || (await box.locator('xpath=ancestor::*[@data-scope="field" or @data-scope="select"][1]')
+          .innerText().catch(() => ''))
+          .replace(/\s+/g, ' ').trim().slice(0, 60)
+        || null;
+
+      try {
+        const listbox = await this.openDropdown(box);
+        entry.options = (await listbox.locator('[data-part="item-text"]').allInnerTexts())
+          .map((n) => n.trim()).filter(Boolean);
+        await this.page.keyboard.press('Escape');
+        await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      } catch (err) {
+        entry.error = String((err && err.message) || err).split(/\r?\n/)[0];
+      }
+      out.push(entry);
+    }
+    return { count, boxes: out };
   }
 
   async selectAssigneeType(roleLabel) {

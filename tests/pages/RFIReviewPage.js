@@ -452,6 +452,9 @@ class RFIReviewPage extends BasePage {
   //     match them. They ARE properly label-associated
   //     (<label for=":r1r:"> + <input id=":r1r:">) inside their own
   //     [data-scope="field"][data-part="root"], which is what is used below.
+  //     (Defect Type has since become a DROPDOWN on the standalone form —
+  //     app change 2026-09-17 — so it is handled adaptively here; the capture
+  //     above predates that change and describes the text-input shape.)
   //   * The panel carries its OWN mandatory "Capture Photo *", and it is NOT
   //     the last camera box on the page — the checklist has one box per item
   //     (16 of them) and the NC's is inserted at item 1. Scoping the capture to
@@ -523,8 +526,45 @@ class RFIReviewPage extends BasePage {
     return this._linkedNcField(index, 'NC Description').locator('input');
   }
 
+  // DEFECT TYPE: a dropdown on the standalone NC form since the 2026-09-17 app
+  // change (NCCreatePage.defectTypeDropdown documents it). This panel renders
+  // the same NC fields, so it is handled ADAPTIVELY by setLinkedNcDefectType
+  // below — the dropdown path when the field carries a combobox, the old
+  // free-text path when it still carries a plain input. Both locators are kept
+  // for that reason; neither is assumed to exist.
+  linkedNcDefectTypeTrigger(index = 0) {
+    return this._linkedNcField(index, 'Defect Type').getByRole('combobox').first();
+  }
+
   linkedNcDefectTypeInput(index = 0) {
-    return this._linkedNcField(index, 'Defect Type').locator('input');
+    return this._linkedNcField(index, 'Defect Type').locator('input').first();
+  }
+
+  // Sets the panel's Defect Type and returns the value actually set.
+  //
+  // `preferred` is a preference, not a requirement: the option list is derived
+  // from the NC's own activity data, so the first offered option is taken when
+  // none of the candidates is present (same contract as
+  // NCCreatePage.selectDefectType).
+  async setLinkedNcDefectType(index = 0, preferred = '__first__') {
+    const trigger = this.linkedNcDefectTypeTrigger(index);
+    const isDropdown = await trigger
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (isDropdown) {
+      const picked = await this.selectSearchableOption(trigger, { preferred });
+      this.lastLinkedNcDefectType = picked;
+      return picked;
+    }
+
+    // Pre-change shape: a label-associated free-text input with no placeholder.
+    const literal = (Array.isArray(preferred) ? preferred : [preferred])
+      .find(v => v != null && v !== '' && v !== '__first__') || 'Workmanship defect';
+    await this.linkedNcDefectTypeInput(index).fill(String(literal));
+    this.lastLinkedNcDefectType = literal;
+    return literal;
   }
 
   // The panel's own camera box — scoped to the panel, never `.last()` on the
@@ -567,17 +607,40 @@ class RFIReviewPage extends BasePage {
       .first();
     await calendar.waitFor({ state: 'visible', timeout: 10000 });
 
+    // Disabled padding cells must be excluded, exactly as in
+    // NCCreatePage.selectTargetDate — see the long note there. A date that
+    // falls in the NEXT month is rendered in this month's grid as a greyed-out
+    // `data-outside-range` cell, which is "visible" but not clickable, and the
+    // click then spins on "element is not enabled" for the full 30s.
+    const enabledCell = () => calendar.locator(
+      `[data-part="table-cell-trigger"][data-value="${dataValue}"]` +
+      `:not([data-outside-range]):not([data-disabled]):not([aria-disabled="true"])`
+    );
+
     for (let i = 0; i < 6; i += 1) {
-      const cell = calendar.locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`);
-      if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await cell.click();
+      const clickable = await enabledCell()
+        .waitFor({ state: 'visible', timeout: 1000 })
+        .then(() => true)
+        .catch(() => false);
+      if (clickable) {
+        await enabledCell().click();
         await calendar.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
         return;
       }
       await calendar.getByRole('button', { name: 'Switch to next month' }).click();
       await this.page.waitForTimeout(200);
     }
-    throw new Error(`Linked NC Target Date: no cell for ${dataValue} within 6 months of forward navigation`);
+
+    const present = await calendar
+      .locator(`[data-part="table-cell-trigger"][data-value="${dataValue}"]`)
+      .count()
+      .catch(() => 0);
+    throw new Error(
+      `Linked NC Target Date: no ENABLED cell for ${dataValue} within 6 months of forward ` +
+      `navigation — ${present
+        ? 'the cell exists but is disabled, so this is a min/max-date restriction on the field'
+        : 'there is no cell for that date at all'}`
+    );
   }
 
   // Fills every field of one item's linked-NC panel. Defaults mirror
@@ -587,7 +650,9 @@ class RFIReviewPage extends BasePage {
   async fillLinkedNc(index, data = {}) {
     const {
       description = 'Linked NC raised by automation',
-      defectType = 'Workmanship defect',
+      // A dropdown preference now, not a literal — '__first__' means "whatever
+      // this NC's activity offers". See setLinkedNcDefectType.
+      defectType = '__first__',
       category = 'Critical',
       targetDateDays = 14,
       quantity = 1,
@@ -599,7 +664,7 @@ class RFIReviewPage extends BasePage {
     const panel = this.linkedNcPanel(index);
 
     await this.linkedNcDescriptionInput(index).fill(description);
-    await this.linkedNcDefectTypeInput(index).fill(defectType);
+    await this.setLinkedNcDefectType(index, defectType);
 
     await this.selectDropdownOption(
       this._linkedNcField(index, 'Category').getByRole('combobox').first(),

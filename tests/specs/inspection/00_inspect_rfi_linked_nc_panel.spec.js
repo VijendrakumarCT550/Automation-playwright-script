@@ -234,6 +234,30 @@ async function selectByAnyLabel(target, pattern, optionText) {
   }
 }
 
+// Same, for a dropdown whose option list the app COMPUTES from other fields
+// and which therefore carries its own "Search..." box — NC's Defect Type since
+// the 2026-09-17 app change. `preferred` is a preference; the first offered
+// option is taken when it is not on the list, so this reports the panel's
+// SHAPE rather than failing over a label.
+async function selectSearchableByAnyLabel(target, pattern, preferred) {
+  const fields = await snapshotFields(target);
+  const matches = fields
+    .filter((f) => f.visible && f.role === 'combobox')
+    .filter((f) => pattern.test(f.ariaLabel) || pattern.test(f.context))
+    .sort((a, b) => a.context.length - b.context.length);
+
+  if (!matches.length) return { ok: false, reason: `no combobox matched ${pattern}` };
+
+  const hit = matches[0];
+  try {
+    const picked = await new BasePage(target)
+      .selectSearchableOption(target.locator(`[data-recon="${hit.i}"]`), { preferred });
+    return { ok: true, hit, picked };
+  } catch (err) {
+    return { ok: false, hit, reason: firstLine(err) };
+  }
+}
+
 // Picks a work section the app will actually accept, learning from its own
 // refusal. Copied from spec 35 (which took it from spec 34) for the reason
 // recorded there: selectWorkSection(null) means "the first option", NOT "the
@@ -426,7 +450,13 @@ test('4. fill the panel from what the dump found, and push the rejection through
   const results = {};
 
   results.ncDescription = await fillByAnyLabel(page, /nc description/i, 'Linked NC raised by recon (G-01)');
-  results.defectType = await fillByAnyLabel(page, /defect type/i, src.defectType || 'Workmanship defect');
+  // Defect Type became a searchable DROPDOWN on the standalone NC form
+  // (2026-09-17). Try that shape first and keep the original free-text attempt
+  // as the fallback — which one succeeds is itself the finding for the panel.
+  results.defectType = await selectSearchableByAnyLabel(page, /defect type/i, src.defectType);
+  if (!results.defectType.ok) {
+    results.defectType = await fillByAnyLabel(page, /defect type/i, 'Workmanship defect');
+  }
   results.ncQuantity = await fillByAnyLabel(page, /nc quantity/i, String(src.ncQuantity || 1));
   results.remark = await fillByAnyLabel(page, /remark/i, 'Not Ok - linked NC recon');
   results.category = await selectByAnyLabel(page, /category/i, src.category || 'Critical');

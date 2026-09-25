@@ -13,7 +13,7 @@ const { SEED_TRACKER: RFI_SEED } = require('./tracker-utils');
 // cannot read or write the regression's tracker. It does mean the 4-TC matrix has
 // exactly one definition rather than a copy that could drift.
 const { SEED_TRACKER: NC_SEED } = require('./nc-tracker-utils');
-const { resolveEnvironment } = require('../config/environments');
+const { environmentKey } = require('../config/environments');
 
 // SMOKE-CHAIN TRACKER STATE — isolated per (flow x profile x viewport x TC set).
 //
@@ -58,43 +58,14 @@ const { resolveEnvironment } = require('../config/environments');
 // loud rather than letting state appear to vanish.
 const SMOKE_FIXTURES = path.join(__dirname, '..', 'fixtures', 'smoke');
 
-// 'qa' | 'test' | 'dev' | 'uat' | <host-derived> — whatever the run targets.
+// 'qa' | 'test' | 'dev' | 'uat' | 'host-<label>' — whatever the run targets.
 //
-// THE HOST-DERIVED CASE IS NOT COSMETIC, and it was found the hard way on
-// 2026-09-08. resolveEnvironment() returns the literal key `custom` for ANY
-// deployment that has no entry in ENVIRONMENTS — so a full chain run against
-// pulse-uat (unnamed at the time) wrote `rfi-tracker.solar-e2e.custom.*.json`.
-//
-// That reintroduces the exact bug this whole key exists to prevent: `custom` is
-// shared by every unnamed deployment, so pointing the suite at a second unknown
-// host would silently resume the first one's rfiId/ncId values. Naming pulse-uat
-// in ENVIRONMENTS fixes today; deriving the key from the HOSTNAME fixes the
-// class, so the next unnamed deployment cannot collide either.
-//
-// The first label of the hostname is enough to be readable and unique here
-// ('pulse-uat.cfapps...' -> 'pulse-uat'), and it is sanitised because it lands
-// in a filename.
-function envKey() {
-  let env;
-  try {
-    env = resolveEnvironment();
-  } catch (e) {
-    // resolveEnvironment throws when neither PULSE_ENV nor BASE_URL is set. A
-    // tracker filename is not the right place to surface that — the run will
-    // fail with a far clearer message the moment it tries to navigate.
-    return 'unknown';
-  }
-
-  if (env.key !== 'custom') return env.key;
-
-  try {
-    const host = new URL(env.baseUrl).hostname.split('.')[0].toLowerCase();
-    const safe = host.replace(/[^a-z0-9-]/g, '');
-    return safe ? `host-${safe}` : 'custom';
-  } catch (e) {
-    return 'custom';
-  }
-}
+// The derivation itself lives in tests/config/environments.js as of 2026-09-09:
+// fixtures/last-created-users.json is now partitioned by environment as well
+// (user-counter-utils.js), and the two stores MUST agree on what "the current
+// deployment" is called. Still exported under this name so the tracker-side
+// vocabulary in this file (and anything that imported it) keeps working.
+const envKey = environmentKey;
 
 // Tracker files from before the env segment existed. Reported, never deleted:
 // they are the record of a real run against some deployment, and which one is

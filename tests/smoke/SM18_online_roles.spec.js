@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { runOnlineRoleRegressionSuite } = require('../utils/online-role-regression');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 
 // Feature stage SM18: the smoke replica of the seven specs in
@@ -31,7 +31,7 @@ const { requireFeatureGround } = require('../config/projects');
 // online-role-regression.js gained ONE optional parameter, `resolveUser`
 // (defaulting to its original bare-prefix lookup). The seven regression specs
 // pass nothing and are byte-for-byte unaffected; this file injects a resolver
-// backed by resolveSmokeUsers(), so the same driver runs as SM01's users for
+// backed by ensureSmokeUsers(), so the same driver runs as SM01's users for
 // the current run. Same injection pattern already proven for `loginAs` on
 // rfi-dependency-flow.js.
 //
@@ -113,10 +113,11 @@ test.describe('Smoke stage SM18 - online-role extensive sweep', () => {
 
       const workLocation = profile.workLocations[0];
 
-      // Resolve up front so a missing user fails here — with resolveSmokeUsers'
-      // message naming exactly which check failed and what to run — rather than
-      // deep inside the driver at a dropdown search.
-      const users = resolveSmokeUsers(profile, [suite.key]);
+      // Resolve up front, so a user missing on this deployment is CREATED here
+      // (ensureSmokeUsers) or fails here with a message naming exactly which
+      // role it is — rather than surfacing deep inside the driver as a dropdown
+      // search that finds nothing.
+      const users = await ensureSmokeUsers(browser, profile, [suite.key]);
       const user = users[suite.key];
       console.log(
         `\n=== SM18 ${suite.roleName} (${suite.key}) ===\n` +

@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
 const { attemptCheckpoint, resetToMyTasks } = require('../utils/rfi-dependency-flow');
 const MyTasksPage = require('../pages/MyTasksPage');
@@ -128,7 +129,12 @@ test.describe('Smoke stage SM28 - a non-approved NC blocks RFI on the same tripl
     };
     checkpoint = { name: data.checkpoint, checklist: data.checklist };
 
-    const users = resolveSmokeUsers(profile, ['CI', 'QI']);
+    const users = await ensureSmokeUsers(browser, profile, ['CI', 'QI']);
+    // Own prerequisite (app owner, 2026-09-25): the CI and QI must hold this stage's
+    // ground in WAM. No-op when they already do — see smoke-prereqs.js.
+    await ensureWorkAreaMapping(browser, profile, users, {
+      roles: ['CI', 'QI'], areas: [area], label: 'SM28 prereq',
+    });
     ci = users.CI;
     qi = users.QI;
 

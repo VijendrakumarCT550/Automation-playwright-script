@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
 const NCCreatePage = require('../pages/NCCreatePage');
 
@@ -56,7 +57,13 @@ test.describe('Smoke stage SM26 - QI creates an NC', () => {
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
     const area = ground.ncCreate || profile.nc.workArea;
-    const qi = resolveSmokeUsers(profile, ['QI']).QI;
+    // Own prerequisite: QI (creator) and CI/EE (who the NC routes to) must hold
+    // this area in WAM. No-op when they already do. See smoke-prereqs.js.
+    const actors = await ensureSmokeUsers(browser, profile, ['QI', 'CI', 'EE']);
+    await ensureWorkAreaMapping(browser, profile, actors, {
+      roles: ['QI', 'CI', 'EE'], areas: [area], label: 'SM26 prereq',
+    });
+    const qi = actors.QI;
 
     // Built from profile.nc — the PROVEN combination the tracked four-TC NC
     // regression has always used — with only the work area re-pointed. The

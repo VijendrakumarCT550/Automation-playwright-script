@@ -699,7 +699,13 @@ const SOLAR_E2E = {
     workSectionCount: 2,
     ncQuantity: 2,
     unit: 'EA',
-    defectType: 'Workmanship defect',
+    // Defect Type is a DROPDOWN since the 2026-09-17 app change, and the app
+    // derives its options from the work-region/activity fields above — the old
+    // free-text value ("Workmanship defect") is in no list. '__first__' takes
+    // whatever this activity offers; a real label here is treated as a
+    // preference with a first-option fallback. See
+    // NCCreatePage.selectDefectType.
+    defectType: '__first__',
     category: 'Critical',
     // Mandatory per an app change; 14 days from the run date.
     targetDateClosureDays: 14,
@@ -787,7 +793,8 @@ const SOLAR_E2E = {
     vendorName: 'CHOUHAN',
     ncQuantity: 2,
     unit: 'EA',
-    defectType: 'Workmanship defect',
+    // Dropdown since 2026-09-17 — see the note in the nc block above.
+    defectType: '__first__',
     category: 'Critical',
     targetDateClosureDays: 14,
 
@@ -945,6 +952,15 @@ const SOLAR_E2E = {
     // risk that the ordering happens to avoid" is a worse guarantee than
     // "disjoint ground that cannot collide at all".
     ncCreate: 'BL05',
+
+    // SM29 (dashboard data prerequisite, 2026-09-25): where EL/QL get mapped and
+    // where one RFI + one NC are guaranteed, so their dashboards have something
+    // to show before SM15-SM18 look. SHARES rfiCreate on purpose — SM23/SM24
+    // only ever ADD RFIs here and nothing re-points its WAM rows, so a count
+    // read concurrently from the readonly lane can only go up. Not BL08/BL09
+    // (where SM13 puts the EL): the wam-sweep lane re-assigns those rows while
+    // the dashboards run. See SM29's header for the rest.
+    dashboardSeed: 'BL11',
   },
 };
 
@@ -1067,6 +1083,7 @@ function featureWorkAreas(profile) {
   add(g.rfiCreate);
   add(g.rfiBulkAreas);
   add(g.ncCreate);
+  add(g.dashboardSeed);
   // BL06 for solar. Harmless here even though it is ALSO in
   // profile.workAreas — smokeMappedWorkAreas() de-duplicates against the
   // flow list, so it does not produce a second mapping pass. Listed so

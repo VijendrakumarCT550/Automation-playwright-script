@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
 const { resolveRfiFixture } = require('../utils/smoke-rfi-fixture');
 const { createAndSubmitCheckpoint, resetToMyTasks, getVisibleCodeFor } = require('../utils/rfi-dependency-flow');
@@ -52,7 +53,13 @@ test.describe('Smoke stage SM25 - one RFI per work area, single session', () => 
     ).toBeGreaterThan(1);
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-    const ci = resolveSmokeUsers(profile, ['CI']).CI;
+    // Own prerequisite: CI and EE/QI must hold EVERY area this sweeps. No-op
+    // when they already do. See smoke-prereqs.js.
+    const actors = await ensureSmokeUsers(browser, profile, ['CI', 'EE', 'QI']);
+    await ensureWorkAreaMapping(browser, profile, actors, {
+      roles: ['CI', 'EE', 'QI'], areas, label: 'SM25 prereq',
+    });
+    const ci = actors.CI;
 
     const context = await browser.newContext({
       permissions: ['geolocation', 'camera'],

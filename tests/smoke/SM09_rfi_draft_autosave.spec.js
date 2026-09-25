@@ -1,6 +1,7 @@
 const { test, expect } = require('../config/test-base');
 const { loginAsFlowUser } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { openFromPendingWithMe } = require('../utils/rfi-nav');
 const { getVisibleCodeFor } = require('../utils/rfi-dependency-flow');
 const MyTasksPage = require('../pages/MyTasksPage');
@@ -269,7 +270,12 @@ test.describe('Smoke stage SM09 - RFI draft-autosave at every depth of the Page 
   test.beforeAll(async ({ browser, profile }) => {
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
     rfiFields = resolveRfiFields(profile);
-    const users = resolveSmokeUsers(profile, ROLES);
+    const users = await ensureSmokeUsers(browser, profile, ROLES);
+    // Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold this stage's
+    // ground in WAM. No-op when they already do — see smoke-prereqs.js.
+    await ensureWorkAreaMapping(browser, profile, users, {
+      roles: ROLES, areas: [rfiFields.workArea], label: 'SM09 prereq',
+    });
     loginAs = (p, role) => loginAsFlowUser(p, users[role].email, PASSWORD);
 
     // Own context rather than the `page` fixture, because every level shares

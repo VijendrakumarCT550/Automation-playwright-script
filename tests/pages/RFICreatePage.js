@@ -441,6 +441,43 @@ class RFICreatePage extends BasePage {
   async isFirstPageLocked() {
     return await this.workLocationDropdown.isDisabled();
   }
+
+  // Reads what page 1 is CURRENTLY SHOWING, without opening anything.
+  //
+  // WHY READING BEATS "the form rendered". On a resubmit, page 1 is
+  // reconstructed for whoever is logged in, and its dropdowns are derived from
+  // that user's WAM. So a CI who has been REASSIGNED a record they are not
+  // mapped for can land on a form that exists, is editable, and cannot describe
+  // its own RFI — every cascading dropdown empty. That renders as a perfectly
+  // healthy-looking page: no error, no toast, just blanks. Asserting "the page
+  // loaded" or "Proceed is visible" would call that a pass.
+  //
+  // This is the probe Family C is built on
+  // (docs/reassignment-scenarios.md, Family C, rows C2-C4), so it returns the
+  // displayed text per field and lets the caller decide what counts as empty.
+  // A placeholder ("Select Work Area") is reported as-is rather than being
+  // normalised away: the difference between a placeholder and a real value is
+  // exactly the finding.
+  async readFirstPageValues() {
+    const fields = {
+      workLocation:         this.workLocationDropdown,
+      workArea:             this.workAreaDropdown,
+      package:              this.packageDropdown,
+      subPackage:           this.subPackageDropdown,
+      activity:             this.activityDropdown,
+      subActivity:          this.subActivityDropdown,
+      inspectionCheckpoint: this.inspectionCheckpointDropdown,
+      inspectionChecklist:  this.inspectionChecklistDropdown,
+    };
+
+    const out = {};
+    for (const [name, locator] of Object.entries(fields)) {
+      out[name] = (await locator.innerText().catch(() => ''))
+        .replace(/\s+/g, ' ')
+        .trim() || null;
+    }
+    return out;
+  }
 }
 
 module.exports = RFICreatePage;

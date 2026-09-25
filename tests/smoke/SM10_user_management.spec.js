@@ -32,9 +32,10 @@ const UserManagementPage = require('../pages/UserManagementPage');
 // ---------------------------------------------------------------------------
 // THE PREFIX NAMESPACE, AND WHY IT IS A THIRD ONE
 // ---------------------------------------------------------------------------
-// tests/fixtures/last-created-users.json is a single flat map keyed by prefix,
-// shared by three tiers, so there are already two namespaces in it that this
-// file must avoid:
+// tests/fixtures/last-created-users.json is keyed by prefix WITHIN a
+// per-deployment bucket (see user-counter-utils.js), and it is shared by three
+// tiers — so there are already two prefix namespaces in it that this file must
+// avoid:
 //
 //   CISL/EESL/...    SM01's, per project type (CIWTG for wind). Clobbering these
 //                    breaks the current run, as above.
@@ -117,11 +118,13 @@ test.describe('Smoke stage SM10 - Admin creates one user per role (all 11)', () 
         ROLE_CONFIGS
           .filter(({ prefix }) => {
             const e = recorded[prefix];
-            // Same two checks resolveSmokeUsers() makes, and for the same reason:
-            // this file has no environment dimension, so a user recorded against
-            // pulse-dev stays recorded when the suite is pointed at pulse-qa
-            // where it does not exist.
-            return !(e && e.profileKey === profile.key && e.baseUrl === process.env.BASE_URL);
+            // Only the profile check is left. The environment check that used to
+            // sit here (e.baseUrl === process.env.BASE_URL) is now structural:
+            // loadLastCreatedUsers() reads this deployment's bucket, so a user
+            // recorded against pulse-dev is not in what comes back when the suite
+            // is pointed at pulse-qa — and, unlike the old comparison, pointing
+            // back at pulse-dev does not invalidate it either.
+            return !(e && e.profileKey === profile.key);
           })
           .map((r) => r.prefix)
       );

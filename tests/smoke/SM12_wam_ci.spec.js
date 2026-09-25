@@ -1,6 +1,6 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
-const { resolveSmokeUsers } = require('../utils/smoke-users');
+const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { requireFeatureGround } = require('../config/projects');
 const { openAssignmentDialog, assignAndProve } = require('../utils/smoke-wam');
 
@@ -42,7 +42,7 @@ test.describe('Smoke stage SM12 - WAM for vendor roles, Service Order gated', ()
       `Profile "${profile.key}" declares no featureGround.wamSweep areas.`
     ).toBeGreaterThan(0);
 
-    users = resolveSmokeUsers(profile, ROLES);
+    users = await ensureSmokeUsers(browser, profile, ROLES);
 
     // Both must actually BE vendor roles, or the Service Order assertion below
     // is silently vacuous — fillAssignmentFilters skips fields that aren't

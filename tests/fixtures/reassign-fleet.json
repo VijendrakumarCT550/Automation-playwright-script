@@ -1,0 +1,1360 @@
+{
+  "version": 1,
+  "environments": {
+    "qa": {
+      "RA_EL": {
+        "key": "RA_EL",
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "email": "rarael24184261@adani.com",
+        "name": "RARAEL24184261",
+        "phone": "9241842615",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "probes": null,
+        "createdAt": "2026-09-15T19:24:46.280Z",
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        }
+      },
+      "RA_QL": {
+        "key": "RA_QL",
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "email": "raraql28628313@adani.com",
+        "name": "RARAQL28628313",
+        "phone": "9286283134",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "probes": null,
+        "createdAt": "2026-09-15T19:25:30.504Z",
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        }
+      },
+      "RA_PM": {
+        "key": "RA_PM",
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "email": "rarapm33050929@adani.com",
+        "name": "RARAPM33050929",
+        "phone": "9330509296",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-15T19:26:12.341Z",
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "A-06c",
+          "filters": "A-06c/Civil"
+        }
+      },
+      "RA_CM": {
+        "key": "RA_CM",
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "email": "raracm20090635@adani.com",
+        "name": "RARACM20090635",
+        "phone": null,
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "reassigner: Contractor Manager -> Contractor In-Charge",
+        "createdAt": "2026-09-15T19:27:50.903Z",
+        "note": "adopted after its WAM step failed; account was created and login-verified"
+      },
+      "CI_A": {
+        "key": "CI_A",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racia78150031@adani.com",
+        "name": "RACIA78150031",
+        "phone": "9781500313",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only, same work location",
+        "createdAt": "2026-09-15T20:06:47.940Z"
+      },
+      "CI_B": {
+        "key": "CI_B",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racib80794215@adani.com",
+        "name": "RACIB80794215",
+        "phone": "9807942154",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "THE HEADLINE CASE — eligible via WL_A, but every mapping is in WL_B/Electrical",
+        "createdAt": "2026-09-15T20:07:14.639Z"
+      },
+      "CI_C": {
+        "key": "CI_C",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racic85636683@adani.com",
+        "name": "RACIC85636683",
+        "phone": "9856366836",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm — fully mapped where the record lives",
+        "createdAt": "2026-09-15T20:08:05.726Z"
+      },
+      "CI_D": {
+        "key": "CI_D",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racid24715712@adani.com",
+        "name": "RACID24715712",
+        "phone": "9247157128",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Electrical"
+        },
+        "probes": "right location, wrong package",
+        "createdAt": "2026-09-15T20:14:33.782Z"
+      },
+      "CI_E": {
+        "key": "CI_E",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racie29580521@adani.com",
+        "name": "RACIE29580521",
+        "phone": "9295805213",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL08"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL08",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "right location and package, WRONG work area (record is on BL07)",
+        "createdAt": "2026-09-15T20:15:23.167Z"
+      },
+      "CI_F": {
+        "key": "CI_F",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racif34599612@adani.com",
+        "name": "RACIF34599612",
+        "phone": "9345996128",
+        "workLocations": [
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "S05b"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "NEGATIVE — other work location only, must not be eligible",
+        "createdAt": "2026-09-15T20:16:13.112Z"
+      },
+      "CI_G": {
+        "key": "CI_G",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racig37311573@adani.com",
+        "name": "RACIG37311573",
+        "phone": "9373115737",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "NEGATIVE — right work location, DIFFERENT vendor, must not be eligible",
+        "createdAt": "2026-09-15T20:16:40.541Z"
+      },
+      "EE_A": {
+        "key": "EE_A",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeea40054365@adani.com",
+        "name": "RAEEA40054365",
+        "phone": "9400543658",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only baseline",
+        "createdAt": "2026-09-15T20:17:06.037Z"
+      },
+      "EE_B": {
+        "key": "EE_B",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeeb42603941@adani.com",
+        "name": "RAEEB42603941",
+        "phone": "9426039416",
+        "workLocations": [
+          "A-06c",
+          "WTG-Khavda"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR",
+            "WIND"
+          ],
+          "workLocations": [
+            "A-06c",
+            "WTG-Khavda"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "multi-project-type — solar AND wind provisioning, no WAM",
+        "createdAt": "2026-09-15T20:17:31.640Z"
+      },
+      "EE_C": {
+        "key": "EE_C",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeec45164164@adani.com",
+        "name": "RAEEC45164164",
+        "phone": "9451641646",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "mapped in WL_B/Electrical, init-only in WL_A",
+        "createdAt": "2026-09-15T20:18:02.908Z"
+      },
+      "EE_D": {
+        "key": "EE_D",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeed50672816@adani.com",
+        "name": "RAEED50672816",
+        "phone": "9506728163",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm",
+        "createdAt": "2026-09-15T20:18:55.331Z"
+      },
+      "QI_A": {
+        "key": "QI_A",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqia55824878@adani.com",
+        "name": "RAQIA55824878",
+        "phone": "9558248784",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only baseline",
+        "createdAt": "2026-09-15T20:19:43.934Z"
+      },
+      "QI_C": {
+        "key": "QI_C",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqic58393632@adani.com",
+        "name": "RAQIC58393632",
+        "phone": "9583936321",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "mapped in WL_B/Electrical, init-only in WL_A",
+        "createdAt": "2026-09-15T20:20:08.894Z"
+      },
+      "QI_D": {
+        "key": "QI_D",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqid62978647@adani.com",
+        "name": "RAQID62978647",
+        "phone": "9629786476",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm",
+        "createdAt": "2026-09-15T20:20:54.632Z"
+      }
+    },
+    "dev": {
+      "RA_EL": {
+        "key": "RA_EL",
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "email": "rarael60487185@adani.com",
+        "name": "RARAEL60487185",
+        "phone": "9604871851",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-16T13:50:29.100Z"
+      },
+      "RA_PM": {
+        "key": "RA_PM",
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "email": "rarapm69684394@adani.com",
+        "name": "RARAPM69684394",
+        "phone": "9696843945",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "A-06c",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-16T13:52:02.588Z"
+      },
+      "CI_A": {
+        "key": "CI_A",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racia74135449@adani.com",
+        "name": "RACIA74135449",
+        "phone": "9741354497",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only, same work location",
+        "createdAt": "2026-09-16T13:52:47.360Z"
+      },
+      "CI_B": {
+        "key": "CI_B",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racib76736273@adani.com",
+        "name": "RACIB76736273",
+        "phone": "9767362738",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": false,
+        "wamDetail": null,
+        "probes": "THE HEADLINE CASE — eligible via WL_A, but every mapping is in WL_B/Electrical",
+        "createdAt": "2026-09-16T13:53:13.945Z"
+      }
+    },
+    "test": {
+      "RA_CM": {
+        "key": "RA_CM",
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "email": "raracm35724751@adani.com",
+        "name": "RARACM35724751",
+        "phone": "9357247512",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ],
+          "projectType": null
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-19T20:39:43.787Z"
+      },
+      "RA_EL": {
+        "key": "RA_EL",
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "email": "rarael40380054@adani.com",
+        "name": "RARAEL40380054",
+        "phone": "9403800546",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-19T20:40:27.121Z"
+      },
+      "RA_QL": {
+        "key": "RA_QL",
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "email": "raraql44595267@adani.com",
+        "name": "RARAQL44595267",
+        "phone": "9445952674",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-19T20:41:14.481Z"
+      },
+      "RA_PM": {
+        "key": "RA_PM",
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "email": "rarapm56022275@adani.com",
+        "name": "RARAPM56022275",
+        "phone": "9560222754",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "A-06c",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-19T20:43:09.596Z"
+      },
+      "CI_A": {
+        "key": "CI_A",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racia63142382@adani.com",
+        "name": "RACIA63142382",
+        "phone": "9631423826",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only, same work location",
+        "createdAt": "2026-09-19T20:45:13.618Z"
+      },
+      "CI_B": {
+        "key": "CI_B",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racib71362123@adani.com",
+        "name": "RACIB71362123",
+        "phone": "9713621232",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "THE HEADLINE CASE — eligible via WL_A, but every mapping is in WL_B/Electrical",
+        "createdAt": "2026-09-19T20:46:33.089Z"
+      },
+      "CI_C": {
+        "key": "CI_C",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racic89385637@adani.com",
+        "name": "RACIC89385637",
+        "phone": "9893856376",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm — fully mapped where the record lives",
+        "createdAt": "2026-09-19T20:49:43.367Z"
+      },
+      "CI_D": {
+        "key": "CI_D",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racid08389022@adani.com",
+        "name": "RACID08389022",
+        "phone": "9083890223",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Electrical"
+        },
+        "probes": "right location, wrong package",
+        "createdAt": "2026-09-19T20:52:10.542Z"
+      },
+      "CI_E": {
+        "key": "CI_E",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racie20237073@adani.com",
+        "name": "RACIE20237073",
+        "phone": "9202370734",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL08"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL08",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "right location and package, WRONG work area (record is on BL07)",
+        "createdAt": "2026-09-19T20:53:48.648Z"
+      },
+      "CI_F": {
+        "key": "CI_F",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racif24914325@adani.com",
+        "name": "RACIF24914325",
+        "phone": "9249143259",
+        "workLocations": [
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "S05b"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "NEGATIVE — other work location only, must not be eligible",
+        "createdAt": "2026-09-19T20:54:36.258Z"
+      },
+      "CI_G": {
+        "key": "CI_G",
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "email": "racig27626013@adani.com",
+        "name": "RACIG27626013",
+        "phone": "9276260133",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "NEGATIVE — right work location, DIFFERENT vendor, must not be eligible",
+        "createdAt": "2026-09-19T20:55:02.664Z"
+      },
+      "EE_A": {
+        "key": "EE_A",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeea30266655@adani.com",
+        "name": "RAEEA30266655",
+        "phone": "9302666558",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only baseline",
+        "createdAt": "2026-09-19T20:55:26.013Z"
+      },
+      "EE_B": {
+        "key": "EE_B",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeeb32601535@adani.com",
+        "name": "RAEEB32601535",
+        "phone": "9326015358",
+        "workLocations": [
+          "A-06c",
+          "WTG-Khavda"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR",
+            "WIND"
+          ],
+          "workLocations": [
+            "A-06c",
+            "WTG-Khavda"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "multi-project-type — solar AND wind provisioning, no WAM",
+        "createdAt": "2026-09-19T20:55:49.984Z"
+      },
+      "EE_C": {
+        "key": "EE_C",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeec34998699@adani.com",
+        "name": "RAEEC34998699",
+        "phone": "9349986999",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "mapped in WL_B/Electrical, init-only in WL_A",
+        "createdAt": "2026-09-19T20:56:13.770Z"
+      },
+      "EE_D": {
+        "key": "EE_D",
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "email": "raeed39533444@adani.com",
+        "name": "RAEED39533444",
+        "phone": "9395334445",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm",
+        "createdAt": "2026-09-19T20:56:59.066Z"
+      },
+      "QI_A": {
+        "key": "QI_A",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqia43907961@adani.com",
+        "name": "RAQIA43907961",
+        "phone": "9439079614",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": null,
+        "wamApplied": true,
+        "wamDetail": null,
+        "probes": "init-only baseline",
+        "createdAt": "2026-09-19T20:57:42.860Z"
+      },
+      "QI_C": {
+        "key": "QI_C",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqic46286250@adani.com",
+        "name": "RAQIC46286250",
+        "phone": "9462862508",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "S05b",
+          "package": "Electrical"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL01",
+          "filters": "S05b/Electrical"
+        },
+        "probes": "mapped in WL_B/Electrical, init-only in WL_A",
+        "createdAt": "2026-09-19T20:58:06.640Z"
+      },
+      "QI_D": {
+        "key": "QI_D",
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "email": "raqid50924219@adani.com",
+        "name": "RAQID50924219",
+        "phone": "9509242195",
+        "workLocations": [
+          "A-06c"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": "control arm",
+        "createdAt": "2026-09-19T20:58:52.690Z"
+      }
+    }
+  }
+}

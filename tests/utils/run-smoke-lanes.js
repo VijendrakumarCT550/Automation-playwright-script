@@ -180,7 +180,18 @@ function runPhase(label, ids) {
       cwd: ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
       shell: process.platform === 'win32',
-      env: { ...process.env, PLAYWRIGHT_BLOB_OUTPUT_DIR: blobDir },
+      env: {
+        ...process.env,
+        PLAYWRIGHT_BLOB_OUTPUT_DIR: blobDir,
+        // WHICH LANE THIS IS, so code that must not run concurrently can say so
+        // for itself. ensureSmokeUsers() (tests/utils/smoke-users.js) refuses to
+        // create or WAM a missing user when this is set: user creation is
+        // read-modify-write on two fixture files and its WAM step re-points
+        // shared work-area rows, which is precisely what lanes.js's
+        // USER_CREATING_STAGES / 'global' ground rules keep out of lanes. Its
+        // validator cannot see a stage that heals itself, so the stage checks.
+        SMOKE_LANE: label,
+      },
     });
 
     // Lane output is PREFIXED rather than inherited. Five concurrent processes
