@@ -92,8 +92,13 @@ function createFlowTracker({
       if (tc.status === "done" || tc.status === "failed") continue;
 
       if (!tc[idField]) {
-        if (actor === createActor) {
-          pending.push({ tcId, tc, step: { actor: createActor, action: "create" } });
+        // A TC may name its own creator (`tc.creator`). NC creation opened up to
+        // EE, PM, EL and QL as well as QI (app change, 2026-10-08), so the NC
+        // matrix runs once per creator role; RFI TCs carry no `creator` and fall
+        // back to the tracker-wide createActor exactly as before.
+        const creator = tc.creator || createActor;
+        if (actor === creator) {
+          pending.push({ tcId, tc, step: { actor: creator, action: "create" } });
         }
         continue;
       }

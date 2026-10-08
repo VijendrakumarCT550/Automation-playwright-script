@@ -202,11 +202,11 @@ async function ensureNcCode(page, ctx, tcId) {
 // ---------------------------------------------------------------------------
 // QI: creates the NC, and is also the SECOND reviewer
 // ---------------------------------------------------------------------------
-async function createFor(page, ctx, tcId) {
+async function createFor(page, ctx, tcId, creatorRole = 'QI') {
   const create = new NCCreatePage(page);
   await create.goto();
   await create.clickCreateNC();
-  await create.fillForm({ ...ctx.ncData, ncDescription: `Automated smoke NC - ${tcId}` });
+  await create.fillForm({ ...ctx.ncData, ncDescription: `Automated smoke NC - ${tcId} (raised by ${creatorRole})` });
   await create.submitNC();
 
   // NC's post-submit URL has NO /view suffix, unlike RFI's — confirmed live and
@@ -223,7 +223,7 @@ async function createFor(page, ctx, tcId) {
 
   const ncCode = await readNcCode(page, ncId, ctx, tcId);
   ctx.tracker.setCode(ctx.tracker.load(), tcId, ncCode);
-  ctx.log('  >> ' + tcId + ': QI created ' + ncCode + ' (id ' + ncId + ') @ ' + ctx.workArea);
+  ctx.log('  >> ' + tcId + ': ' + creatorRole + ' created ' + ncCode + ' (id ' + ncId + ') @ ' + ctx.workArea);
 }
 
 // ---------------------------------------------------------------------------
@@ -288,8 +288,13 @@ async function runCITurn(page, ctx) {
 // ---------------------------------------------------------------------------
 // EE and QI review turns — identical mechanics, so one parameterised function
 // ---------------------------------------------------------------------------
-async function runReviewTurn(page, ctx, role) {
-  const pending = ctx.tracker.getPendingStepsForActor(ctx.tracker.load(), role);
+//
+// `createOnly` / `skipCreate` split ONE user across TWO live sessions (see
+// EE_CREATOR_SESSION below): the creator session only raises NCs, the reviewer
+// session only reviews. Neither set = the original behaviour.
+async function runReviewTurn(page, ctx, role, { createOnly = false, skipCreate = false } = {}) {
+  const pending = ctx.tracker.getPendingStepsForActor(ctx.tracker.load(), role)
+    .filter(({ step }) => (createOnly ? step.action === 'create' : skipCreate ? step.action !== 'create' : true));
   if (!pending.length) { ctx.log('  ' + role + ': nothing pending'); return; }
   ctx.log('  ' + role + ': ' + pending.length + ' TC(s) pending -> ' +
     pending.map((p) => p.tcId + ':' + p.step.action).join(', '));
@@ -301,7 +306,7 @@ async function runReviewTurn(page, ctx, role) {
       // always the create actor's turn), so it is handled here rather than in a
       // separate function the caller has to remember to call.
       if (step.action === 'create') {
-        await createFor(page, ctx, tcId);
+        await createFor(page, ctx, tcId, role);
         continue;
       }
 
@@ -343,8 +348,68 @@ async function runReviewTurn(page, ctx, role) {
 
 const runEETurn = (page, ctx) => runReviewTurn(page, ctx, 'EE');
 const runQITurn = (page, ctx) => runReviewTurn(page, ctx, 'QI');
+// PM / EL / QL have no review steps in the NC flow — their only turn is creating
+// the NCs the tracker assigns to them. Same function, same 'create' branch.
+const runPMTurn = (page, ctx) => runReviewTurn(page, ctx, 'PM');
+const runELTurn = (page, ctx) => runReviewTurn(page, ctx, 'EL');
+const runQLTurn = (page, ctx) => runReviewTurn(page, ctx, 'QL');
+
+// ---------------------------------------------------------------------------
+// MULTI-CREATOR ROUND ROBIN (app change 2026-10-08: NC can be raised by QI, EE,
+// PM, EL and QL — see smoke-tracker.NC_CREATORS)
+// ---------------------------------------------------------------------------
+// Sessions needed = every creator + the three flow actors CI/EE/QI who respond
+// and review whoever raised the NC.
+const FLOW_ACTORS = ['CI', 'EE', 'QI'];
+
+// EE both RAISES NCs and REVIEWS them, and its turn has to come after CI's (CI
+// must respond first). Run as one session, an EE-raised NC therefore waited a
+// round for CI. So EE gets TWO live sessions of the SAME user (app owner,
+// 2026-10-08): 'EEC' only creates and goes first with the other creators, 'EE'
+// only reviews and stays after CI. EE-raised NCs now reach CI in round 1 too.
+const EE_CREATOR_SESSION = 'EEC';
+
+// SESSION keys for a set of creators — not always user roles: 'EEC' is EE's
+// create-only session. Pass these to sessionUsers() to get the login accounts.
+function ncRolesFor(creators) {
+  const keys = creators.map((c) => (c === 'EE' ? EE_CREATOR_SESSION : c));
+  return [...new Set([...keys, ...FLOW_ACTORS])];
+}
+
+// Session key -> the user role that logs in under it.
+const userRoleOf = (key) => (key === EE_CREATOR_SESSION ? 'EE' : key);
+const ncUserRolesFor = (creators) => [...new Set(ncRolesFor(creators).map(userRoleOf))];
+// users map extended so loginFlowSessions(users[sessionKey]) resolves 'EEC'.
+const sessionUsers = (users) => ({ ...users, [EE_CREATOR_SESSION]: users.EE });
+
+const TURN_BY_ROLE = {
+  PM: runPMTurn, EL: runELTurn, QL: runQLTurn, QI: runQITurn, CI: runCITurn,
+  [EE_CREATOR_SESSION]: (page, ctx) => runReviewTurn(page, ctx, 'EE', { createOnly: true }),
+  // The reviewer EE leaves creating to its creator session ONLY when one is live.
+  EE: (page, ctx, hasEeCreator) => runReviewTurn(page, ctx, 'EE', { skipCreate: hasEeCreator }),
+};
+
+// One round: create-only sessions first (PM, EL, QL, EEC), then QI, CI, EE.
+//
+// Creators that do nothing else lead, and QI leads the flow actors for the
+// reason it always did (it both creates and does the final review), so an NC
+// raised by ANY creator reaches CI within the SAME round. EE's review session is
+// last because CI's response must precede its review. TC-04 takes four rounds
+// for every creator, inside the MAX_ROUNDS = 8 cap.
+function ncRoundOrder(roles) {
+  const creatorsOnly = roles.filter((r) => !FLOW_ACTORS.includes(r));
+  return [...creatorsOnly, ...['QI', 'CI', 'EE'].filter((r) => roles.includes(r))];
+}
+
+async function runNcRound(sessions, ctx, roles) {
+  const hasEeCreator = roles.includes(EE_CREATOR_SESSION);
+  for (const role of ncRoundOrder(roles)) {
+    await TURN_BY_ROLE[role](sessions[role].page, ctx, hasEeCreator);
+  }
+}
 
 module.exports = {
-  makeNcContext, runCITurn, runEETurn, runQITurn, runReviewTurn,
+  makeNcContext, runCITurn, runEETurn, runQITurn, runPMTurn, runELTurn, runQLTurn, runReviewTurn,
+  ncRolesFor, ncUserRolesFor, userRoleOf, sessionUsers, EE_CREATOR_SESSION, ncRoundOrder, runNcRound,
   readNcCode, patchTc, captureFailureEvidence,
 };

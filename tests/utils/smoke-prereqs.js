@@ -2,6 +2,21 @@ const { expect } = require('@playwright/test');
 const { adminFreshLogin, loginAsUser, loginAsFlowUser } = require('./helpers');
 const { openAssignmentDialog, assignAndProve } = require('./smoke-wam');
 
+// ADMIN SCREENS ARE DESKTOP (2026-09-26). Playwright applies the PROJECT's
+// device settings even to a context a test creates itself, so from a mobile
+// flow stage (Pixel 7) this Admin session opened WAM in the phone layout and
+// the desktop dialog clicks timed out: 'WAM dialog not usable — locator.click:
+// Timeout 30000ms' x3, failing smoke-*-rfi-mobile and -nc-mobile before any
+// flow work. Admin's WAM / Users screens are always driven at desktop size.
+const { devices: __devices } = require('@playwright/test');
+const ADMIN_DESKTOP_CONTEXT = {
+  viewport: { width: 1600, height: 1000 },
+  isMobile: false,
+  hasTouch: false,
+  deviceScaleFactor: 1,
+  userAgent: __devices['Desktop Chrome'].userAgent,
+};
+
 // STAGE PREREQUISITES — each stage provisions what it needs instead of hoping an
 // earlier stage left it behind.
 //
@@ -66,18 +81,26 @@ async function ensureWorkAreaMapping(browser, profile, users, { roles, areas, la
 
   console.log(`\n--- ${label}: checking WAM for ${roles.join(', ')} on ${wanted.join(', ')} ---`);
   const assigned = [];
-  const { context, page, dashboard } = await adminFreshLogin(browser);
+  const { context, page, dashboard } = await adminFreshLogin(browser, ADMIN_DESKTOP_CONTEXT);
   try {
     for (const roleKey of roles) {
       const user = users[roleKey];
       const filters = wamFiltersFor(profile, user);
       const wam = await openAssignmentDialog(page, dashboard, filters);
 
+      // Project Manager's WAM rows are WORK LOCATIONS, not work areas (SM04 /
+      // docs §3.6), so mapping a PM "onto a work area" means mapping it onto the
+      // work location that contains the area. Single-select, like CI/QI/EE, so
+      // the same assign path applies. Needed since NC creation opened up to the
+      // PM (2026-10-08).
+      const rowsForRole = roleKey === 'PM' ? [profile.workLocations[0]] : wanted;
+      const rowKind = roleKey === 'PM' ? 'work location' : 'work area';
+
       const missing = [];
-      for (const row of wanted) {
+      for (const row of rowsForRole) {
         const current = await wam.getWorkAreaUserValue(row).catch((err) => {
           throw new Error(
-            `${label}: work area "${row}" is not a row in Admin's WAM dialog for ${user.role} ` +
+            `${label}: ${rowKind} "${row}" is not a row in Admin's WAM dialog for ${user.role} ` +
             `(${JSON.stringify(filters)}). ${err.message.split('\n')[0]}`
           );
         });
@@ -85,7 +108,7 @@ async function ensureWorkAreaMapping(browser, profile, users, { roles, areas, la
       }
 
       if (!missing.length) {
-        console.log(`    ${roleKey} "${user.name}": already on ${wanted.join(', ')}`);
+        console.log(`    ${roleKey} "${user.name}": already on ${rowsForRole.join(', ')}`);
         await wam.closeDialog();
         continue;
       }

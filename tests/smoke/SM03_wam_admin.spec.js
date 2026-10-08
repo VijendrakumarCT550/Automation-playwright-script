@@ -1,7 +1,8 @@
 const { test, expect } = require('../config/test-base');
 const { adminFreshLogin } = require('../utils/helpers');
 const { ensureSmokeUsers } = require('../utils/smoke-users');
-const { smokeMappedWorkAreas } = require('../config/projects');
+const { smokeMappedWorkAreas, resolveFlowWorkAreas } = require('../config/projects');
+const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const WAMPage = require('../pages/WAMPage');
 
 // Stage 3 of the E2E smoke chain: Admin assigns each of the four users created
@@ -165,4 +166,35 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
       await wam.closeDialog();
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // NC CREATORS (app change, 2026-10-08): PM, EL and QL can raise an NC now.
+  // ---------------------------------------------------------------------------
+  // Mapped on the NC GROUND ONLY (the NC flow area(s) + featureGround.ncCreate),
+  // NOT on every area above: EL and QL rows are replace-on-pick here, and SM04 /
+  // SM13 / SM29 already own EL/QL on other areas (BL06, BL08/09, BL11) for their
+  // dashboard checks, so mapping them on all ten would evict those. PM's rows are
+  // WORK LOCATIONS, so it is mapped on the work location that holds the NC area.
+  // Each NC stage (SM06, SM26) still re-checks this itself — see smoke-prereqs.js.
+  test('map the NC creators (PM, EL, QL) on the NC ground', async ({ browser }) => {
+    test.setTimeout(15 * 60 * 1000);
+    // Wind has no NC data (parked, see SM06), hence no NC ground to map onto.
+    test.skip(!profile.nc, `Profile "${profile.key}" has no nc data — no NC creators to map`);
+    const creators = ['PM', 'EL', 'QL'];
+    const creatorUsers = await ensureSmokeUsers(browser, profile, creators);
+
+    const areas = new Set();
+    for (const viewport of ['desktop', 'mobile']) {
+      try { resolveFlowWorkAreas(profile, { flow: 'nc', viewport }).forEach((a) => areas.add(a)); } catch { /* no NC area for this viewport */ }
+    }
+    if (profile.featureGround && profile.featureGround.ncCreate) areas.add(profile.featureGround.ncCreate);
+    expect(areas.size, `Profile "${profile.key}" names no NC work area to map the NC creators on`).toBeGreaterThan(0);
+
+    console.log(`
+  NC creators on ${[...areas].join(', ')} (PM at work location ${profile.workLocations[0]}):`);
+    for (const r of creators) console.log(`    ${r} (${creatorUsers[r].role}): ${creatorUsers[r].name}`);
+    await ensureWorkAreaMapping(browser, profile, creatorUsers, {
+      roles: creators, areas: [...areas], label: 'SM03 NC creators',
+    });
+  });
 });

@@ -381,6 +381,37 @@ freshly-created user to a work area **evicts** the incumbent. This is why the
 smoke chain must stay off the regression's work areas — otherwise it strips the
 `.env` CI/QI of the areas specs 02, 08-10, 21, 23 and 24 depend on.
 
+### 3.7a Multi-assignee WAM rows are capped at 3 users — rule 2026-09-26
+
+**Problem, seen live on pulse-dev (Site Admin, cluster Gujarat):** the Khavda row
+had piled up ~40 SAD users. A multi-assignee row's trigger lists every assignee
+inline, so it grew to fill the Add Details dialog and pushed the rows below it
+(Ludbay, Mandvi) and their dropdowns out of reach, and WAM for some users failed.
+
+**Where the pile-up came from:** the patch/update stages (SM19, SM20, specs 26,
+28) add one extra user per run and never removed it, and the demap stages (SM21,
+SM22, specs 25, 27) restored *every* captured name after clearing.
+
+**The rule — `WAMPage.enforceRowCap`, run by every `addAssigneeToRow`:** a
+multi-assignee row holds at most `MAX_ROW_ASSIGNEES` (3). When an add would go
+past that, the row is cleared (Clear value = remove all) and refilled with:
+
+1. the user being added,
+2. every user this deployment's `last-created-users.json` records (never
+   demapped, so one profile's run cannot strip another profile's current user
+   from a shared row),
+3. the most recently added of the rest, up to the free slots.
+
+The patch specs call `enforceRowCap(row, { reserve: 1 })` before their snapshot
+(and Submit if it trimmed), and the demap specs restore only
+`capRestoreList(names, [testUser])` — at most 3 names. Single-assignee rows (CI,
+QI, EE) are untouched.
+
+**Verified live 2026-09-26 on pulse-dev** (SM13 "Admin can assign SAD at site
+granularity"): Khavda held 31 SAD users → cleared, 2 kept, `SADSLcjeUser175`
+added, Submit → "Assigned successfully", and the 3-user row **persisted after
+reopen**. So Clear + add in one Submit is saved as one change.
+
 ### 3.8 Keep NC files independent of RFI's
 
 Standing instruction: NC work stays in its own files even where the logic looks
@@ -419,12 +450,56 @@ The old free-text value `'Workmanship defect'` is in no list and has been
 removed from `projects.js` (`nc`, `ncBlock`), `nc-flow-turns.js`, specs 14 / 32 /
 35 / 39 and `RFIReviewPage.fillLinkedNc`'s defaults.
 
-**Still unconfirmed:** whether the linked-NC panel inside an RFI review (the
-"Raise NC" path) changed too. The app owner said "everywhere", so it is assumed
-to have, and `RFIReviewPage.setLinkedNcDefectType` handles **both** shapes —
-dropdown when the field carries a combobox, the old text input otherwise — so
-that path cannot break either way. Confirm it on the next linked-NC run and
-delete whichever half is dead.
+**Resolved 2026-09-24 — the linked-NC panel changed too.** It was confirmed live
+that the "Raise NC" panel inside an RFI review also renders Defect Type as a
+dropdown. The free-text half of `RFIReviewPage.setLinkedNcDefectType` (and the
+`linkedNcDefectTypeInput` locator) was the dead half and has been deleted; the
+locator is now `linkedNcDefectTypeDropdown(index)`.
+
+**`defectType` value types (2026-09-24),** accepted by both
+`NCCreatePage.selectDefectType` and `RFIReviewPage.setLinkedNcDefectType`:
+
+| Value | Picks |
+|---|---|
+| `'__first__'` (the default everywhere) | the first option |
+| a **number** | the option at that index, **wrapping round** the list (`index % count`) |
+| any other string | the option matching that text, else the first option (logged) |
+
+Spec 39 (bulk NC create) uses the numeric form: NC *i* passes `defectType: i - 1`,
+so the NCs cycle through whatever the activity offers, and the picked label is
+logged per NC and in the end-of-run summary. Note that index `0` is falsy —
+`fillForm` tests `defectType != null`, not truthiness.
+
+### 3.8c NC can be raised by FIVE roles — app change 2026-10-08
+
+**App owner:** NC can now be created by the Execution Engineer, Project Manager,
+Execution Lead and Quality Lead as well as the QI. The new creators can ONLY
+create — no draft feature — and the Create NC button is in the same place as it
+was for QI. So the 4-TC NC matrix runs once per creator: 5 x 4 = 20 TCs.
+
+| What | Where |
+|---|---|
+| TCs keyed `TC-0n-<ROLE>`, each carrying `creator`; `SMOKE_NC_CREATORS=QI,PM` narrows it | `smoke-tracker.NC_CREATORS` / `ncSeedFor`; `flow-tracker` honours `tc.creator` |
+| Round order: PM, EL, QL, QI, CI, EE (EE-raised NCs wait one extra round for CI) | `smoke-nc-turns.runNcRound` |
+| WAM prerequisite per creator; **PM maps at its Work Location row**, not the work area | `ensureWorkAreaMapping` |
+| Smoke: SM06 (matrix), SM26 (create + V1, one test per creator) | `tests/smoke/` |
+| DRS: IN04 (one cycle per creator), IN06 (20-TC matrix); DRS profile gained PM/EL/QL users | `tests/integration/`, `drs-profile.js` |
+
+Tracker filenames now carry the creator set (`...full-QIEEPMELQL.json`), so old
+4-TC trackers are never resumed. Regression specs 14-17/22 stay QI-only: their
+`.env` has CI/EE/QI accounts only. Draft specs (32 / IN13) stay QI-only.
+
+**Assumed, unverified live:** CI → EE → QI review the NC whoever raised it, and an
+EE-raised NC is still reviewable by that same EE.
+
+### 3.8b NC review's OK radio is pre-selected — app change 2026-09-24
+
+The NC review form (seen on the QI's turn) now opens with **OK already checked**,
+and the hidden `<input>` then refuses even a `force: true` click ("Element is not
+visible"). `NCReviewPage._selectRadio` skips a radio that is already checked,
+otherwise force-clicks it and falls back to the element named by its
+`aria-labelledby`, then verifies it is checked. `approve()` (OK) and `reject()`
+(Not Ok) both go through it.
 
 ### 3.9 SO Mapping hands off to DRS — all landing pages are correct
 

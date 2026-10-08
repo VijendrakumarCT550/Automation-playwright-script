@@ -3,6 +3,7 @@ const { loginAsFlowUser } = require('../utils/helpers');
 const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { requireFeatureGround } = require('../config/projects');
+const { resolveNcCreators } = require('../utils/smoke-tracker');
 const NCCreatePage = require('../pages/NCCreatePage');
 
 // Feature stage SM26: the smoke replica of 14_nc_create_qi.spec.js — the QI
@@ -43,10 +44,17 @@ test.describe.configure({ mode: 'serial' });
 
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 
-test.describe('Smoke stage SM26 - QI creates an NC', () => {
-  test('QI can create a new NC and it starts at V1', async ({ browser, profile }) => {
-    test.setTimeout(15 * 60 * 1000);
+// NC CREATORS (app change, 2026-10-08): QI, EE, PM, EL and QL can all raise an
+// NC now, so this stage proves the create (and V1) once per creator. They only
+// create — no draft — and the Create NC button is where it was for QI.
+const CREATORS = resolveNcCreators();
 
+test.describe('Smoke stage SM26 - NC creation by each creator role', () => {
+  let actors;
+  let area;
+
+  test.beforeAll(async ({ browser, profile }) => {
+    test.setTimeout(20 * 60 * 1000);
     const ground = requireFeatureGround(profile);
     expect(
       profile.nc,
@@ -56,14 +64,19 @@ test.describe('Smoke stage SM26 - QI creates an NC', () => {
     ).toBeTruthy();
     expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
-    const area = ground.ncCreate || profile.nc.workArea;
-    // Own prerequisite: QI (creator) and CI/EE (who the NC routes to) must hold
-    // this area in WAM. No-op when they already do. See smoke-prereqs.js.
-    const actors = await ensureSmokeUsers(browser, profile, ['QI', 'CI', 'EE']);
-    await ensureWorkAreaMapping(browser, profile, actors, {
-      roles: ['QI', 'CI', 'EE'], areas: [area], label: 'SM26 prereq',
-    });
-    const qi = actors.QI;
+    area = ground.ncCreate || profile.nc.workArea;
+    // Own prerequisite: every creator, plus CI/EE who the NC routes to, must hold
+    // this area in WAM (PM at its Work Location row). No-op when they already do.
+    // See smoke-prereqs.js.
+    const roles = [...new Set([...CREATORS, 'CI', 'EE'])];
+    actors = await ensureSmokeUsers(browser, profile, roles);
+    await ensureWorkAreaMapping(browser, profile, actors, { roles, areas: [area], label: 'SM26 prereq' });
+  });
+
+  for (const creator of CREATORS) {
+  test(`${creator} can create a new NC and it starts at V1`, async ({ browser, profile }) => {
+    test.setTimeout(15 * 60 * 1000);
+    const qi = actors[creator];
 
     // Built from profile.nc — the PROVEN combination the tracked four-TC NC
     // regression has always used — with only the work area re-pointed. The
@@ -81,7 +94,7 @@ test.describe('Smoke stage SM26 - QI creates an NC', () => {
       workSectionCount: profile.nc.workSectionCount,
       ncQuantity: profile.nc.ncQuantity,
       unit: profile.nc.unit,
-      ncDescription: 'Smoke SM26 - standalone NC creation check',
+      ncDescription: `Smoke SM26 - standalone NC creation check (${creator})`,
       defectType: profile.nc.defectType,
       category: profile.nc.category,
       // Mandatory per an app change. Capture Photo is also mandatory everywhere
@@ -98,8 +111,8 @@ test.describe('Smoke stage SM26 - QI creates an NC', () => {
 
     try {
       console.log(
-        `\n=== SM26 QI NC creation: "${profile.key}" ===\n` +
-        `    QI     : ${qi.name} <${qi.email}>\n` +
+        `\n=== SM26 ${creator} NC creation: "${profile.key}" ===\n` +
+        `    ${creator.padEnd(7)}: ${qi.name} <${qi.email}>\n` +
         `    ground : ${ncData.workLocation} / ${area} (shared with the NC flow — NC consumes nothing)\n` +
         `    activity: ${ncData.activity}\n`
       );
@@ -135,4 +148,5 @@ test.describe('Smoke stage SM26 - QI creates an NC', () => {
       await context.close();
     }
   });
+  }
 });

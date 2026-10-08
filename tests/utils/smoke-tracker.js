@@ -159,23 +159,54 @@ function createSmokeRfiTracker({ profileKey, viewport, set }) {
 // NC's 4-TC matrix: happy path, EE-reject, QI-reject, and both. There is no
 // P1/P2 split because NC has only ONE reject mechanism (a single OK/Not-Ok
 // toggle), unlike RFI's page-1-button vs per-item-checklist paths.
-function ncSeedFor(set) {
-  const full = JSON.parse(JSON.stringify(NC_SEED));
-  if (set !== 'quick') return full;
-  return { 'TC-01': full['TC-01'] };
+//
+// NC CREATORS (app change, 2026-10-08). NC used to be raised by the QI alone. It
+// can now be raised by the Execution Engineer, Project Manager, Execution Lead
+// and Quality Lead as well, so the 4-TC matrix runs once PER CREATOR role — 5
+// roles x 4 TCs = 20 TCs. Each TC is keyed `<TC>-<ROLE>` and carries `creator`,
+// which flow-tracker.getPendingStepsForActor honours. Everything AFTER creation
+// is unchanged: CI responds, EE reviews, QI reviews, whoever raised it.
+const NC_CREATORS = ['QI', 'EE', 'PM', 'EL', 'QL'];
+
+// SMOKE_NC_CREATORS=QI,PM narrows the matrix (iteration aid); default is all five.
+function resolveNcCreators(raw = process.env.SMOKE_NC_CREATORS) {
+  if (!raw || !String(raw).trim()) return [...NC_CREATORS];
+  const picked = String(raw).split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  const bad = picked.filter((r) => !NC_CREATORS.includes(r));
+  if (bad.length) {
+    throw new Error('Unknown SMOKE_NC_CREATORS role(s) "' + bad.join(', ') + '". Valid: ' + NC_CREATORS.join(', '));
+  }
+  return NC_CREATORS.filter((r) => picked.includes(r));
 }
 
-function createSmokeNcTracker({ profileKey, viewport, set }) {
+function ncSeedFor(set, creators = NC_CREATORS) {
+  const base = JSON.parse(JSON.stringify(NC_SEED));
+  const tcIds = set === 'quick' ? ['TC-01'] : Object.keys(base);
+  const seed = {};
+  for (const creator of creators) {
+    for (const tcId of tcIds) {
+      seed[tcId + '-' + creator] = { ...JSON.parse(JSON.stringify(base[tcId])), creator };
+    }
+  }
+  return seed;
+}
+
+function createSmokeNcTracker({ profileKey, viewport, set, creators = resolveNcCreators() }) {
   const tcSet = resolveTcSet(set);
-  const file = 'nc-tracker.' + profileKey + '.' + envKey() + '.' + viewport + '.' + tcSet + '.json';
+  // The creator set is part of the filename, and TC keys changed shape
+  // (`TC-01` -> `TC-01-QI`), so a pre-2026-10-08 4-TC tracker can never be
+  // resumed as if it covered the other creators — it is simply a different file.
+  const file = 'nc-tracker.' + profileKey + '.' + envKey() + '.' + viewport + '.' +
+    tcSet + '-' + creators.join('') + '.json';
   warnAboutLegacyTrackersOnce(path.join(SMOKE_FIXTURES, file));
   const tracker = createFlowTracker({
     trackerPath: path.join(SMOKE_FIXTURES, file),
-    seed: ncSeedFor(tcSet),
+    seed: ncSeedFor(tcSet, creators),
     idField: 'ncId',
     codeField: 'ncCode',
-    // QI creates an NC — the reverse of RFI, which CI creates. A TC with no
-    // ncId yet is therefore always QI's turn, whatever steps[0] says.
+    // NC is raised by a reviewer-side role — the reverse of RFI, which CI
+    // creates. Each TC names its own `creator` (see ncSeedFor); QI is only the
+    // fallback for a TC that does not.
     createActor: 'QI',
     seedIfMissing: true,
   });
@@ -240,7 +271,9 @@ function prepareRun(tracker, {
   }
 
   const t = tracker.load();
-  const pending = ['CI', 'EE', 'QI'].some(
+  // PM/EL/QL only ever have a create step (NC creators), but must be counted or
+  // a tracker whose only pending work is their creates reads as "nothing to do".
+  const pending = ['CI', 'EE', 'QI', 'PM', 'EL', 'QL'].some(
     (actor) => tracker.getPendingStepsForActor(t, actor).length > 0
   );
   if (pending) return { reset: false };
@@ -287,7 +320,7 @@ function printRunSummary(tracker, roundsRun, {
   if (done.length) {
     log('\n--- DONE ---');
     for (const [id, tc] of done) {
-      log('  ' + id + ': ' + (tc.rfiCode || '(no code)') +
+      log('  ' + id + ': ' + (tc.rfiCode || tc.ncCode || '(no code)') +
           (tc.workArea ? ' @ ' + tc.workArea : '') +
           (tc.checkpointCode ? ' [' + tc.checkpointCode + ']' : '') +
           ' — ' + tc.steps.length + ' step(s)');
@@ -343,5 +376,5 @@ module.exports = {
   listLegacyTrackerFiles,
   SMOKE_FIXTURES, TC_SETS, resolveTcSet, prepareRun, printRunSummary,
   rfiSeedFor, createSmokeRfiTracker,
-  ncSeedFor, createSmokeNcTracker,
+  ncSeedFor, createSmokeNcTracker, NC_CREATORS, resolveNcCreators,
 };

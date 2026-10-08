@@ -80,16 +80,38 @@ class NCCreatePage extends BasePage {
   // the listbox to the top before giving up. Kept local to NCCreatePage
   // (not added to BasePage's shared selectDropdownOption) so this can't
   // affect RFI/WAM/User-Management's already-validated dropdown handling.
-  async _selectScrollableOption(dropdown, optionText) {
-    const listbox = await this.openDropdown(dropdown);
-    const option = listbox.locator('[role="option"]').filter({ hasText: optionText }).first();
-    if (!(await option.isVisible({ timeout: 2000 }).catch(() => false))) {
-      await listbox.hover();
-      await this.page.mouse.wheel(0, -10000);
+  //
+  // RETRIES THE OPEN (2026-10-08). A cascade field opened right after its parent
+  // was picked can render "No items found" because its options have not loaded
+  // yet (seen live on Sub-Activity straight after Activity, in a 20-NC run: 3 of
+  // 20 creates failed with a bare 5s waitFor timeout). The list fills a moment
+  // later, so close, give it time, and reopen rather than failing the TC.
+  async _selectScrollableOption(dropdown, optionText, attempts = 3) {
+    let lastErr;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const listbox = await this.openDropdown(dropdown);
+      const option = listbox.locator('[role="option"]').filter({ hasText: optionText }).first();
+      try {
+        if (!(await option.isVisible({ timeout: 2000 }).catch(() => false))) {
+          await listbox.hover();
+          await this.page.mouse.wheel(0, -10000);
+        }
+        await option.waitFor({ state: 'visible', timeout: 5000 });
+        await option.click();
+        await this.page.waitForTimeout(300);
+        return;
+      } catch (err) {
+        lastErr = err;
+        if (attempt === attempts) break;
+        console.log(`  (dropdown option "${optionText}" not on offer yet — reopening, attempt ${attempt}/${attempts})`);
+        if (await listbox.isVisible().catch(() => false)) {
+          await this.page.keyboard.press('Escape').catch(() => {});
+          await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+        }
+        await this.page.waitForTimeout(2500);
+      }
     }
-    await option.waitFor({ state: 'visible', timeout: 5000 });
-    await option.click();
-    await this.page.waitForTimeout(300);
+    throw lastErr;
   }
 
   // Resolves the Defect Type trigger, by accessible name when it has one and
@@ -107,6 +129,35 @@ class NCCreatePage extends BasePage {
     return byLabel;
   }
 
+  // Picks the option at `index` of an open-able dropdown, WRAPPING ROUND the
+  // list (`index % count`), so a loop passing 0,1,2,… cycles first → second →
+  // … → first again however short this activity's list is. Returns the option
+  // text actually clicked. Kept local to NCCreatePage, like
+  // _selectScrollableOption, so no RFI/WAM/User-Management dropdown changes.
+  //
+  // Added for Defect Type's numeric mode (Defect Type is a dropdown now; index
+  // selection added 2026-09-24 for 39_nc_bulk_create_qi.spec.js).
+  async _selectOptionByIndex(dropdown, index) {
+    const listbox = await this.openDropdown(dropdown);
+    const options = listbox.locator('[role="option"]');
+    await options.first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+    const count = await options.count();
+    if (!count) throw new Error(`Dropdown has no options to pick index ${index} from`);
+
+    const option = options.nth(((index % count) + count) % count);
+    await option.scrollIntoViewIfNeeded();
+    const text = (await option.innerText()).replace(/\s*✓\s*$/, '').trim();
+    await option.click();
+    await this.page.waitForTimeout(300);
+    // Guarded close — a blind Escape with nothing open bubbles up (see
+    // BasePage.selectDropdownOption).
+    if (await listbox.isVisible().catch(() => false)) {
+      await this.page.keyboard.press('Escape').catch(() => {});
+      await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    }
+    return text;
+  }
+
   // Picks a Defect Type. `preferred` is a PREFERENCE (a string, or candidates
   // tried in order), not a requirement: the list is activity-dependent, so the
   // first offered option is taken when none of the candidates is present, and
@@ -117,12 +168,19 @@ class NCCreatePage extends BasePage {
   // Pass '__first__' to say "whatever this NC's activity offers" explicitly —
   // the same sentinel fillForm's other dropdowns already accept.
   //
+  // Pass a NUMBER to pick by position, wrapping round the list — see
+  // _selectOptionByIndex (2026-09-24, used by the bulk NC spec to spread NCs
+  // across the options on offer).
+  //
   // VERIFIES THE PICK LANDED rather than trusting the click: this app no-ops
   // on invalid input, and a Defect Type left unset would surface much later as
   // a silent Submit that never happens.
   async selectDefectType(preferred) {
     const trigger = await this._defectTypeTrigger();
-    const picked = await this.selectSearchableOption(trigger, { preferred });
+    const byIndex = typeof preferred === 'number';
+    const picked = byIndex
+      ? await this._selectOptionByIndex(trigger, preferred)
+      : await this.selectSearchableOption(trigger, { preferred });
 
     const shown = (await trigger.innerText()).trim();
     if (!shown || /^select\s+defect\s+type$/i.test(shown)) {
@@ -131,7 +189,7 @@ class NCCreatePage extends BasePage {
       );
     }
 
-    const asked = (Array.isArray(preferred) ? preferred : [preferred])
+    const asked = byIndex ? [] : (Array.isArray(preferred) ? preferred : [preferred])
       .filter(v => v != null && v !== '' && v !== '__first__');
     if (asked.length && !asked.some(v => picked.toLowerCase().includes(String(v).toLowerCase()))) {
       console.log(
@@ -279,7 +337,9 @@ class NCCreatePage extends BasePage {
       await this.ncDescriptionInput.pressSequentially(data.ncDescription, { delay: 20 });
     }
 
-    if (data.defectType) {
+    // Not a truthiness check: index 0 (the bulk spec's first NC) is a valid
+    // Defect Type choice now.
+    if (data.defectType != null && data.defectType !== '') {
       await this.selectDefectType(data.defectType);
     }
 

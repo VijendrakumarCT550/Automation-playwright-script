@@ -3,12 +3,27 @@ const { loginFreshUserSession } = require('../utils/helpers');
 const { ensureSmokeUsers } = require('../utils/smoke-users');
 const { ensureWorkAreaMapping } = require('../utils/smoke-prereqs');
 const { resolveFlowWorkAreas } = require('../config/projects');
-const { createSmokeNcTracker, prepareRun, printRunSummary } = require('../utils/smoke-tracker');
-const { makeNcContext, runCITurn, runEETurn, runQITurn } = require('../utils/smoke-nc-turns');
+const { createSmokeNcTracker, prepareRun, printRunSummary, resolveNcCreators } = require('../utils/smoke-tracker');
+const { makeNcContext, ncRolesFor, ncUserRolesFor, sessionUsers, runNcRound } = require('../utils/smoke-nc-turns');
 
 // Stage 5 of the E2E smoke chain (file SM06): the FULL 4-TC NC flow for one
 // project type and one viewport, driven by the users stages 1-3 created,
 // SO-mapped and WAM'd.
+//
+// ---------------------------------------------------------------------------
+// FIVE NC CREATORS (app change, 2026-10-08)
+// ---------------------------------------------------------------------------
+// NC can now be raised by the Execution Engineer, Project Manager, Execution
+// Lead and Quality Lead as well as the QI, so the 4-TC matrix runs once per
+// creator: 5 x 4 = 20 TCs (smoke-tracker.NC_CREATORS). The new creators can ONLY
+// create — no draft, no review steps — and use the same Create NC button. CI
+// responds, EE reviews and QI reviews whoever raised it. Sessions: the five
+// creators + CI (EE and QI are already in that set) = PM, EL, QL, QI, EE, CI.
+// SMOKE_NC_CREATORS=QI,PM narrows it while iterating.
+//
+// PREREQUISITE: every session role must hold this stage's ground in WAM —
+// ensureWorkAreaMapping below does it (PM at its Work Location row, the rest at
+// the work area).
 //
 // Same session model as the RFI stage: log in as CI, EE and QI exactly ONCE
 // each, IN PARALLEL, then round-robin turns between the three live sessions
@@ -51,14 +66,18 @@ const { makeNcContext, runCITurn, runEETurn, runQITurn } = require('../utils/smo
 test.describe.configure({ mode: 'serial' });
 
 const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
-const ROLES = ['CI', 'EE', 'QI'];
+const CREATORS = resolveNcCreators();
+// ROLES are SESSION keys (EE gets a create-only 'EEC' session plus its reviewer
+// 'EE' session, same user); USER_ROLES are the accounts behind them.
+const ROLES = ncRolesFor(CREATORS);
+const USER_ROLES = ncUserRolesFor(CREATORS);
 
 // Safety cap, not a round count — the loop exits as soon as every TC is done or
-// failed. Each round runs QI (create + review), then CI, then EE, so a TC
-// advances by at most one QI step per round. TC-04's eight steps (respond,
-// EE reject, resubmit, EE approve, QI reject, resubmit, EE approve, QI approve)
-// therefore take FOUR rounds: QI's two review steps land in separate rounds, and
-// its final approve needs a round of its own after EE's last approve.
+// failed. Each round runs the create-only roles, QI (create + review), CI, then
+// EE, so a TC advances by at most one QI step per round. TC-04's eight steps
+// (respond, EE reject, resubmit, EE approve, QI reject, resubmit, EE approve, QI
+// approve) take FOUR rounds for a QI/PM/EL/QL-raised NC and FIVE for an
+// EE-raised one (EE's create lands after CI's turn, so CI answers a round late).
 const MAX_ROUNDS = 8;
 
 test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMobileViewport }) => {
@@ -72,14 +91,15 @@ test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMo
   expect(PASSWORD, 'BULK_USER_DEFAULT_PASSWORD must be set in .env').toBeTruthy();
 
   const viewport = isMobileViewport ? 'mobile' : 'desktop';
-  const users = await ensureSmokeUsers(browser, profile, ROLES);
+  const baseUsers = await ensureSmokeUsers(browser, profile, USER_ROLES);
+  const users = sessionUsers(baseUsers);
   const workArea = resolveFlowWorkAreas(profile, { flow: 'nc', viewport })[0];
   // Own prerequisite (app owner, 2026-09-25): CI, EE and QI must hold this stage's
   // ground in WAM. No-op when they already do — see smoke-prereqs.js.
-  await ensureWorkAreaMapping(browser, profile, users, {
-    roles: ROLES, areas: [workArea], label: `SM06 ${viewport} prereq`,
+  await ensureWorkAreaMapping(browser, profile, baseUsers, {
+    roles: USER_ROLES, areas: [workArea], label: `SM06 ${viewport} prereq`,
   });
-  const { tracker, tcSet, file } = createSmokeNcTracker({ profileKey: profile.key, viewport });
+  const { tracker, tcSet, file } = createSmokeNcTracker({ profileKey: profile.key, viewport, creators: CREATORS });
 
   console.log(
     '\n=== Smoke NC flow: "' + profile.key + '" / ' + viewport + ' / TC set "' + tcSet + '" ===\n' +
@@ -126,7 +146,7 @@ test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMo
 
   const sessions = {};
   ROLES.forEach((role, i) => { sessions[role] = results[i].value; });
-  console.log('  all three sessions live: ' + ROLES.map((r) => r + '=' + sessions[r].email).join(', ') + '\n');
+  console.log('  all ' + ROLES.length + ' sessions live: ' + ROLES.map((r) => r + '=' + sessions[r].email).join(', ') + '\n');
 
   const ctx = makeNcContext({ profile, tracker, workArea, viewport });
   let roundsRun = 0;
@@ -135,6 +155,7 @@ test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMo
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       const t = tracker.load();
       const stillPending = ROLES.some((role) => tracker.getPendingStepsForActor(t, role).length > 0);
+      // (ROLES includes every creator, so an NC awaiting only its create counts)
       if (!stillPending) {
         console.log('\nNothing left pending after round ' + (round - 1) + '.');
         break;
@@ -144,9 +165,7 @@ test('NC full flow, 4 TC, one session per role', async ({ browser, profile, isMo
       // QI FIRST, unlike the RFI stage where CI leads. QI both creates the NC
       // and performs the final review, so leading with it means a freshly
       // created NC reaches CI within the SAME round.
-      await runQITurn(sessions.QI.page, ctx);
-      await runCITurn(sessions.CI.page, ctx);
-      await runEETurn(sessions.EE.page, ctx);
+      await runNcRound(sessions, ctx, ROLES);
       roundsRun = round;
 
       if (round === MAX_ROUNDS) {
