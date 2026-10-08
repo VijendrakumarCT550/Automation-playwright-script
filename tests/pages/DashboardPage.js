@@ -207,20 +207,45 @@ class DashboardPage extends BasePage {
   // the distribution cards; the smallest element carrying both the title and a
   // TOTAL label is the card.
   async getDistributionTotal(title, { timeout = 30000, wantNonZero = false, intervalMs = 1000 } = {}) {
-    const card = this.page.locator('div')
-      .filter({ has: this.page.getByText(title, { exact: true }) })
-      .filter({ hasText: /TOTAL/i })
-      .last();
-    const read = async () => {
-      const text = await card.innerText({ timeout: 2000 }).catch(() => '');
-      const m = text.match(/TOTAL\s*([\d,]+)/i);
-      return m ? Number(m[1].replace(/,/g, '')) : null;
-    };
+    // READ BY WALKING UP FROM THE TITLE, not via a nested-div locator. The old
+    // `locator('div').filter({has: title}).filter({hasText: TOTAL}).last()` matched
+    // nine nested divs on a fully loaded dashboard and the one it picked never
+    // returned text (innerText timed out, SM29 read null for 90 s while the page
+    // visibly showed TOTAL 16 / 88 — probed live 2026-10-08). textContent also
+    // covers an SVG-rendered figure, which innerText does not. The nearest
+    // ancestor of the title that carries a TOTAL figure is the card itself.
+    const read = () => this.page.evaluate((t) => {
+      const titleEl = [...document.querySelectorAll('*')]
+        .find((e) => e.children.length === 0 && (e.textContent || '').trim() === t);
+      for (let n = titleEl && titleEl.parentElement; n && n !== document.body; n = n.parentElement) {
+        const m = (n.textContent || '').match(/TOTAL\s*([\d,]+)/i);
+        if (m) return Number(m[1].replace(/,/g, ''));
+      }
+      return null;
+    }, title).catch(() => null);
 
+    // Wait for the card's title to be on screen before reading anything, so a
+    // slow dashboard (PWA data still loading) is not reported as an unreadable
+    // total. Bounded by the same timeout; falls through to the poll if it never
+    // shows, which then returns null as before.
     const deadline = Date.now() + timeout;
+    await this.page.getByText(title, { exact: true }).first()
+      .waitFor({ state: 'visible', timeout }).catch(() => {});
+
+    // SETTLE, THEN RE-READ (app owner, 2026-10-08: a dashboard that visibly held
+    // 15 RFIs / 87 NCs was read as null/0 because the read ran the instant the
+    // card appeared). A value seen once is only trusted after it has held for a
+    // short settle window, so a pre-paint figure is never returned.
+    const SETTLE_MS = 2000;
     let value = await read();
     while (Date.now() < deadline) {
-      if (value !== null && (!wantNonZero || value > 0)) return value;
+      if (value !== null && (!wantNonZero || value > 0)) {
+        await this.page.waitForTimeout(SETTLE_MS);
+        const settled = await read();
+        if (settled !== null && (!wantNonZero || settled > 0)) return settled;
+        value = settled;
+        continue;
+      }
       await this.page.waitForTimeout(intervalMs);
       value = await read();
     }

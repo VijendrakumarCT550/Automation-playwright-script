@@ -176,7 +176,7 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
   // dashboard checks, so mapping them on all ten would evict those. PM's rows are
   // WORK LOCATIONS, so it is mapped on the work location that holds the NC area.
   // Each NC stage (SM06, SM26) still re-checks this itself — see smoke-prereqs.js.
-  test('map the NC creators (PM, EL, QL) on the NC ground', async ({ browser }) => {
+  test('map the NC creators (PM, EL, QL) on the NC and dashboard-seed ground', async ({ browser }) => {
     test.setTimeout(15 * 60 * 1000);
     // Wind has no NC data (parked, see SM06), hence no NC ground to map onto.
     test.skip(!profile.nc, `Profile "${profile.key}" has no nc data — no NC creators to map`);
@@ -188,6 +188,10 @@ test.describe('Smoke stage 3 - WAM the created users onto the work area', () => 
       try { resolveFlowWorkAreas(profile, { flow: 'nc', viewport }).forEach((a) => areas.add(a)); } catch { /* no NC area for this viewport */ }
     }
     if (profile.featureGround && profile.featureGround.ncCreate) areas.add(profile.featureGround.ncCreate);
+    // EL and QL are ALSO mapped on the dashboard seed area (SM29's ground) here, so
+    // all of their WAM happens in this one stage and SM29's mapping step is a
+    // read-only check. PM (work-location row) is unaffected by the area list.
+    if (profile.featureGround && profile.featureGround.dashboardSeed) areas.add(profile.featureGround.dashboardSeed);
     expect(areas.size, `Profile "${profile.key}" names no NC work area to map the NC creators on`).toBeGreaterThan(0);
 
     console.log(`

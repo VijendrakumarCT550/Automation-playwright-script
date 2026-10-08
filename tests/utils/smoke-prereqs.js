@@ -145,6 +145,10 @@ async function readDashboardTotals(browser, user, password, { wantNonZero = true
   try {
     const dashboard = await loginAsUser(page, user.email, password);
     await dashboard.goToDashboard();
+    // Let the first data fetch land before the cards are read (see
+    // DashboardPage.getDistributionTotal's settle window).
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForTimeout(2000);
     const rfi = await dashboard.getDistributionTotal('RFI Distribution', { wantNonZero, timeout });
     const nc = await dashboard.getDistributionTotal('NC Distribution', { wantNonZero, timeout });
     return { rfi, nc };
