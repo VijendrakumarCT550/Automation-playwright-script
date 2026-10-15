@@ -82,6 +82,49 @@ class DrsServiceOrderPage {
     return { status: res.status(), method: res.request().method(), url: res.url(), body: await res.text().catch(() => '') };
   }
 
+  // "Add Line", then fill the NEW block (lineField reads the LAST caption, and the
+  // new block is the last one - on the edit form the existing lines are collapsed
+  // to "10-10 / 100 EA @ 1/EA" buttons, inspection round 21).
+  async addLine(line) {
+    await this.page.getByRole('button', { name: 'Add Line' }).click();
+    await this.page.waitForTimeout(500);
+    await this.lineField('Line Number').fill(String(line.lineNumber));
+    await this.lineField('Service Item No').fill(String(line.serviceItemNo));
+    await this.lineField('Quantity').fill(String(line.quantity));
+    await this.lineField('Actual Qty').fill(String(line.actualQty));
+    await this.lineField('Price Unit').fill(String(line.priceUnit));
+    await this.lineField('UOM').fill(String(line.uom));
+    // THE SERVICE CODE goes in Optional Line Fields → "Activity Code" (app owner,
+    // 2026-10-15; the step-5 card shows it as "Service Code"). The newest line's
+    // section is the last one; it opens on a click (inspection round 13).
+    if (line.serviceCode) {
+      await this.page.getByText('Optional Line Fields', { exact: true }).last().click();
+      const box = this.page.getByText('Activity Code', { exact: true }).last().locator('xpath=following::input[1]');
+      await box.waitFor({ state: 'visible', timeout: 10000 });
+      await box.fill(String(line.serviceCode));
+      await expect(box).toHaveValue(String(line.serviceCode));
+    }
+  }
+
+  // ADDS lines to an EXISTING SO (a new catalog version brought onto an existing
+  // project, 2026-10-15): Edit → Add Line per line → Save Changes. Returns the
+  // save call's answer.
+  async addLines(number, lines) {
+    const card = this.page.locator('div').filter({ has: this.page.getByText(String(number), { exact: true }) })
+      .filter({ has: this.page.getByRole('button', { name: 'Edit' }) }).last();
+    await card.getByRole('button', { name: 'Edit' }).click();
+    await this.page.getByRole('textbox', { name: 'SO Number*' }).waitFor({ state: 'visible', timeout: 30000 });
+    await this.page.waitForTimeout(1000);
+    for (const line of lines) await this.addLine(line);
+    const response = this.page.waitForResponse(
+      (r) => ['POST', 'PUT', 'PATCH'].includes(r.request().method()) && /\/api\/v1\/service-orders/.test(r.url()),
+      { timeout: 90000 },
+    );
+    await this.page.getByRole('button', { name: 'Save Changes' }).click();
+    const res = await response;
+    return { status: res.status(), method: res.request().method(), url: res.url(), body: await res.text().catch(() => '') };
+  }
+
   async createServiceOrder({ number, vendorCode, vendorName, lines = [] }) {
     await this.page.getByRole('button', { name: /Create new service order/i }).click();
     const soBox = this.page.getByRole('textbox', { name: 'SO Number*' });
@@ -90,26 +133,7 @@ class DrsServiceOrderPage {
     const vendorText = await this.pickVendor(vendorCode);
     if (vendorName) await this.fillAdvancedVendor(vendorCode, vendorName);
 
-    for (const line of lines) {
-      await this.page.getByRole('button', { name: 'Add Line' }).click();
-      await this.page.waitForTimeout(500);
-      await this.lineField('Line Number').fill(String(line.lineNumber));
-      await this.lineField('Service Item No').fill(String(line.serviceItemNo));
-      await this.lineField('Quantity').fill(String(line.quantity));
-      await this.lineField('Actual Qty').fill(String(line.actualQty));
-      await this.lineField('Price Unit').fill(String(line.priceUnit));
-      await this.lineField('UOM').fill(String(line.uom));
-      // THE SERVICE CODE goes in Optional Line Fields → "Activity Code" (app owner,
-      // 2026-10-15; the step-5 card shows it as "Service Code"). The newest line's
-      // section is the last one; it opens on a click (inspection round 13).
-      if (line.serviceCode) {
-        await this.page.getByText('Optional Line Fields', { exact: true }).last().click();
-        const box = this.page.getByText('Activity Code', { exact: true }).last().locator('xpath=following::input[1]');
-        await box.waitFor({ state: 'visible', timeout: 10000 });
-        await box.fill(String(line.serviceCode));
-        await expect(box).toHaveValue(String(line.serviceCode));
-      }
-    }
+    for (const line of lines) await this.addLine(line);
 
     const response = this.page.waitForResponse(
       (r) => r.request().method() === 'POST' && /\/api\/v1\/service-orders/.test(r.url()),

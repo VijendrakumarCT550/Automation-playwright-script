@@ -61,6 +61,12 @@ Related: [`tests/drs-setting/README.md`](../tests/drs-setting/README.md), [`test
 ### 2.5 Pins
 - A Work Area with no badge has **no pin**. That is normal.
 - The pin dropdown lists the locked versions of the Work Area's **site**, then the locked **All sites** versions.
+- **Which versions a Work Area can take** (app owner, 2026-10-15). Visibility has only two filters:
+  - **Project type**, for **every** version (All sites and site alike), because a catalog is built per project type;
+  - **Site**, for a **site** version only: the Work Area must belong to that catalog's site.
+
+  An **All sites** version is available to every site's Work Areas of that project type.
+- **No new project is needed for a new catalog version.** Any Work Area that has **no records yet** can take it: a new Work Area added to an existing project, or an existing one with no RFI/NC, SO Configuration or WMC.
 - A pin **can be changed** while no work depends on the Work Area (no RFI/NC, no SO Configuration, no WMC). It can **never be cleared**.
 - Do not pin a **site** version through the Locations CSV import's *Catalog version* column (bug 16944). Use the form.
 
@@ -160,6 +166,26 @@ The DRS project chain (`npm run drs:setup`, `tests/drs/setup/D01–D06`) creates
 - The Automation Site 01 versions must be **locked** before D03 runs, so run `catalog_site_versions.spec.js` first.
 
 ---
+
+### 5.1 A new version on an EXISTING project (E01)
+
+`tests/drs/extend/E01_add_version_area.spec.js` brings a catalog version onto a project that already exists. Set it with `DRS_PROJECT_TAG`; the version is the newest locked site version, or `CATALOG_VERSION_LABEL`.
+
+**The stage:**
+1. **Import** one new Work Area `BL<nn> <AS|S>-v<n>` (60 Work Sections) under the project's existing Work Location. The import upserts by name, so nothing else changes.
+2. **Pin** it to the version.
+3. **Add that version's SO lines** to the project's **existing** SOs (Edit → *Add Line* → *Save Changes*), numbered after the existing lines, with the same plan rules as D04.
+
+**Then re-run D05 and D06** on the same project. They are idempotent, so only the new area's cells and the new lines are mapped.
+
+**Verified 2026-10-15** on AUTO-Solar-15102026-RHY:
+- **Area and pin:** `BL06 S-v3` imported (61 nodes) and pinned to Automation Site 01 v3.
+- **Civil SO 9956077393:** lines 210–340 added.
+- **Electrical SO 9956099198:** lines 130–240 added.
+- **D05:** set 17 + 12 new cells and 0 elsewhere.
+- **D06:** mapped the new lines.
+- **Line check:** 58/58 lines exactly as planned.
+- **Pulse:** IN01 (users, batch 225) and IN16 with `DRS_PROJECT_TAG=15102026-RHY` passed 4/4 on `BL06 S-v3`. b/c were blocked until the previous checkpoint was approved, every checklist loaded all its questions (6/17/16/7/18/17, equal to DRS), and RFIs CIV-0…CIV-5 were approved.
 
 ## 6. SO Configuration (step 4)
 

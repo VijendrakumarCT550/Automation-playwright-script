@@ -103,9 +103,22 @@ function versionTagOf(workArea) {
 
 // The Work Area names D02 gives the version areas when the run has `blCount` plain
 // BLs: [{ name: 'BL03 AS-v2', sections: 60 }, ...].
-module.exports.versionAreaNames = (blCount) => module.exports.versionAreas.map((a, i) => ({
-  name: `BL${String(blCount + i + 1).padStart(2, '0')} ${a.tag}`, sections: a.sections,
-}));
+//
+// With `envRecord`, the SITE-version areas follow the catalog records instead of the
+// fixed list: one "S-v<n>" area per LOCKED site version the catalog spec recorded
+// (S1..S3 ... - each catalog run adds one, app owner 2026-10-15), so a new project
+// always pins every site version, the newest included.
+module.exports.versionAreaNames = (blCount, envRecord) => {
+  let areas = module.exports.versionAreas;
+  if (envRecord) {
+    const chain = ((envRecord.catalogs || {})[module.exports.site]) || {};
+    const siteTags = Object.values(chain).filter((c) => c.status === 'locked')
+      .map((c) => (String(c.label).match(/ v(\d+)$/) || [])[1]).filter(Boolean)
+      .map(Number).sort((a, b) => a - b).map((n) => ({ tag: `S-v${n}`, sections: 60 }));
+    if (siteTags.length) areas = [...areas.filter((a) => !a.tag.startsWith('S-')), ...siteTags];
+  }
+  return areas.map((a, i) => ({ name: `BL${String(blCount + i + 1).padStart(2, '0')} ${a.tag}`, sections: a.sections }));
+};
 
 module.exports.isVersionArea = (workArea) => Boolean(versionTagOf(workArea));
 module.exports.isSiteVersionArea = (workArea) => /^S-/.test(versionTagOf(workArea) || '');

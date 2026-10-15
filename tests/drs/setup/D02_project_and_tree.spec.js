@@ -30,7 +30,7 @@ const OUT = path.resolve(__dirname, '../../../drs-explore/stage-d02');
 const WORK_AREAS = Number(process.env.DRS_WORK_AREAS || 2);
 // ~300 Work Sections in EACH BL Work Area (app owner, 2026-09-26) — see buildLocationCsv.
 const SECTIONS_PER_AREA = Number(process.env.DRS_SECTIONS_PER_AREA || 300);
-const VERSION_AREAS = process.env.DRS_VERSION_AREAS === '0' ? [] : DATA.versionAreaNames(WORK_AREAS);
+const VERSION_AREAS = process.env.DRS_VERSION_AREAS === '0' ? [] : DATA.versionAreaNames(WORK_AREAS, state.envRecord(ENV.key));
 
 test.describe.configure({ mode: 'serial' });
 

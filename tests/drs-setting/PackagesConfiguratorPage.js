@@ -267,9 +267,18 @@ class PackagesConfiguratorPage {
   createPanel() { return this.page.getByRole('tabpanel').filter({ has: this.page.getByRole('button', { name: 'Create' }) }).first(); }
   editPanel() { return this.page.getByRole('tabpanel').filter({ has: this.page.getByRole('button', { name: 'Save', exact: true }) }).first(); }
 
+  // The row's kebab is scrolled to the MIDDLE of the view first: with a long tree
+  // (Civil A..L, 2026-10-15) a row near the bottom opened its menu outside the
+  // viewport and "Add Activity" could not be clicked ("element is outside of the
+  // viewport" ×50). If the item is still off-screen, it is clicked programmatically.
   async openAddForm(parentName, menuItem) {
-    await this.page.getByRole('button', { name: `Add or delete ${parentName}`, exact: true }).first().click();
-    await this.page.getByRole('menuitem', { name: menuItem, exact: true }).click();
+    const kebab = this.page.getByRole('button', { name: `Add or delete ${parentName}`, exact: true }).first();
+    await kebab.evaluate((el) => el.scrollIntoView({ block: 'center' })).catch(() => {});
+    await this.page.waitForTimeout(300);
+    await kebab.click();
+    const item = this.page.getByRole('menuitem', { name: menuItem, exact: true });
+    await item.waitFor({ state: 'visible', timeout: 10000 });
+    await item.click({ timeout: 5000 }).catch(() => item.dispatchEvent('click'));
     // Gotcha 17: the form lags behind the menu - wait for the empty Create form.
     await this.createPanel().waitFor({ state: 'visible', timeout: 15000 });
     return this.createPanel();
@@ -352,11 +361,15 @@ class PackagesConfiguratorPage {
     await field(panel, 'Name').fill(s.name);
     await fillIfShown(field(panel, 'Code'), s.code);
     // Min Unit: searchable combobox (gotcha 16 - assert the chosen value before Create).
-    const minUnit = panel.getByPlaceholder('Search Min Unit');
+    // Found by its LABEL "Min Unit*" (2026-10-15: the old placeholder "Search Min
+    // Unit" no longer matched once a value was typed), and the option is WAITED for -
+    // isVisible() is one immediate read, and the list lists all units (CABLE,
+    // CULVERT ... TABLE, WORKAREA) a moment after typing.
+    const minUnit = panel.getByRole('combobox', { name: /^Min Unit\*?$/ }).first();
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       await minUnit.fill(s.minUnit);
-      const opt = this.page.locator('[role="option"]:visible').filter({ hasText: new RegExp(`^\\s*${escapeRe(s.minUnit)}`, 'i') }).first();
-      if (await opt.isVisible({ timeout: 4000 }).catch(() => false)) { await opt.click(); break; }
+      const opt = this.page.locator('[role="option"]:visible').filter({ hasText: new RegExp(`^\\s*${escapeRe(s.minUnit)}\\s*$`, 'i') }).first();
+      if (await opt.waitFor({ state: 'visible', timeout: 6000 }).then(() => true).catch(() => false)) { await opt.click(); break; }
       await minUnit.fill('');
     }
     await expect(minUnit).toHaveValue(new RegExp(escapeRe(s.minUnit), 'i'));
@@ -376,6 +389,54 @@ class PackagesConfiguratorPage {
       await this.submitCreate(panel, /Inspection Point created/i, c.name);
     }
     await this.ensureChecklist(c);
+    if (c.after) await this.ensureDependency(c);
+  }
+
+  // DEPENDENCY (catalog guide §8; docs/drs-checklists.md §3): "Must be completed
+  // first" on the inspection point's form → "Choose an inspection point…" (it offers
+  // the other points of the same sub-activity) → the change is marked "not saved
+  // yet" → "Save dependencies". Idempotent: a point already waiting on c.after is
+  // left alone. The point is selected (ensureChecklist just did).
+  async ensureDependency(c) {
+    const edit = this.editPanel();
+    const section = edit.getByText('Must be completed first', { exact: true }).first();
+    await section.scrollIntoViewIfNeeded();
+    if (await this.hasDependency(edit, c.after, 4000)) return;
+    // Live 2026-10-15: the control is the combobox "Add a preceding inspection point";
+    // its options read "L.1.1.1 — PC03.1.1 Checkpoint a  PC03 Sub Package › PC03.1
+    // Activity › PC03.1.1 Sub Activity" (serial — name, then the path). The option is
+    // WAITED for (isVisible is one immediate read).
+    const box = edit.getByRole('combobox', { name: /Add a preceding inspection point/i }).first();
+    await box.scrollIntoViewIfNeeded();
+    let picked = false;
+    for (let attempt = 1; attempt <= 2 && !picked; attempt += 1) {
+      await box.fill(c.after);
+      const opt = this.page.locator('[role="option"]:visible').filter({ hasText: ` — ${c.after}` }).first();
+      if (await opt.waitFor({ state: 'visible', timeout: 8000 }).then(() => true).catch(() => false)) {
+        await opt.click();
+        picked = true;
+      } else {
+        await box.fill('');
+      }
+    }
+    if (!picked) throw new Error(`${c.name}: "${c.after}" is not offered as a preceding inspection point`);
+    await edit.getByRole('button', { name: 'Save dependencies' }).click();
+    await expect(edit.getByText(/not saved yet/i)).toHaveCount(0, { timeout: 15000 });
+    expect(await this.hasDependency(edit, c.after), `${c.name}: dependency on ${c.after} not shown after save`).toBe(true);
+  }
+
+  // Does the point's "Must be completed first" list hold `name`? (The tree is not
+  // in the tab panel, so a name found in the panel is the dependency, not the node.)
+  // A listed dependency carries its serial and path ("L.1.1.1 — PC03.1.1 Checkpoint a"
+  // …), so the match is on " — <name>" anywhere in the text, and never on the
+  // combobox (an input's value is not text) nor on an open option (excluded).
+  async hasDependency(panel, name, timeout = 8000) {
+    // with or without the serial in front ("… — PC03.1.1 Checkpoint a" / the bare name)
+    const hit = panel.getByText(new RegExp(`(^|— )${escapeRe(name)}$`))
+      .filter({ hasNot: this.page.locator('[role="option"]') }).first();
+    return hit.waitFor({ state: 'visible', timeout }).then(async () => {
+      return !(await hit.evaluate((el) => !!el.closest('[role="option"], [role="listbox"]')).catch(() => false));
+    }).catch(() => false);
   }
 
   // 6.6 - the checklist is its own save (gotcha 7) and only exists once the point does.
@@ -415,8 +476,9 @@ class PackagesConfiguratorPage {
 
   // ---- whole letter -------------------------------------------------------------
 
-  async buildLetter(L, pkg = 'Electrical') {
-    const t = buildTree(L);
+  // opts -> buildTree (site catalog builds: our checklists on .2.1/.2.2, dependencies).
+  async buildLetter(L, pkg = 'Electrical', opts = {}) {
+    const t = buildTree(L, opts);
     await this.ensureSubPackage(t, pkg);
     for (const a of t.activities) {
       await this.ensureActivity(t.name, a);
@@ -427,15 +489,16 @@ class PackagesConfiguratorPage {
     }
   }
 
-  // Section 7 - READ ONLY. Returns { missing: [...], wrongChecklist: [...] }.
-  async verifyLetter(L, pkg = 'Electrical') {
-    const t = buildTree(L);
+  // Section 7 - READ ONLY. Returns { missing, wrongChecklist, missingDependency }.
+  async verifyLetter(L, pkg = 'Electrical', opts = {}) {
+    const t = buildTree(L, opts);
     const missing = [];
     const wrongChecklist = [];
+    const missingDependency = [];
     await this.expand(pkg);
     // No sub-package means none of its 18 descendants exist either - report the
     // whole tree as missing so the count reads 0/19, not a misleading 18/19.
-    if (!(await this.has(t.name))) return { missing: expectedNames(L), wrongChecklist };
+    if (!(await this.has(t.name))) return { missing: expectedNames(L), wrongChecklist, missingDependency };
     await this.expand(t.name);
     for (const a of t.activities) {
       if (!(await this.has(a.name))) { missing.push(a.name); continue; }
@@ -449,10 +512,11 @@ class PackagesConfiguratorPage {
           // Locked versions open read-only (gotcha 18), so the panel is not always an edit form.
           const panel = this.page.getByRole('tabpanel').first();
           if (!(await this.hasChecklistChip(panel, c.checklist))) wrongChecklist.push(`${c.name} (expected ${c.checklist.chip})`);
+          if (c.after && !(await this.hasDependency(panel, c.after))) missingDependency.push(`${c.name} (after ${c.after})`);
         }
       }
     }
-    return { missing, wrongChecklist };
+    return { missing, wrongChecklist, missingDependency };
   }
 }
 

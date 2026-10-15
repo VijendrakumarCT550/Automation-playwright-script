@@ -4,7 +4,8 @@ const path = require('path');
 const { drsEnv, loginSuperAdmin, makeDumper } = require('../drs/utils/drs-ui');
 const state = require('../drs/utils/drs-state');
 const PackagesConfiguratorPage = require('./PackagesConfiguratorPage');
-const { expectedNames } = require('./pc-data');
+const { expectedNames, siteChecklists } = require('./pc-data');
+const ChecklistsConfiguratorPage = require('./ChecklistsConfiguratorPage');
 const counter = require('./pc-counter');
 
 // ===========================================================================
@@ -42,10 +43,34 @@ const ENV = drsEnv();
 const SITE = process.env.CATALOG_SITE || require('../drs/drs-data').site;
 const PACKAGES = ['Civil', 'Electrical'];
 const OUT = path.resolve(__dirname, '../../drs-explore/catalog-site-versions');
-const STEPS = [
-  { key: 'S1', source: () => 'All sites v1' },
-  { key: 'S2', source: (cats) => cats.S1 && cats.S1.status === 'locked' && cats.S1.label },
-].filter((s) => !process.env.CATALOG_STEPS || process.env.CATALOG_STEPS.split(',').includes(s.key));
+// THE SITE CHAIN, ONE VERSION PER RUN (app owner, 2026-10-15): S1 = draft from
+// "All sites v1"; every later S<n> = draft from S<n-1>. A run works on the newest
+// step: it resumes it when not locked yet, else it builds the NEXT one.
+// CATALOG_STEPS=S1,S2 re-verifies those (locked) steps instead.
+// From S3 on (CHECKLISTS_FROM) the build also makes our six checklists and binds
+// them on the Civil P-code's .2.1 / .2.2 checkpoints only, with the a -> b -> c
+// dependencies there (docs/drs-checklists.md). S1/S2 were built before that.
+const CHECKLISTS_FROM = 3;
+const stepNo = (key) => Number(String(key).replace(/^S/, ''));
+function planSteps() {
+  const recorded = Object.keys(cats()).filter((k) => /^S\d+$/.test(k)).sort((a, b) => stepNo(a) - stepNo(b));
+  const chosen = process.env.CATALOG_STEPS ? process.env.CATALOG_STEPS.split(',').map((x) => x.trim()) : null;
+  let keys = chosen;
+  if (!keys) {
+    const last = recorded[recorded.length - 1];
+    if (!last) keys = ['S1'];
+    else keys = cats()[last].status === 'locked' ? [`S${stepNo(last) + 1}`] : [last];
+  }
+  return keys.map((key) => ({
+    key,
+    withChecklists: stepNo(key) >= CHECKLISTS_FROM,
+    source: (c) => {
+      if (key === 'S1') return 'All sites v1';
+      const prev = c[`S${stepNo(key) - 1}`];
+      return prev && prev.status === 'locked' && prev.label;
+    },
+  }));
+}
 
 test.describe.configure({ mode: 'serial' });
 
@@ -92,18 +117,78 @@ async function copyCheck(source, newestLocked, draftLabel) {
   };
 }
 
+// The build options of one code: the code that got our checklists (recorded on its
+// step as `checklistCode` + `checklists`) is built AND verified with them and with
+// the a -> b -> c dependencies; every other code with the standard checklists.
+function optsFor(L) {
+  const rec = Object.values(cats()).find((c) => c.checklistCode === L && c.checklists);
+  return rec ? { checklists: rec.checklists, dependencies: true } : {};
+}
+
 // Every code of `codes` ({ Civil: [...], Electrical: [...] }) fully present?
 async function verifyCodes(codes, label) {
   for (const pkg of PACKAGES) {
     for (const L of codes[pkg] || []) {
-      const { missing, wrongChecklist } = await pc.verifyLetter(L, pkg);
+      const { missing, wrongChecklist, missingDependency } = await pc.verifyLetter(L, pkg, optsFor(L));
       const total = expectedNames(L).length;
       console.log(`  ${label} / ${pkg} / ${L}: ${total - missing.length}/${total} nodes` +
-        `${wrongChecklist.length ? `, ${wrongChecklist.length} without their checklist` : ''}`);
+        `${wrongChecklist.length ? `, ${wrongChecklist.length} without their checklist` : ''}` +
+        `${missingDependency.length ? `, ${missingDependency.length} without their dependency` : ''}`);
       expect(missing, `${label}: ${pkg} / ${L} nodes missing`).toEqual([]);
       expect(wrongChecklist, `${label}: ${pkg} / ${L} checkpoints without their checklist`).toEqual([]);
+      expect(missingDependency, `${label}: ${pkg} / ${L} checkpoints without their dependency`).toEqual([]);
     }
   }
+}
+
+// THE SIX CHECKLISTS of a step (docs/drs-checklists.md §2), made in the Checklists
+// Configurator and recorded on the step the moment each exists (they cannot be
+// deleted). Idempotent: a recorded one is re-read; one that exists by name but was
+// not recorded (a run cut off after its create) is adopted. Each is read back and
+// checked: our questions with their type + required flag, and a fork's NEW SFQP.
+async function ensureChecklists(stepKey, code) {
+  const cl = new ChecklistsConfiguratorPage(page, ENV.baseUrl);
+  const made = { ...((cats()[stepKey] || {}).checklists || {}) };
+  for (const spec of siteChecklists(code)) {
+    if (!made[spec.n]) {
+      await cl.goto();
+      let found = await cl.read(spec.name);
+      if (!found) {
+        const res = spec.kind === 'new'
+          ? await cl.create(spec)
+          : await cl.fork(spec.from.n ? made[spec.from.n] : spec.from, { name: spec.name, addQuestions: spec.addQuestions });
+        const of = spec.from ? ` of ${spec.from.n ? `#${spec.from.n}` : spec.from.name}` : '';
+        console.log(`    checklist ${spec.n} "${spec.name}" (${spec.kind}${of}) -> ${res.method} ${res.url} HTTP ${res.status}`);
+        if (res.status >= 300) console.log(`      sent: ${res.payload}
+      answer: ${res.body.slice(0, 500)}`);
+        expect(res.status, `${spec.name}: ${spec.kind} answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
+        await cl.goto();
+        found = await cl.read(spec.name);
+      } else {
+        console.log(`    checklist ${spec.n} "${spec.name}" already exists (${found.sfqp}) - adopting`);
+      }
+      expect(found, `${spec.name} not in the list after its ${spec.kind}`).toBeTruthy();
+      made[spec.n] = { name: found.name, sfqp: found.sfqp, kind: spec.kind, from: spec.from || null };
+      putCat(stepKey, { checklists: made });
+    }
+    // Read back: every question we put in, with its type and required flag.
+    await cl.goto();
+    const got = await cl.read(made[spec.n].name, made[spec.n].sfqp);
+    expect(got, `${spec.name} (${made[spec.n].sfqp}) not found on read-back`).toBeTruthy();
+    const want = spec.kind === 'new' ? spec.questions : spec.addQuestions;
+    for (const q of want) {
+      const g = got.questions.find((x) => x.text === q.text);
+      expect(g, `${spec.name}: question "${q.text}" missing (read: ${JSON.stringify(got.questions.map((x) => x.text))})`).toBeTruthy();
+      expect(g.type, `${spec.name}: "${q.text}" type`).toBe(q.type);
+      expect(g.required, `${spec.name}: "${q.text}" required`).toBe(q.required);
+    }
+    if (spec.kind === 'fork') {
+      const src = spec.from.n ? made[spec.from.n] : spec.from;
+      expect(got.sfqp, `${spec.name}: a fork should get a NEW SFQP, not its source's`).not.toBe(src.sfqp);
+    }
+    console.log(`    checklist ${spec.n} "${got.name}" (${got.sfqp}): ${got.questions.length} question(s) ok`);
+  }
+  return made;
 }
 
 test.beforeAll(async ({ browser }) => {
@@ -122,7 +207,7 @@ test.afterAll(async () => {
   if (context) await context.close();
 });
 
-for (const step of STEPS) {
+for (const step of planSteps()) {
   test(`${step.key}. ${SITE}: draft, build Civil + Electrical, lock`, async () => {
     test.setTimeout(4 * 60 * 60 * 1000);
     let rec = cats()[step.key];
@@ -175,9 +260,9 @@ for (const step of STEPS) {
         `${JSON.stringify(fpDraft)} / source ${JSON.stringify(fpSource)} / newest ${JSON.stringify(fpNewest)})`).toBe(true);
     }
 
-    // ---- S2: the previous step's trees came along in the copy ----
+    // ---- S2+: the previous step's trees came along in the copy ----
     if (step.key !== 'S1') {
-      const prev = cats().S1;
+      const prev = cats()[`S${stepNo(step.key) - 1}`];
       const inheritedCodes = mergeCodes(prev.inheritedCodes || {}, prev.codes);
       await verifyCodes(inheritedCodes, `${rec.label} (inherited from ${prev.label})`);
       rec = putCat(step.key, { inheritedCodes });
@@ -194,10 +279,22 @@ for (const step of STEPS) {
     }
     console.log(`  ${step.key}: codes ${JSON.stringify(rec.codes)}`);
 
+    // ---- S3+: our six checklists, for the Civil P-code ONLY (PCxx.2.1 / .2.2 -
+    //      app owner: "only PC.xx.2.1 and .2.2, not QC, nowhere else") ----
+    if (step.withChecklists) {
+      const code = rec.codes.Civil.find((c) => c.startsWith('P'));
+      rec = putCat(step.key, { checklistCode: code });
+      const checklists = await ensureChecklists(step.key, code);
+      rec = putCat(step.key, { checklists });
+      await pc.goto();
+      await pc.selectProjectTypeAndSite(SITE);
+      await pc.openDraft(rec.label);
+    }
+
     // ---- build + verify ----
     for (const pkg of PACKAGES) {
       for (const L of rec.codes[pkg]) {
-        await pc.buildLetter(L, pkg);
+        await pc.buildLetter(L, pkg, optsFor(L));
         console.log(`  ${step.key} / ${pkg} / ${L}: built`);
       }
     }
