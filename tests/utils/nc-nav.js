@@ -35,7 +35,63 @@ async function openFromPendingWithMe(page, ncCode) {
 
   const list = new NCListPage(page);
   await list.waitForGrid();
-  await list.openRowByCode(ncCode);
+  try {
+    await list.openRowByCode(ncCode);
+  } catch (firstErr) {
+    // OBSERVED RETRY (2026-09-26, DRS integration NC matrix on pulse-uat): all
+    // three "next actor's row lookup timed out" failures there had the NC
+    // PRESENT in the saved grid, exact code in column 1 — the lookup ran before
+    // the freshly-updated list was usable. One reload + re-navigate, logged
+    // either way; a record that is still not there throws as before.
+    // (NC's own copy — deliberately not shared with rfi-nav.js.)
+    // PATIENT, AND MEASURED (2026-09-26): keep reloading (every ~20 s, up to
+    // ~90 s) and log how long the NC took — a slow list is a measurement, not
+    // a missing NC. NC's own copy of the RFI retry.
+    console.log(`  [observe] ROW_LATE ${ncCode}: not usable on first look — retrying with reloads`);
+    const started = Date.now();
+    let opened = false;
+    for (let attempt = 1; attempt <= 4 && !opened; attempt++) {
+      await page.reload({ waitUntil: 'networkidle' }).catch(() => {});
+      await base.dismissToastIfPresent();
+      await new DashboardPage(page).goToMyTasks();
+      await base.dismissToastIfPresent();
+      await ncTasks.clickNcTab();
+      await ncTasks.clickPendingWithMe();
+      await list.waitForGrid();
+      opened = await list.openRowByCode(ncCode).then(() => true).catch(() => false);
+    }
+    try {
+      if (!opened) throw new Error('still not openable');
+      console.log(`  [observe] ROW_LATE ${ncCode}: found after ${Math.round((Date.now() - started) / 1000)}s of retries (timing, not a missing record)`);
+    } catch {
+      console.log(`  [observe] ROW_MISSING ${ncCode}: still not usable after a reload`);
+      // WHAT THE LOOKUP SAW — grid scroll (openRowByCode scrolls right to the
+      // Actions column), the row's cell boxes, selection and eye icon. NC's own
+      // copy of the RFI diagnostic, per the NC/RFI separation rule.
+      const diag = await list.grid.evaluate((grid, code) => {
+        const rows = [...grid.querySelectorAll('.rdg-row[role="row"]')];
+        const row = rows.find((r) => {
+          const c = r.querySelector('[aria-colindex="1"]');
+          return c && c.textContent.includes(code);
+        });
+        const box = (el) => { const b = el.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)]; };
+        return {
+          rows: rows.length,
+          scrollLeft: grid.scrollLeft, scrollWidth: grid.scrollWidth, clientWidth: grid.clientWidth,
+          scrollTop: grid.scrollTop,
+          rowFound: !!row,
+          rowIndex: row && row.getAttribute('aria-rowindex'),
+          cells: row ? [...row.querySelectorAll('[role="gridcell"]')].map((c) => `${c.getAttribute('aria-colindex')}:${box(c).join('x')}${c.getAttribute('aria-selected') === 'true' ? ':sel' : ''}`) : [],
+          eyeIcon: !!(row && row.querySelector('svg.lucide-eye')),
+        };
+      }, ncCode).catch((e) => ({ error: e.message }));
+      const rowLoc = list.getRowByCode(ncCode);
+      diag.playwrightMatches = await rowLoc.count().catch(() => -1);
+      diag.playwrightVisible = await rowLoc.first().isVisible().catch(() => false);
+      console.log(`  [observe] ROW_DIAG ${ncCode}: ${JSON.stringify(diag)}`);
+      throw firstErr;
+    }
+  }
 }
 
 module.exports = { openFromPendingWithMe };

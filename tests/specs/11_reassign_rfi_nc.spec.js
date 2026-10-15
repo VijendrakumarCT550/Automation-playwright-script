@@ -8,13 +8,16 @@ const ReassignPage = require('../pages/ReassignPage');
 // app's reassignment rules — CI/EE/QI-level roles are each restricted to
 // reassigning within their own single role).
 //
-// Both grids (RFI's "Pending with others" and NC's "Pending with others")
-// share the same column layout for these three roles: aria-colindex 5 = CI,
-// 6 = EE, 7 = QI (confirmed via DOM dump of both lists' headers).
+// The CI/EE/QI columns are located by HEADER NAME at run time, never by a
+// hardcoded aria-colindex: this spec used 5/6/7 from a one-off DOM dump, and
+// on pulse-test 2026-09-30 column 5 was the Work Area ("BL07"), so a correct
+// reassignment read back as a wrong value. See
+// ReassignPage.resolveColumnIndexByHeader; the header names match
+// tests/utils/reassign-rfi-ops.js (EE/QI are "Assigned EE" / "Assigned QI").
 const ASSIGNEE_TYPES = [
-  { label: 'Contractor Incharge', colIndex: 5 },
-  { label: 'Execution Engineer', colIndex: 6 },
-  { label: 'Quality Inspector', colIndex: 7 },
+  { label: 'Contractor Incharge', headers: ['Contractor Incharge', 'Contractor In-Charge'] },
+  { label: 'Execution Engineer', headers: ['Assigned EE', 'Execution Engineer'] },
+  { label: 'Quality Inspector', headers: ['Assigned QI', 'Quality Inspector'] },
 ];
 
 // Fill in a specific RFI/NC id here to target it manually (must currently
@@ -43,7 +46,7 @@ async function reassignAllTypesOnRow(page, listUrl, entityLabel, manualId) {
     console.log(`${entityLabel}: no id specified, using first available pending row "${rowId}"`);
   }
 
-  for (const { label, colIndex } of ASSIGNEE_TYPES) {
+  for (const { label, headers } of ASSIGNEE_TYPES) {
     await page.goto(listUrl);
     await page.waitForLoadState('networkidle');
     await reassign.waitForGrid();
@@ -74,6 +77,8 @@ async function reassignAllTypesOnRow(page, listUrl, entityLabel, manualId) {
     await reassign.waitForGrid();
     const updatedRow = reassign.getRowById(rowId);
     await updatedRow.waitFor({ state: 'visible', timeout: 15000 });
+    const colIndex = await reassign.resolveColumnIndexByHeader(headers);
+    expect(colIndex, `no "${label}" column header in the ${entityLabel} grid (tried ${headers.join(' / ')})`).not.toBeNull();
     const updatedCell = await reassign.scrollUntilColumnVisible(updatedRow, colIndex);
     await expect(updatedCell).toHaveText(newAssignee, { timeout: 15000 });
 

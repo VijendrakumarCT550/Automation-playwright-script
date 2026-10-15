@@ -192,6 +192,15 @@ for (const { type, present, absent, why } of TYPES) {
     for (const key of present) {
       const name = nameOf(key);
       if (!name) { note(`  SKIP ${describe(key)} — not built yet, cannot judge`); continue; }
+      // A control arm that IS the record's current assignee is absent by rule
+      // E1 (asserted above), not by eligibility. This happens when the only
+      // pending record is a pool record raised on the fleet's own cell
+      // (pulse-test after the 2026-09-30 RFI DB clear: CI_C/EE_D/QI_D hold
+      // CIV-640), so the arm cannot be judged here — say so, do not fail it.
+      if (current && name === current) {
+        note(`  current assignee, so absent by E1: ${describe(key)}`);
+        continue;
+      }
       expect(
         eligible,
         `${describe(key)} should be OFFERED for "${type}": it is provisioned in ${WL_A}, and ` +

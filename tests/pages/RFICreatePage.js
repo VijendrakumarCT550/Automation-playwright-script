@@ -184,7 +184,17 @@ class RFICreatePage extends BasePage {
       throw err;
     }
     const selectedLabel = (await option.innerText()).trim();
-    await option.click({ timeout: 1500 }).catch(() => option.click());
+    // NEVER CLICK AN ALREADY-CHOSEN OPTION (2026-09-26). This is a MULTI-select:
+    // clicking a checked option REMOVES it. A resubmit re-select that fired on a
+    // section the form already held emptied the field and left Proceed silently
+    // blocked — which read as an app bug until the markup showed the truth. An
+    // option already data-state="checked" is left as is.
+    const alreadyChosen = (await option.getAttribute('data-state').catch(() => null)) === 'checked';
+    if (alreadyChosen) {
+      console.log(`  [observe] WS_ALREADY_SELECTED "${selectedLabel.split('\n')[0]}" — not clicked (a click would deselect it)`);
+    } else {
+      await option.click({ timeout: 1500 }).catch(() => option.click());
+    }
     // Multi-select combobox stays open after selection.
     // Click the toggle button again to close it.
     // DO NOT press Escape — the form's Escape handler navigates back to My Tasks.
@@ -266,6 +276,40 @@ class RFICreatePage extends BasePage {
   // Returns { total, selected, pending }, any of which may be null if the panel
   // could not be parsed — callers must treat null as "unknown" and fall back to
   // attempting, never as zero.
+  // How many Work Sections the FIELD itself holds, read from its label: the
+  // label reads "Work Section - (N) *" once N sections are chosen and plain
+  // "Work Section *" when empty (measured 2026-09-26, pulse-uat). Polls until
+  // the count is > 0 or `timeout` passes, because the resubmit form fills the
+  // field AFTER first render.
+  //
+  // Why this exists: the summary boxes ("Selected for RFI" …) load late too,
+  // and read "0 / 288" for a moment on every resubmit. The engine used to
+  // treat that as "the rejection cleared the section", re-selected it — and on
+  // this multi-select a click on an already-chosen option REMOVES it, leaving
+  // the field empty and Proceed silently blocked. That was mistaken for an app
+  // bug (TC-02 / TC-07); the field's own count is the reliable signal.
+  async readWorkSectionFieldCount({ timeout = 10000 } = {}) {
+    const read = () => this.page.evaluate(() => {
+      for (const el of document.querySelectorAll('label, p, span, div')) {
+        const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (t.length > 40 || !/^work section\b/i.test(t)) continue;
+        // ANY dash: the label renders "Work Section – (1)" with an EN DASH on
+        // pulse-uat. A hyphen-only pattern read every selected field as 0 —
+        // caught 2026-09-26 when TC-03 "had 0 sections" yet resubmitted fine.
+        const m = t.match(/^work section\s*[-‐-―−]\s*\((\d+)\)/i);
+        if (m) return Number(m[1]);
+      }
+      return 0;
+    }).catch(() => 0);
+    const deadline = Date.now() + timeout;
+    let n = await read();
+    while (n === 0 && Date.now() < deadline) {
+      await this.page.waitForTimeout(500);
+      n = await read();
+    }
+    return n;
+  }
+
   async readWorkSectionSummary() {
     return this.page.evaluate(() => {
       const LABELS = {

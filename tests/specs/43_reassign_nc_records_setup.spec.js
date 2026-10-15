@@ -59,7 +59,10 @@ const NC_DATA = {
   workSectionCount: 2,
   ncQuantity:       2,
   unit:             'EA',
-  defectType:       'Workmanship defect',
+  // Defect Type is a dropdown now (app change, 2026-09-24) — the old literal
+  // 'Workmanship defect' is in no option list. '__first__' takes whatever
+  // this activity offers; see NCCreatePage.selectDefectType.
+  defectType:       '__first__',
   category:         'Critical',
   // capturePhoto is not listed — NCCreatePage.fillForm defaults it to true,
   // and the photo is mandatory.

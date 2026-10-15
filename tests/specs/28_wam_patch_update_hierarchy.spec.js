@@ -116,6 +116,16 @@ test.describe('Cluster Admin can update roles below its own tier', () => {
     await openAndFilter();
 
     const rowLabel = await wam.resolveRowLabel(SITE_ROW_CANDIDATES);
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): trim a crowded row BEFORE the
+    // snapshot, leaving one slot for the user this test adds. These updates used
+    // to grow the row by one every run, which is how Khavda reached ~40 names and
+    // its dropdown fell out of reach.
+    if ((await wam.enforceRowCap(rowLabel, { reserve: 1 })).length) {
+      await wam.clickSubmit();
+      await wam.closeDialog();
+      await wam.openAddDetails();
+      await openAndFilter();
+    }
     const before = await wam.getWorkAreaUserValue(rowLabel);
     expect(before, 'precondition: Site Admin row should already have existing assignees').not.toBe('');
     const existingNames = before.split(',').map(n => n.trim()).filter(Boolean);
@@ -171,6 +181,16 @@ test.describe('Site Admin can update roles below its own tier', () => {
     await wam.openAddDetails();
     await openAndFilter();
 
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): trim a crowded row BEFORE the
+    // snapshot, leaving one slot for the user this test adds. These updates used
+    // to grow the row by one every run, which is how Khavda reached ~40 names and
+    // its dropdown fell out of reach.
+    if ((await wam.enforceRowCap(UNTOUCHED_WORK_LOCATION, { reserve: 1 })).length) {
+      await wam.clickSubmit();
+      await wam.closeDialog();
+      await wam.openAddDetails();
+      await openAndFilter();
+    }
     const before = await wam.getWorkAreaUserValue(UNTOUCHED_WORK_LOCATION);
     expect(before, 'precondition: Plot Admin row should already have existing assignees').not.toBe('');
     const existingNames = before.split(',').map(n => n.trim()).filter(Boolean);

@@ -99,10 +99,19 @@ async function adminFreshLogin(browser, contextOptions = {}) {
   return { context, page, dashboard };
 }
 
+// Read at LOGIN time, not at module load (2026-09-26). Same variables, same
+// values for every existing caller — but a DRS integration wrapper
+// (tests/integration/IN1x_*) can now point CI_/EE_/QI_EMAIL at the DRS
+// project's users for the length of one spec, which a copy taken when this
+// file first loaded could never see.
+const roleCredentials = (role) => ({
+  get email() { return process.env[`${role}_EMAIL`]; },
+  get password() { return process.env[`${role}_PASSWORD`]; },
+});
 const ROLE_CREDENTIALS = {
-  CI: { email: process.env.CI_EMAIL, password: process.env.CI_PASSWORD },
-  EE: { email: process.env.EE_EMAIL, password: process.env.EE_PASSWORD },
-  QI: { email: process.env.QI_EMAIL, password: process.env.QI_PASSWORD },
+  CI: roleCredentials('CI'),
+  EE: roleCredentials('EE'),
+  QI: roleCredentials('QI'),
 };
 
 // Same shape as adminFreshLogin, but for CI/EE/QI — its own independent

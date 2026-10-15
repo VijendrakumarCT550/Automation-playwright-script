@@ -67,8 +67,17 @@ const PASSWORD = process.env.BULK_USER_DEFAULT_PASSWORD;
 // deployment/DB-state variance that made CLUSTER_CANDIDATES a list rather than a
 // string. Only the Cluster and Site rows have shown it; Work Location rows have
 // not. resolveRowLabel picks whichever is actually rendered.
-const CLUSTER_ROW_CANDIDATES = ['Gujarat', 'KHAVDA', 'Khavda'];
-const SITE_ROW_CANDIDATES = ['Khavda', 'KHAVDA'];
+//
+// FROM THE PROFILE, not hardcoded (2026-09-26): these were the literals
+// ['Gujarat','KHAVDA','Khavda'] / ['Khavda','KHAVDA'], right for solar's
+// Gujarat → Khavda ground and wrong anywhere else. On the DRS project
+// (Rajasthan → AUTOMATION SITE) Admin assigned the Cluster Admin to the
+// "Gujarat" row, so the Cluster Admin then could not see "Rajasthan" at all.
+// Each value is offered as-is and upper-cased; solar resolves exactly as before.
+const withCase = (values) => [...new Set([].concat(values).filter(Boolean)
+  .flatMap((v) => [String(v), String(v).toUpperCase()]))];
+const clusterRowCandidates = (profile) => withCase(profile.cluster);
+const siteRowCandidates = (profile) => withCase(profile.site);
 
 // Which rows are SINGLE-select, i.e. a pick REPLACES the incumbent rather than
 // adding alongside. Everything else is genuinely multi-select, where clicking an
@@ -278,7 +287,7 @@ test.describe('Smoke stage 6 - WAM hierarchy cascade, each tier assigns the tier
     // Cluster Admin has NO location filters at all — rows are the Clusters.
     await cascadeStep({
       asLabel: 'Admin', role: 'Cluster Admin', targetUser: users.CAD,
-      filters: {}, rowCandidates: CLUSTER_ROW_CANDIDATES,
+      filters: {}, rowCandidates: clusterRowCandidates(profile),
     });
   });
 
@@ -287,7 +296,7 @@ test.describe('Smoke stage 6 - WAM hierarchy cascade, each tier assigns the tier
     await loginAsUser(page, users.CAD.email, PASSWORD);
     await cascadeStep({
       asLabel: 'Cluster Admin', role: 'Site Admin', targetUser: users.SAD,
-      filters: { cluster: profile.cluster }, rowCandidates: SITE_ROW_CANDIDATES,
+      filters: { cluster: profile.cluster }, rowCandidates: siteRowCandidates(profile),
     });
   });
 

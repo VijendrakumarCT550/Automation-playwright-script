@@ -12,10 +12,23 @@ const LOCATION_FILTERS = {
   package:      'Civil',
 };
 
+// const LOCATION_FILTERS = {
+//   cluster:      ['Gujarat', 'Khavda'],
+//   site:         'Khavda',
+//   workLocation: 'S05b',
+//   // package:      'Civil',
+//   package:      'Electrical',
+// };
+
 const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
 'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
 
-// more work areas exist in the DB, but the test is limited to a smaller set to keep the test runtime reasonable. The full set of work areas is commented out below for reference.
+// const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
+// 'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
+// 'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
+// 'BL16', 'BL17', 'BL18', 'BL19', 'BL20',
+// 'BL21', 'BL22', 'BL23', 'BL24'];
+
 // const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
 // 'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
 // 'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
@@ -27,6 +40,9 @@ const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
 
 const SCENARIOS = [
   // Roster has "Jay Kishan Suthar" (no exact "Jay Kishan Sutha" entry exists).
+  //   { role: 'Execution Engineer', assignee: 'SOLAR UAT EE' },
+  // { role: 'Quality Inspector',  assignee: 'SOLAR UAT QI' },
+
   { role: 'Execution Engineer', assignee: 'Jay Kishan Suthar' },
   { role: 'Quality Inspector',  assignee: 'Udit Sharma' },
 

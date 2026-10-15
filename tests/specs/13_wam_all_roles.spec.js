@@ -49,7 +49,7 @@ const SERVICE_ORDER = 'M S CHOUHAN INFRAVENTURES';
 // work-area-level roles for the same reason).
 // const WORK_LOCATIONS = ['A-06c', 'S05b'];
 const WORK_LOCATIONS = ['S05b'];
-const WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05'];
+const WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05' , 'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
 
 const WORK_AREA_ROLES = [
   { prefix: 'EE', role: 'Execution Engineer' },

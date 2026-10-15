@@ -204,7 +204,7 @@ for (const tier of TIERS) {
         const originalNames = before ? before.split(',').map((n) => n.trim()).filter(Boolean) : [];
         console.log(`  ${tier.label}: before clear, ${row} = [${originalNames.join(', ') || '(empty)'}]`);
 
-        const namesToRestore = [...originalNames];
+        let namesToRestore = [...originalNames];
         if (!namesToRestore.includes(target.name)) {
           console.log(`  ${tier.label}: seeding "${target.name}" so this clears a populated row`);
           await wam.addAssigneeToRow(row, target.name);
@@ -235,6 +235,11 @@ for (const tier of TIERS) {
         // Restore every captured name, one at a time (addAssigneeToRow only
         // adds). Failures collected rather than thrown, so one un-restorable
         // name does not abandon the rest.
+        // Row cap (WAMPage.enforceRowCap, 2026-09-26): restore at most
+        // MAX_ROW_ASSIGNEES names, never every captured one — re-adding them all
+        // is what rebuilt a 40-name row that pushed its dropdown out of reach.
+        namesToRestore = wam.capRestoreList(namesToRestore, [target.name]);
+        console.log(`  restoring (capped): [${namesToRestore.join(", ")}]`);
         const restoreFailures = [];
         for (const name of namesToRestore) {
           try {
@@ -258,9 +263,12 @@ for (const tier of TIERS) {
           `${tier.label}: failed to re-add ${JSON.stringify(restoreFailures)} to ${row}. ` +
           `Shared WAM state is short those assignees — run \`npm run smoke:restore\`.`
         ).toEqual([]);
+        // Whole names, not substrings: a one-letter user "p" would otherwise
+        // "pass" whenever anyone's name contains a p.
+        const restoredNames = (restored || '').split(',').map((n) => n.trim()).filter(Boolean);
         for (const name of namesToRestore) {
           expect(
-            restored,
+            restoredNames,
             `"${name}" was on ${row} before this test and must be back on it afterwards`
           ).toContain(name);
         }

@@ -833,6 +833,114 @@ reopening the dialog** — with a loud, copy-pasteable repair instruction printe
 if it ever fails. Confirmed live: `RESTORED: BL07 Contractor Incharge =
 "RACIC89385637"`.
 
+## 3i. The remaining families (priority 1 + 2): VERIFIED LIVE 2026-09-27, ALL PASS
+
+On pulse-test, on the app owner's request. There are six new spec files, so
+none of the passing 40–49 changed:
+
+| Spec | Cases | Result |
+|---|---|---|
+| `50_reassign_future_past_actor` | **H2** future QI, **H3** past CI | 2/2, 15.1 min |
+| `51_reassign_content_and_linked_nc` | **I2** content, **I4** linked NC | 2/2, 12.9 min |
+| `52_reassign_closed_nc` | **B2** closed NC | 2/2, 4.2 min (2nd run) |
+| `53_reassign_capability_more` | **C4a** CI_D, **C4b** CI_E, **C6** EE_B | 3/3, 18.7 min |
+| `54_reassign_snapshot_ee_qi` | **S5** S1/S2/S4 for EE + QI | 3/3, 5.7 min (2nd run) |
+| `55_reassign_demap_user_everywhere` | record's **own** CI demapped everywhere | 4/4, 9.7 min |
+
+**What each proved:**
+- **H2:** QI reassigned while the RFI was with the EE (`CIV-60`). It was absent
+  from the new QI's queue until the EE approved, then arrived there and not
+  with the old QI.
+- **H3:** CI reassigned while the RFI was with the QI (`CIV-61`). The QI's later
+  rejection landed on the **new** CI, who can open `/re-submit`. The old CI
+  does not hold it.
+- **I2:** after an EE swap (`CIV-62`), the new EE (EE_C, mapped elsewhere) sees
+  the same 16 observations (`I2 content marker 1…16`) and the same photo.
+- **I4:** CI reassigned, then the QI rejected with a linked NC (`CIV-63`). The
+  NC `NC-…-CIV-54` went to the **new** CI (matched by description), not the
+  old one.
+- **B2:** `NC-…-CIV-53` was closed by a full cycle (CI response → EE → QI). Its
+  own row in the Approved list has view=1 and **reassign=0**.
+- **C4 / C6:** a CI with the wrong package (CI_D) and one with the wrong work
+  area (CI_E) each reached, read (page 1 still says A-06c/BL07/Civil/Piling -
+  MMS) and **resubmitted**. EE_B (solar + wind, no WAM) approved, and the record
+  moved on to the QI. E7 was already asserted by 41.
+- **S5:** BL07's EE and QI remapped → the in-flight `CIV-67` kept its own. A new
+  RFI after the remap (`CIV-69`) carried the new pair. Explicit reassignment
+  moved `CIV-67`. Restore verified.
+- **Demap everywhere:** the record's own CI (`RACIC…`) was cleared from its only
+  row (A-06c/Civil/BL07). A rescan of both work locations × both packages found
+  it mapped **nowhere**. `CIV-68` still named it, the EE's rejection reached it,
+  and it **resubmitted** with no WAM at all. 13 candidates were still offered.
+  Restore verified. This closes the variant 3h left open.
+
+**New pieces:**
+- **Pool:** +9 RFIs (`CIV-60`…`-68`) and +1 NC (`B_CLOSED_NC`). 42 now takes an
+  optional per-record `observation` and `attachPhoto`, used by I2.
+- **`tests/utils/reassign-rfi-ops.js`:** the RFI-side helpers 45–49 had inline
+  (robust queue read with fresh-session confirmation, reassign with the
+  already-assigned guard, read an assignee by grid header). RFI only; NC
+  helpers stay inside the NC spec.
+- **`tests/specs/inspection/00_inspect_reassign_fleet_wam.spec.js`:** a
+  READ-ONLY check that every fleet member still holds its recorded WAM row. It
+  prints the exact `REASSIGN_FLEET_REMAP` command for any drift. It ran green
+  before 54, after 54 and after 55 (12/12 mapped members; the 6 init-only
+  members are unmapped by design).
+
+**Two traps, both ours, fixed:**
+1. The grid's EE/QI columns are headed **"Assigned EE" / "Assigned QI"**, not
+   the role names. Only the CI column is named after its role, which is why
+   47/49 never met this. 54's first run failed on the first read, before any
+   WAM change.
+2. The NC tab's "Pending with me" **tile** did not render for the QI step in 52
+   (30 s timeout), the same tab-path fragility 48 records. 52 now opens NCs by
+   route (proved by the "NC ID" header) plus the row's eye icon.
+
+**Still open:** B3 (draft RFI), H4 (tile placement), E8 ("nobody eligible"),
+X3 (mobile reassign, G-19) and I2's remarks half (a fresh record carries none).
+
+## 3j. Full re-run on pulse-test after a data reset — 2026-09-30, ALL PASS
+
+Every reassignment spec (11, 41, 44–55) was re-run on pulse-test from scratch,
+one spec at a time, and **all 45 behaviour tests pass**. The only product
+defect is the one already known: the **PM type dropdown offers CI + EE instead
+of EE + QI** (44's `test.fail()` still fails as expected).
+
+**The deployment had changed under the suite, so it had to be rebuilt first:**
+- **All 18 fleet accounts had been deleted.** A User Management search found
+  0/18, and a control search for a known user (Vikram Singh) found him, so the
+  search itself worked. WAM had meanwhile filled the fleet's cells with real
+  users (e.g. Vikram Singh as BL07's CI). The fleet was rebuilt with 40, which
+  overwrote those cells. The previous holders are listed in the run's
+  pre-remap log.
+- **Piling - MMS had no Work Sections left on BL07** (0 for all three
+  checkpoints), so 42 built nothing. The app owner then cleared the RFI data,
+  and 42 built 16/16 (`CIV-625`…`-640`) and 43 built 4/4 (`NC-…-CIV-5`…`-8`).
+  After the clear, RFI and NC codes use separate counters.
+- Right after the clear, the WAM "Add Details" dialog did not open for five
+  A-06c CI/EE/QI rows (the fleet check reported them UNREADABLE and took
+  5.9 min). A re-run a few minutes later read all 12 as OK in 57 s, so this was
+  backend slowness, not drift.
+
+**Two test fixes, neither an app issue:**
+1. **41** assumed a pending record whose CI/EE/QI are NOT fleet members. After
+   the clear, the only candidate was a pool record, so its control arms
+   (CI_C/EE_D/QI_D) were the current assignees and correctly absent by E1. 41
+   now notes such an arm as "absent by E1" instead of failing.
+2. **11** hard-coded `aria-colindex` 5/6/7 and read the Work Area column
+   ("BL07"). This was the exact failure `resolveColumnIndexByHeader` was built
+   for on 09-04; 11 had never adopted it. It now resolves columns by header.
+
+**Side effect to know about:** 11 reassigns the FIRST pending row with the
+first eligible person. On this run that was `CIV-640` (D_USER_DEMAP, already
+used by 55) and `NC-…-CIV-9`, and it put a real user, **Devaram Raika**, in as
+their EE.
+
+New read-only inspectors: `inspection/00_inspect_reassign_fleet_users_exist`
+(does each fleet account still exist? includes a control arm) and
+`inspection/00_inspect_reassign_bl07_work_sections` (free Work Sections per
+activity chain on BL07; opens dropdowns only, never selects).
+
 ## 4. Open questions (discovery items)
 
 To be answered by the recon pass in §5, **before** anything asserts them:

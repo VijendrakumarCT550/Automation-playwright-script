@@ -225,6 +225,15 @@ test.describe('Smoke stage SM19 - WAM patch/update semantics per role', () => {
               : [].concat(profile.cluster).flatMap((c) => [c, c.toUpperCase()])
           );
 
+      // Row cap (WAMPage.enforceRowCap, 2026-09-26): trim a crowded row BEFORE the
+      // snapshot, leaving one slot for the user this test adds. These updates used
+      // to grow the row by one every run, which is how Khavda reached ~40 names and
+      // its dropdown fell out of reach.
+      if ((await wam.enforceRowCap(row, { reserve: 1 })).length) {
+        await ensureDialogOpen(wam, { reason: 'before Submit (row cap)' });
+        await wam.clickSubmit();
+        await reopenWithFilters(wam, filters);
+      }
       const before = await wam.getWorkAreaUserValue(row);
       expect(
         before,
@@ -262,10 +271,10 @@ test.describe('Smoke stage SM19 - WAM patch/update semantics per role', () => {
       ).toContain(added);
       console.log(`  ${key} after add (persisted): ${row} = "${after}"`);
 
-      // NOT restored, deliberately. These rows are additive by design and the
-      // extra assignee is harmless — whereas removing them would mean a demap,
-      // which is SM21/SM22's job and would make this stage destructive for no
-      // reason.
+      // NOT restored here — but no longer "harmless" either: left alone, every
+      // run added one more user until the row's dropdown was pushed out of
+      // reach (2026-09-26). The row cap at the top of this test trims it back
+      // on the next run; see WAMPage.enforceRowCap.
       await wam.closeDialog();
     });
   }

@@ -527,44 +527,52 @@ class RFIReviewPage extends BasePage {
   }
 
   // DEFECT TYPE: a dropdown on the standalone NC form since the 2026-09-17 app
-  // change (NCCreatePage.defectTypeDropdown documents it). This panel renders
-  // the same NC fields, so it is handled ADAPTIVELY by setLinkedNcDefectType
-  // below — the dropdown path when the field carries a combobox, the old
-  // free-text path when it still carries a plain input. Both locators are kept
-  // for that reason; neither is assumed to exist.
-  linkedNcDefectTypeTrigger(index = 0) {
+  // change (NCCreatePage.defectTypeDropdown documents it), and — confirmed live
+  // 2026-09-24 — on this panel too. Defect Type is a dropdown now (app change,
+  // 2026-09-24): the old free-text `input` locator and its typed-literal
+  // fallback are gone, a free-text path can no longer succeed.
+  linkedNcDefectTypeDropdown(index = 0) {
     return this._linkedNcField(index, 'Defect Type').getByRole('combobox').first();
   }
 
-  linkedNcDefectTypeInput(index = 0) {
-    return this._linkedNcField(index, 'Defect Type').locator('input').first();
-  }
-
-  // Sets the panel's Defect Type and returns the value actually set.
+  // Sets the panel's Defect Type and returns the option text actually picked.
   //
-  // `preferred` is a preference, not a requirement: the option list is derived
-  // from the NC's own activity data, so the first offered option is taken when
-  // none of the candidates is present (same contract as
-  // NCCreatePage.selectDefectType).
+  //   * '__first__' (the default) → the first option;
+  //   * a NUMBER → the option at that index, WRAPPING ROUND the list, so a
+  //     loop's 0,1,2,… cycles through whatever this activity offers;
+  //   * any other string (or candidates) → a PREFERENCE matched against the
+  //     options, falling back to the first when none is on offer (same
+  //     contract as NCCreatePage.selectDefectType).
+  //
+  // The index pick is written out here rather than shared with NCCreatePage,
+  // per the standing rule that NC and RFI page objects are not factored
+  // together.
   async setLinkedNcDefectType(index = 0, preferred = '__first__') {
-    const trigger = this.linkedNcDefectTypeTrigger(index);
-    const isDropdown = await trigger
-      .waitFor({ state: 'visible', timeout: 5000 })
-      .then(() => true)
-      .catch(() => false);
+    const dropdown = this.linkedNcDefectTypeDropdown(index);
+    await dropdown.waitFor({ state: 'visible', timeout: 10000 });
 
-    if (isDropdown) {
-      const picked = await this.selectSearchableOption(trigger, { preferred });
-      this.lastLinkedNcDefectType = picked;
-      return picked;
+    let picked;
+    if (typeof preferred === 'number') {
+      const listbox = await this.openDropdown(dropdown);
+      const options = listbox.locator('[role="option"]');
+      await options.first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+      const count = await options.count();
+      if (!count) throw new Error(`Linked NC ${index}: Defect Type dropdown has no options`);
+      const option = options.nth(((preferred % count) + count) % count);
+      await option.scrollIntoViewIfNeeded();
+      picked = (await option.innerText()).replace(/\s*✓\s*$/, '').trim();
+      await option.click();
+      await this.page.waitForTimeout(300);
+      if (await listbox.isVisible().catch(() => false)) {
+        await this.page.keyboard.press('Escape').catch(() => {});
+        await listbox.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+      }
+    } else {
+      picked = await this.selectSearchableOption(dropdown, { preferred });
     }
 
-    // Pre-change shape: a label-associated free-text input with no placeholder.
-    const literal = (Array.isArray(preferred) ? preferred : [preferred])
-      .find(v => v != null && v !== '' && v !== '__first__') || 'Workmanship defect';
-    await this.linkedNcDefectTypeInput(index).fill(String(literal));
-    this.lastLinkedNcDefectType = literal;
-    return literal;
+    this.lastLinkedNcDefectType = picked;
+    return picked;
   }
 
   // The panel's own camera box — scoped to the panel, never `.last()` on the

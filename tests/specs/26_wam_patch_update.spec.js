@@ -135,6 +135,16 @@ test.describe('WAM patch/update semantics for every role', () => {
       await openAndFilter();
 
       const rowLabel = await wam.resolveRowLabel(rowLabelCandidates);
+      // Row cap (WAMPage.enforceRowCap, 2026-09-26): trim a crowded row BEFORE the
+      // snapshot, leaving one slot for the user this test adds. These updates used
+      // to grow the row by one every run, which is how Khavda reached ~40 names and
+      // its dropdown fell out of reach.
+      if ((await wam.enforceRowCap(rowLabel, { reserve: 1 })).length) {
+        await wam.clickSubmit();
+        await wam.closeDialog();
+        await wam.openAddDetails();
+        await openAndFilter();
+      }
       const before = await wam.getWorkAreaUserValue(rowLabel);
       expect(before, `precondition: ${role}'s row should already have existing assignees`).not.toBe('');
       const existingNames = before.split(',').map(n => n.trim()).filter(Boolean);

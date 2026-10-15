@@ -406,7 +406,13 @@ class WAMPage extends BasePage {
   // until the option is actually visible, or throws once scrolling stops
   // turning up anything new.
   async _findRowOptionWithScroll(listbox, userName, maxScrolls = 15) {
-    const option = listbox.locator('[role="option"]').filter({ hasText: userName }).first();
+    // EXACT name (plus Ark's optional selected-checkmark), never a substring:
+    // a one-letter user "p" on a pulse-uat Site row (2026-09-26) matched the
+    // first option containing a "p", so SM22's restore clicked someone else
+    // and reported success.
+    const escaped = userName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const option = listbox.locator('[role="option"]')
+      .filter({ hasText: new RegExp(`^\\s*${escaped}\\s*(✓)?\\s*$`) }).first();
     for (let i = 0; i < maxScrolls; i++) {
       if (await option.isVisible({ timeout: 500 }).catch(() => false)) return option;
       await listbox.hover().catch(() => {});
@@ -518,11 +524,18 @@ class WAMPage extends BasePage {
   // that once, after clearing/reassigning every row it needs to.
   async clearWorkAreaUser(areaCode) {
     const row = this.getWorkAreaRow(areaCode);
-    const clearBtn = row.getByRole('button', { name: 'Clear value' });
-    if (await clearBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await clearBtn.click();
-      await this.page.waitForTimeout(150);
-      return true;
+    const clearBtn = row.getByRole('button', { name: 'Clear value' }).first();
+    // waitFor, not isVisible — isVisible is a single immediate check. On a
+    // crowded row the button can sit below the dialog's scroll position.
+    const present = await clearBtn.waitFor({ state: 'attached', timeout: 2000 })
+      .then(() => true).catch(() => false);
+    if (present) {
+      await clearBtn.scrollIntoViewIfNeeded().catch(() => {});
+      if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click();
+        await this.page.waitForTimeout(150);
+        return true;
+      }
     }
     return false;
   }
@@ -544,10 +557,110 @@ class WAMPage extends BasePage {
   // closed the WHOLE "Add Details" dialog instead of just the row's
   // popover — leaving Submit unreachable. Same guard selectMultiAware
   // already uses in BasePage.js.
+  //
+  // ENFORCES THE ROW CAP FIRST — see enforceRowCap. A crowded row is cleared
+  // (keeping this deployment's current users) before userName is added, and
+  // that counts as a change, so the caller expects "Assigned successfully".
   async addAssigneeToRow(rowLabel, userName) {
+    const trimmed = await this.enforceRowCap(rowLabel, { incoming: userName });
+    const added = await this._addOneAssignee(rowLabel, userName);
+    return added || trimmed.length > 0;
+  }
+
+  // ---------------------------------------------------------------------------
+  // ROW CAP for multi-assignee rows — rule added 2026-09-26.
+  //
+  // A multi-assignee row's trigger lists EVERY assignee inline, comma-joined,
+  // and grows with them. Caught live on pulse-dev (Site Admin, Gujarat): the
+  // Khavda row had piled up ~40 SAD users over many runs, the trigger grew to
+  // fill the dialog, and the rows below it (Ludbay, Mandvi) and the dropdowns
+  // themselves were pushed out of reach — so WAM for some users failed. The
+  // pile-up came from the patch/update stages (SM19/SM20, specs 26/28), which
+  // add one more user per run and never remove it, and the demap stages'
+  // restore loops, which re-added every captured name.
+  //
+  // THE RULE: a multi-assignee row holds at most MAX_ROW_ASSIGNEES users while
+  // the WAM tests run. When adding would go past it, the row is cleared ("remove
+  // all" via its Clear value button) and only the users that still matter are
+  // put back: the one being added, plus any name this deployment's
+  // last-created-users.json records (so a desktop run never demaps the mobile
+  // run's current user on the same row, or vice versa). Stale users from
+  // earlier runs are the ones dropped — they are never logged in as again.
+  //
+  // Returns the names removed (empty when the row was within the cap). Does NOT
+  // Submit — the caller does, as with every other row edit here.
+  static get MAX_ROW_ASSIGNEES() { return 3; }
+
+  // Every user this deployment's tests may still log in as. Read fresh each
+  // time: SM01 rewrites the file mid-run.
+  _protectedUserNames() {
+    try {
+      const { loadLastCreatedUsers } = require('../utils/user-counter-utils');
+      return Object.values(loadLastCreatedUsers()).map(u => u && u.name).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
+  async _rowAssigneeNames(rowLabel) {
+    const text = (await this.getWorkAreaUserValue(rowLabel).catch(() => '')) || '';
+    return text.split(',').map(n => n.trim()).filter(Boolean);
+  }
+
+  // `incoming` — the user about to be added (counts toward the cap unless
+  // already on the row). `reserve` — slots to leave free for a caller that will
+  // add someone not known yet (addAnyUnassignedUser's callers pass 1).
+  async enforceRowCap(rowLabel, { incoming = null, reserve = 0 } = {}) {
+    const max = WAMPage.MAX_ROW_ASSIGNEES;
+    const names = await this._rowAssigneeNames(rowLabel);
+    const extra = (incoming && !names.includes(incoming) ? 1 : 0) + reserve;
+    if (names.length + extra <= max) return [];
+
+    // Kept: every current user of this deployment (never demapped, even past
+    // the cap), then the most recently added of the rest up to the free slots —
+    // so the row stays populated for callers that expect existing assignees.
+    const protectedNames = new Set(this._protectedUserNames());
+    const others = names.filter(n => n !== incoming);
+    const mustKeep = others.filter(n => protectedNames.has(n));
+    const fill = [...others].reverse().filter(n => !mustKeep.includes(n));
+    const keep = [...mustKeep, ...fill.slice(0, Math.max(0, max - extra - mustKeep.length))];
+
+    const cleared = await this.clearWorkAreaUser(rowLabel);
+    if (!cleared) {
+      // Never fail a mapping over the cap itself — report it and carry on.
+      console.log(`    WAM row cap: ${rowLabel} holds ${names.length} users but has no Clear value button — left as is`);
+      return [];
+    }
+    for (const name of keep) await this._addOneAssignee(rowLabel, name);
+
+    const removed = names.filter(n => !keep.includes(n) && n !== incoming);
+    console.log(
+      `    WAM row cap: ${rowLabel} held ${names.length} users (max ${max}) — cleared it, ` +
+      `kept [${keep.join(', ') || 'none'}], removed ${removed.length}`
+    );
+    return removed;
+  }
+
+  // Keeps only the names worth restoring after a demap test, at most
+  // MAX_ROW_ASSIGNEES: `mustKeep` first, then this deployment's current users,
+  // then the most recently added of the rest. Restoring every captured name is
+  // what used to rebuild a 40-name row after each demap run.
+  capRestoreList(names, mustKeep = []) {
+    const protectedNames = new Set(this._protectedUserNames());
+    const ordered = [
+      ...mustKeep.filter(n => names.includes(n)),
+      ...names.filter(n => protectedNames.has(n)),
+      ...[...names].reverse(),
+    ];
+    return [...new Set(ordered)].slice(0, WAMPage.MAX_ROW_ASSIGNEES);
+  }
+
+  // The raw add (no cap): open the row, pick userName, make sure the popover
+  // closed. No-op returning false when userName is already on the row.
+  async _addOneAssignee(rowLabel, userName) {
     const combo = this.getWorkAreaRow(rowLabel).locator('[role="combobox"]');
-    const current = (await combo.innerText()).trim();
-    if (current.includes(userName)) return false;
+    // By whole name, not substring — see _findRowOptionWithScroll.
+    if ((await this._rowAssigneeNames(rowLabel)).includes(userName)) return false;
 
     const listbox = await this.openDropdown(combo);
     // See _findRowOptionWithScroll's comment — this row's user list can
@@ -588,8 +701,8 @@ class WAMPage extends BasePage {
   // currently in the row at all — nothing to remove.
   async removeAssigneeFromRow(rowLabel, userName) {
     const combo = this.getWorkAreaRow(rowLabel).locator('[role="combobox"]');
-    const current = (await combo.innerText()).trim();
-    if (!current.includes(userName)) return false;
+    // By whole name, not substring — see _findRowOptionWithScroll.
+    if (!(await this._rowAssigneeNames(rowLabel)).includes(userName)) return false;
 
     const listbox = await this.openDropdown(combo);
     // See _findRowOptionWithScroll's comment — this row's user list can

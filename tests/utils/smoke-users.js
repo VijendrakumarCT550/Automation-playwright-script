@@ -1,6 +1,21 @@
 const { loadLastCreatedUsers, nextBatchNumber } = require('./user-counter-utils');
 const { environmentKey } = require('../config/environments');
 
+// ADMIN SCREENS ARE DESKTOP (2026-09-26). Playwright applies the PROJECT's
+// device settings even to a context a test creates itself, so from a mobile
+// flow stage (Pixel 7) this Admin session opened WAM in the phone layout and
+// the desktop dialog clicks timed out: 'WAM dialog not usable — locator.click:
+// Timeout 30000ms' x3, failing smoke-*-rfi-mobile and -nc-mobile before any
+// flow work. Admin's WAM / Users screens are always driven at desktop size.
+const { devices: __devices } = require('@playwright/test');
+const ADMIN_DESKTOP_CONTEXT = {
+  viewport: { width: 1600, height: 1000 },
+  isMobile: false,
+  hasTouch: false,
+  deviceScaleFactor: 1,
+  userAgent: __devices['Desktop Chrome'].userAgent,
+};
+
 // RESOLVING THE SMOKE CHAIN'S OWN USERS — and creating them when they are not
 // there.
 //
@@ -233,7 +248,7 @@ async function ensureSmokeUsers(browser, profile, roleKeys, { env = environmentK
     `    (SMOKE_AUTOCREATE_USERS=0 to disable this and fail instead)`
   );
 
-  const { context, page, dashboard } = await adminFreshLogin(browser);
+  const { context, page, dashboard } = await adminFreshLogin(browser, ADMIN_DESKTOP_CONTEXT);
   try {
     // ONE batch number for everything created in THIS call, which is the
     // established meaning of the number: users created together share it (see

@@ -727,9 +727,9 @@
         "key": "RA_CM",
         "role": "Contractor Manager",
         "userType": "VENDOR",
-        "email": "raracm35724751@adani.com",
-        "name": "RARACM35724751",
-        "phone": "9357247512",
+        "email": "raracm03397495@adani.com",
+        "name": "RARACM03397495",
+        "phone": "9033974956",
         "workLocations": [
           "A-06c",
           "S05b"
@@ -758,127 +758,15 @@
           "filters": "A-06c/Civil"
         },
         "probes": null,
-        "createdAt": "2026-09-19T20:39:43.787Z"
-      },
-      "RA_EL": {
-        "key": "RA_EL",
-        "role": "Execution Lead",
-        "userType": "AGEL",
-        "email": "rarael40380054@adani.com",
-        "name": "RARAEL40380054",
-        "phone": "9403800546",
-        "workLocations": [
-          "A-06c",
-          "S05b"
-        ],
-        "provisioned": {
-          "cluster": [
-            "Gujarat"
-          ],
-          "sites": [
-            "Khavda"
-          ],
-          "projectType": [
-            "SOLAR"
-          ],
-          "workLocations": [
-            "A-06c",
-            "S05b"
-          ]
-        },
-        "wam": {
-          "workLocation": "A-06c",
-          "package": "Civil",
-          "workArea": "BL07"
-        },
-        "wamApplied": true,
-        "wamDetail": {
-          "row": "BL07",
-          "filters": "A-06c/Civil"
-        },
-        "probes": null,
-        "createdAt": "2026-09-19T20:40:27.121Z"
-      },
-      "RA_QL": {
-        "key": "RA_QL",
-        "role": "Quality Lead",
-        "userType": "AGEL",
-        "email": "raraql44595267@adani.com",
-        "name": "RARAQL44595267",
-        "phone": "9445952674",
-        "workLocations": [
-          "A-06c",
-          "S05b"
-        ],
-        "provisioned": {
-          "cluster": [
-            "Gujarat"
-          ],
-          "sites": [
-            "Khavda"
-          ],
-          "projectType": [
-            "SOLAR"
-          ],
-          "workLocations": [
-            "A-06c",
-            "S05b"
-          ]
-        },
-        "wam": {
-          "workLocation": "A-06c",
-          "package": "Civil",
-          "workArea": "BL07"
-        },
-        "wamApplied": true,
-        "wamDetail": {
-          "row": "BL07",
-          "filters": "A-06c/Civil"
-        },
-        "probes": null,
-        "createdAt": "2026-09-19T20:41:14.481Z"
-      },
-      "RA_PM": {
-        "key": "RA_PM",
-        "role": "Project Manager",
-        "userType": "AGEL",
-        "email": "rarapm56022275@adani.com",
-        "name": "RARAPM56022275",
-        "phone": "9560222754",
-        "workLocations": [
-          "A-06c",
-          "S05b"
-        ],
-        "provisioned": {
-          "cluster": [
-            "Gujarat"
-          ],
-          "sites": [
-            "Khavda"
-          ],
-          "projectType": [
-            "SOLAR"
-          ]
-        },
-        "wam": {
-          "workLocation": "A-06c",
-          "package": "Civil"
-        },
-        "wamApplied": true,
-        "wamDetail": {
-          "row": "A-06c",
-          "filters": "A-06c/Civil"
-        },
-        "probes": null,
-        "createdAt": "2026-09-19T20:43:09.596Z"
+        "createdAt": "2026-09-30T06:01:02.993Z"
       },
       "CI_A": {
         "key": "CI_A",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racia63142382@adani.com",
-        "name": "RACIA63142382",
-        "phone": "9631423826",
+        "email": "racia31948453@adani.com",
+        "name": "RACIA31948453",
+        "phone": "9319484535",
         "workLocations": [
           "A-06c"
         ],
@@ -900,15 +788,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "init-only, same work location",
-        "createdAt": "2026-09-19T20:45:13.618Z"
+        "createdAt": "2026-09-30T06:06:35.032Z"
       },
       "CI_B": {
         "key": "CI_B",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racib71362123@adani.com",
-        "name": "RACIB71362123",
-        "phone": "9713621232",
+        "email": "racib39503435@adani.com",
+        "name": "RACIB39503435",
+        "phone": "9395034357",
         "workLocations": [
           "A-06c",
           "S05b"
@@ -938,15 +826,15 @@
           "filters": "S05b/Electrical"
         },
         "probes": "THE HEADLINE CASE — eligible via WL_A, but every mapping is in WL_B/Electrical",
-        "createdAt": "2026-09-19T20:46:33.089Z"
+        "createdAt": "2026-09-30T06:07:47.823Z"
       },
       "CI_C": {
         "key": "CI_C",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racic89385637@adani.com",
-        "name": "RACIC89385637",
-        "phone": "9893856376",
+        "email": "racic53588874@adani.com",
+        "name": "RACIC53588874",
+        "phone": "9535888742",
         "workLocations": [
           "A-06c",
           "S05b"
@@ -977,15 +865,15 @@
           "filters": "A-06c/Civil"
         },
         "probes": "control arm — fully mapped where the record lives",
-        "createdAt": "2026-09-19T20:49:43.367Z"
+        "createdAt": "2026-09-30T06:09:46.832Z"
       },
       "CI_D": {
         "key": "CI_D",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racid08389022@adani.com",
-        "name": "RACID08389022",
-        "phone": "9083890223",
+        "email": "racid68150375@adani.com",
+        "name": "RACID68150375",
+        "phone": "9681503753",
         "workLocations": [
           "A-06c"
         ],
@@ -1013,15 +901,15 @@
           "filters": "A-06c/Electrical"
         },
         "probes": "right location, wrong package",
-        "createdAt": "2026-09-19T20:52:10.542Z"
+        "createdAt": "2026-09-30T06:12:37.099Z"
       },
       "CI_E": {
         "key": "CI_E",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racie20237073@adani.com",
-        "name": "RACIE20237073",
-        "phone": "9202370734",
+        "email": "racie86397053@adani.com",
+        "name": "RACIE86397053",
+        "phone": "9863970536",
         "workLocations": [
           "A-06c"
         ],
@@ -1050,15 +938,15 @@
           "filters": "A-06c/Civil"
         },
         "probes": "right location and package, WRONG work area (record is on BL07)",
-        "createdAt": "2026-09-19T20:53:48.648Z"
+        "createdAt": "2026-09-30T06:14:50.156Z"
       },
       "CI_F": {
         "key": "CI_F",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racif24914325@adani.com",
-        "name": "RACIF24914325",
-        "phone": "9249143259",
+        "email": "racif90990294@adani.com",
+        "name": "RACIF90990294",
+        "phone": "9909902948",
         "workLocations": [
           "S05b"
         ],
@@ -1080,15 +968,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "NEGATIVE — other work location only, must not be eligible",
-        "createdAt": "2026-09-19T20:54:36.258Z"
+        "createdAt": "2026-09-30T06:15:30.966Z"
       },
       "CI_G": {
         "key": "CI_G",
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "email": "racig27626013@adani.com",
-        "name": "RACIG27626013",
-        "phone": "9276260133",
+        "email": "racig93097063@adani.com",
+        "name": "RACIG93097063",
+        "phone": "9930970633",
         "workLocations": [
           "A-06c"
         ],
@@ -1110,15 +998,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "NEGATIVE — right work location, DIFFERENT vendor, must not be eligible",
-        "createdAt": "2026-09-19T20:55:02.664Z"
+        "createdAt": "2026-09-30T06:15:51.969Z"
       },
       "EE_A": {
         "key": "EE_A",
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "email": "raeea30266655@adani.com",
-        "name": "RAEEA30266655",
-        "phone": "9302666558",
+        "email": "raeea95197190@adani.com",
+        "name": "RAEEA95197190",
+        "phone": "9951971907",
         "workLocations": [
           "A-06c"
         ],
@@ -1140,15 +1028,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "init-only baseline",
-        "createdAt": "2026-09-19T20:55:26.013Z"
+        "createdAt": "2026-09-30T06:16:10.427Z"
       },
       "EE_B": {
         "key": "EE_B",
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "email": "raeeb32601535@adani.com",
-        "name": "RAEEB32601535",
-        "phone": "9326015358",
+        "email": "raeeb97042854@adani.com",
+        "name": "RAEEB97042854",
+        "phone": "9970428549",
         "workLocations": [
           "A-06c",
           "WTG-Khavda"
@@ -1173,15 +1061,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "multi-project-type — solar AND wind provisioning, no WAM",
-        "createdAt": "2026-09-19T20:55:49.984Z"
+        "createdAt": "2026-09-30T06:16:29.102Z"
       },
       "EE_C": {
         "key": "EE_C",
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "email": "raeec34998699@adani.com",
-        "name": "RAEEC34998699",
-        "phone": "9349986999",
+        "email": "raeec98910360@adani.com",
+        "name": "RAEEC98910360",
+        "phone": "9989103603",
         "workLocations": [
           "A-06c",
           "S05b"
@@ -1211,15 +1099,15 @@
           "filters": "S05b/Electrical"
         },
         "probes": "mapped in WL_B/Electrical, init-only in WL_A",
-        "createdAt": "2026-09-19T20:56:13.770Z"
+        "createdAt": "2026-09-30T06:16:47.965Z"
       },
       "EE_D": {
         "key": "EE_D",
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "email": "raeed39533444@adani.com",
-        "name": "RAEED39533444",
-        "phone": "9395334445",
+        "email": "raeed02581871@adani.com",
+        "name": "RAEED02581871",
+        "phone": "9025818717",
         "workLocations": [
           "A-06c"
         ],
@@ -1248,15 +1136,15 @@
           "filters": "A-06c/Civil"
         },
         "probes": "control arm",
-        "createdAt": "2026-09-19T20:56:59.066Z"
+        "createdAt": "2026-09-30T06:17:23.701Z"
       },
       "QI_A": {
         "key": "QI_A",
         "role": "Quality Inspector",
         "userType": "AGEL",
-        "email": "raqia43907961@adani.com",
-        "name": "RAQIA43907961",
-        "phone": "9439079614",
+        "email": "raqia06199965@adani.com",
+        "name": "RAQIA06199965",
+        "phone": "9061999656",
         "workLocations": [
           "A-06c"
         ],
@@ -1278,15 +1166,15 @@
         "wamApplied": true,
         "wamDetail": null,
         "probes": "init-only baseline",
-        "createdAt": "2026-09-19T20:57:42.860Z"
+        "createdAt": "2026-09-30T06:18:00.053Z"
       },
       "QI_C": {
         "key": "QI_C",
         "role": "Quality Inspector",
         "userType": "AGEL",
-        "email": "raqic46286250@adani.com",
-        "name": "RAQIC46286250",
-        "phone": "9462862508",
+        "email": "raqic08005549@adani.com",
+        "name": "RAQIC08005549",
+        "phone": "9080055497",
         "workLocations": [
           "A-06c",
           "S05b"
@@ -1316,15 +1204,15 @@
           "filters": "S05b/Electrical"
         },
         "probes": "mapped in WL_B/Electrical, init-only in WL_A",
-        "createdAt": "2026-09-19T20:58:06.640Z"
+        "createdAt": "2026-09-30T06:18:18.166Z"
       },
       "QI_D": {
         "key": "QI_D",
         "role": "Quality Inspector",
         "userType": "AGEL",
-        "email": "raqid50924219@adani.com",
-        "name": "RAQID50924219",
-        "phone": "9509242195",
+        "email": "raqid11574767@adani.com",
+        "name": "RAQID11574767",
+        "phone": "9115747677",
         "workLocations": [
           "A-06c"
         ],
@@ -1353,7 +1241,119 @@
           "filters": "A-06c/Civil"
         },
         "probes": "control arm",
-        "createdAt": "2026-09-19T20:58:52.690Z"
+        "createdAt": "2026-09-30T06:18:54.131Z"
+      },
+      "RA_EL": {
+        "key": "RA_EL",
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "email": "rarael23378849@adani.com",
+        "name": "RARAEL23378849",
+        "phone": "9233788492",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-30T06:20:57.271Z"
+      },
+      "RA_QL": {
+        "key": "RA_QL",
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "email": "raraql27563378@adani.com",
+        "name": "RARAQL27563378",
+        "phone": "9275633782",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ],
+          "workLocations": [
+            "A-06c",
+            "S05b"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil",
+          "workArea": "BL07"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "BL07",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-30T06:21:34.227Z"
+      },
+      "RA_PM": {
+        "key": "RA_PM",
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "email": "rarapm31258895@adani.com",
+        "name": "RARAPM31258895",
+        "phone": "9312588951",
+        "workLocations": [
+          "A-06c",
+          "S05b"
+        ],
+        "provisioned": {
+          "cluster": [
+            "Gujarat"
+          ],
+          "sites": [
+            "Khavda"
+          ],
+          "projectType": [
+            "SOLAR"
+          ]
+        },
+        "wam": {
+          "workLocation": "A-06c",
+          "package": "Civil"
+        },
+        "wamApplied": true,
+        "wamDetail": {
+          "row": "A-06c",
+          "filters": "A-06c/Civil"
+        },
+        "probes": null,
+        "createdAt": "2026-09-30T06:22:14.082Z"
       }
     }
   }

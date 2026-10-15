@@ -21,8 +21,26 @@ const ASSIGNMENT_FILTERS = {
   serviceOrder: 'M S CHOUHAN INFRAVENTURES PVT LTD',
 };
 
+// const ASSIGNMENT_FILTERS = {
+//   role:         'Contractor Incharge',
+//   cluster:      ['Gujarat', 'Khavda'],
+//   site:         'Khavda',
+//   workLocation: 'S05b',
+//   // package:      'Civil',
+//   package:      'Electrical',
+//   serviceOrder: 'M S CHOUHAN INFRAVENTURES PVT LTD',
+// };
+
 const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
 'BL06', 'BL07', 'BL08', 'BL09', 'BL10'];
+
+
+// const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
+// 'BL06', 'BL07', 'BL08', 'BL09', 'BL10',
+// 'BL11', 'BL12', 'BL13', 'BL14', 'BL15',
+// 'BL16', 'BL17', 'BL18', 'BL19', 'BL20',
+// 'BL21', 'BL22', 'BL23', 'BL24'];
+
 // 'Vikram Singh' 'Vikas Sharma' isn't in this role/location's assignable-user roster
 // (confirmed live: only 'Vikas Sharma'/'Ompal Singh' are offered for
 // Contractor Incharge at this Cluster/Site/Work Location/Package/Service
@@ -30,6 +48,8 @@ const TARGET_WORK_AREAS = ['BL01', 'BL02', 'BL03', 'BL04', 'BL05',
 // whoever's already assigned, so the test still exercises a real change.
 // const ASSIGNEE = 'Vikas Sharma';
 const ASSIGNEE = 'Vikram Singh';
+// const ASSIGNEE = 'Guddu Kumar Gond';
+
 
 test.describe('Admin - Work Area Mapping (WAM) - Contractor Incharge', () => {
   let context, page, dashboard;

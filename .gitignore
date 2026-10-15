@@ -7,3 +7,6 @@ smoke-reports/
 
 # ad-hoc QA OOM capture logs (see project_qa_oom_capture memory)
 qa-oom-capture/
+
+# DRS exploration dumps (tests/drs/inspection)
+drs-explore/

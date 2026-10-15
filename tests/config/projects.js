@@ -971,6 +971,12 @@ const PROFILES = {
 };
 
 function getProfile(key) {
+  // DRS integration profiles (`drs-solar-<tag>`) are BUILT, not declared: their
+  // ground is whatever the DRS setup chain created (tests/fixtures/drs/). Lazy
+  // require so this file never loads the integration code unless asked.
+  if (typeof key === 'string' && key.startsWith('drs-')) {
+    return require('../integration/drs-smoke-profile').buildDrsSmokeProfile(key);
+  }
   const profile = PROFILES[key];
   if (!profile) {
     throw new Error(

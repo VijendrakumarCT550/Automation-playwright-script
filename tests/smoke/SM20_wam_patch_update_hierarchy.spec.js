@@ -175,6 +175,15 @@ for (const tier of TIERS) {
           ? await wam.resolveRowLabel([profile.site, profile.site.toUpperCase()])
           : profile.workLocations[0];
 
+        // Row cap (WAMPage.enforceRowCap, 2026-09-26): trim a crowded row BEFORE the
+        // snapshot, leaving one slot for the user this test adds. These updates used
+        // to grow the row by one every run, which is how Khavda reached ~40 names and
+        // its dropdown fell out of reach.
+        if ((await wam.enforceRowCap(row, { reserve: 1 })).length) {
+          await ensureDialogOpen(wam, { reason: 'before Submit (row cap)' });
+          await wam.clickSubmit();
+          await reopenWithFilters(wam, filters);
+        }
         const before = await wam.getWorkAreaUserValue(row);
         expect(
           before,
@@ -211,9 +220,9 @@ for (const tier of TIERS) {
         expect(after, `Newly added "${added}" should be on ${row}`).toContain(added);
         console.log(`  after add (persisted): ${row} = "${after}"`);
 
-        // Not restored: these rows are additive by design and the extra
-        // assignee is harmless. Removing them would be a demap, which is
-        // SM22's subject.
+        // Not restored here, but bounded: the row cap at the top of this test
+        // trims the row on the next run (WAMPage.enforceRowCap, 2026-09-26) —
+        // unbounded, these adds are what pushed Khavda's dropdown out of reach.
         await wam.closeDialog();
       });
     }

@@ -1,0 +1,1399 @@
+{
+  "version": 1,
+  "environments": {
+    "uat": {
+      "projects": [
+        {
+          "tag": "26092026-QXA",
+          "createdAt": "2026-09-26T11:35:44.715Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-26092026-QXA",
+          "id": "ce779d73-3949-47a3-b6be-a0e58621c786",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-26092026-QXA",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "csv": "locations-26092026-QXA.csv",
+          "catalogVersion": "v1",
+          "pinned": {
+            "BL01": "v1",
+            "BL02": "v1",
+            "Culvert-01": "v1",
+            "Drain-01": "v1",
+            "Road-01": "v1"
+          },
+          "serviceOrder": {
+            "number": "9922846092",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ],
+            "vendorHeaderSet": true
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9922846092",
+                "BL02": "9922846092"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9922846092",
+                "BL02": "9922846092"
+              },
+              "Piling - MMS": {
+                "BL01": "9922846092",
+                "BL02": "9922846092"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9922846092",
+                "BL02": "9922846092"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System",
+              "EA - Piling - MMS",
+              "EA - Piling - Inverter",
+              "EA - Piling - LT Cable Hanger System"
+            ]
+          },
+          "pulse": {
+            "env": "uat",
+            "users": {
+              "CI": {
+                "name": "CIDRSqyxUser201",
+                "email": "CIDRSqyxUser201@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION SERVICE CONTRACTOR",
+                "createdAt": "2026-09-26T11:58:41.084Z"
+              },
+              "EE": {
+                "name": "EEDRShekUser201",
+                "email": "EEDRShekUser201@adani.com",
+                "role": "Execution Engineer",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-09-26T11:58:55.035Z"
+              },
+              "QI": {
+                "name": "QIDRSlvlUser201",
+                "email": "QIDRSlvlUser201@adani.com",
+                "role": "Quality Inspector",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-09-26T11:59:09.008Z"
+              }
+            },
+            "wam": {
+              "roles": [
+                "CI",
+                "EE",
+                "QI"
+              ],
+              "areas": [
+                "BL01",
+                "BL02"
+              ],
+              "assigned": [
+                "CI@BL01",
+                "CI@BL02",
+                "EE@BL01",
+                "EE@BL02",
+                "QI@BL01",
+                "QI@BL02"
+              ],
+              "at": "2026-09-26T12:00:09.385Z"
+            },
+            "rfis": [
+              {
+                "id": "065c3c95-0eed-434f-b5f2-d489a499fdbc",
+                "code": "RFI-AUTO-WL-26092026-QXA-BL01-CIV-0",
+                "workArea": "BL01",
+                "workSection": "R01-T06",
+                "status": "approved"
+              }
+            ],
+            "ncs": [
+              {
+                "id": "dbf77f5f-91b4-40fd-8038-7244a12bfefd",
+                "code": "NC-AUTO-WL-26092026-QXA-BL02-CIV-0",
+                "workArea": "BL02",
+                "status": "approved"
+              }
+            ]
+          }
+        },
+        {
+          "tag": "26092026-JKX",
+          "createdAt": "2026-09-26T12:08:55.102Z",
+          "stagesDone": [
+            "D4",
+            "D5"
+          ],
+          "name": "AUTO-Solar-26092026-JKX",
+          "id": "340faf75-c74a-408d-ae41-c57c49eaaae3",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-26092026-JKX",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "BL03",
+            "BL04",
+            "BL05",
+            "BL06",
+            "BL07",
+            "BL08",
+            "BL09",
+            "BL10",
+            "BL11",
+            "BL12",
+            "BL13",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "csv": "locations-26092026-JKX.csv",
+          "abandoned": true,
+          "abandonedReason": "stopped mid-D6 on 2026-09-26: app owner asked for ~300 sections per Work Area + multi-Work-Area version pinning; BL01-BL06 pinned, BL07+ not; no SO"
+        },
+        {
+          "tag": "26092026-FQQ",
+          "createdAt": "2026-09-26T12:18:34.654Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-26092026-FQQ",
+          "id": "6edf3b67-097d-4fc4-9108-d8edb346374f",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-26092026-FQQ",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "BL03",
+            "BL04",
+            "BL05",
+            "BL06",
+            "BL07",
+            "BL08",
+            "BL09",
+            "BL10",
+            "BL11",
+            "BL12",
+            "BL13",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-26092026-FQQ.csv",
+          "catalogVersion": "v1",
+          "pinned": {
+            "BL01": "v1",
+            "BL02": "v1",
+            "BL03": "v1",
+            "BL04": "v1",
+            "BL05": "v1",
+            "BL06": "v1",
+            "BL07": "v1",
+            "BL08": "v1",
+            "BL09": "v1",
+            "BL10": "v1",
+            "BL11": "v1",
+            "BL12": "v1",
+            "BL13": "v1",
+            "Culvert-01": "v1",
+            "Drain-01": "v1",
+            "Road-01": "v1"
+          },
+          "serviceOrder": {
+            "number": "9925277020",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9925277020",
+                "BL02": "9925277020",
+                "BL03": "9925277020",
+                "BL04": "9925277020",
+                "BL05": "9925277020",
+                "BL06": "9925277020",
+                "BL07": "9925277020",
+                "BL08": "9925277020",
+                "BL09": "9925277020",
+                "BL10": "9925277020",
+                "BL11": "9925277020",
+                "BL12": "9925277020",
+                "BL13": "9925277020"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9925277020",
+                "BL02": "9925277020",
+                "BL03": "9925277020",
+                "BL04": "9925277020",
+                "BL05": "9925277020",
+                "BL06": "9925277020",
+                "BL07": "9925277020",
+                "BL08": "9925277020",
+                "BL09": "9925277020",
+                "BL10": "9925277020",
+                "BL11": "9925277020",
+                "BL12": "9925277020",
+                "BL13": "9925277020"
+              },
+              "Piling - MMS": {
+                "BL01": "9925277020",
+                "BL02": "9925277020",
+                "BL03": "9925277020",
+                "BL04": "9925277020",
+                "BL05": "9925277020",
+                "BL06": "9925277020",
+                "BL07": "9925277020",
+                "BL08": "9925277020",
+                "BL09": "9925277020",
+                "BL10": "9925277020",
+                "BL11": "9925277020",
+                "BL12": "9925277020",
+                "BL13": "9925277020"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9925277020",
+                "BL02": "9925277020",
+                "BL03": "9925277020",
+                "BL04": "9925277020",
+                "BL05": "9925277020",
+                "BL06": "9925277020",
+                "BL07": "9925277020",
+                "BL08": "9925277020",
+                "BL09": "9925277020",
+                "BL10": "9925277020",
+                "BL11": "9925277020",
+                "BL12": "9925277020",
+                "BL13": "9925277020"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System",
+              "EA - Piling - MMS",
+              "EA - Piling - Inverter",
+              "EA - Piling - LT Cable Hanger System"
+            ]
+          },
+          "pulse": {
+            "env": "uat",
+            "users": {
+              "CI": {
+                "name": "CIDRSxthUser202",
+                "email": "CIDRSxthUser202@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION SERVICE CONTRACTOR"
+              },
+              "EE": {
+                "name": "EEDRSkoxUser202",
+                "email": "EEDRSkoxUser202@adani.com",
+                "role": "Execution Engineer",
+                "userType": "AGEL",
+                "vendor": null
+              },
+              "QI": {
+                "name": "QIDRSfgyUser202",
+                "email": "QIDRSfgyUser202@adani.com",
+                "role": "Quality Inspector",
+                "userType": "AGEL",
+                "vendor": null
+              }
+            },
+            "wam": {
+              "roles": [
+                "CI",
+                "EE",
+                "QI"
+              ],
+              "areas": [
+                "BL01",
+                "BL02",
+                "BL03",
+                "BL04",
+                "BL05"
+              ],
+              "assigned": [
+                "CI@BL01",
+                "CI@BL02",
+                "CI@BL03",
+                "CI@BL04",
+                "CI@BL05",
+                "EE@BL01",
+                "EE@BL02",
+                "EE@BL03",
+                "EE@BL04",
+                "EE@BL05",
+                "QI@BL01",
+                "QI@BL02",
+                "QI@BL03",
+                "QI@BL04",
+                "QI@BL05"
+              ],
+              "at": "2026-10-01T14:00:43.193Z"
+            },
+            "rfis": [
+              {
+                "id": "3b5b5f2d-a2da-49da-ae04-a5d16576cf78",
+                "code": "RFI-AUTO-WL-26092026-FQQ-BL01-CIV-0",
+                "workArea": "BL01",
+                "workSection": "R15-T01",
+                "status": "approved"
+              },
+              {
+                "id": "008d080a-51ac-42e2-b654-bf8dcbffec3a",
+                "code": "RFI-AUTO-WL-26092026-FQQ-BL01-CIV-105",
+                "workArea": "BL01",
+                "workSection": "R08-T01",
+                "status": "approved"
+              }
+            ],
+            "ncs": [
+              {
+                "id": "c3986ca5-331b-4eda-9ce9-9a3e847f27ea",
+                "code": "NC-AUTO-WL-26092026-FQQ-BL02-CIV-0",
+                "workArea": "BL02",
+                "status": "approved"
+              },
+              {
+                "id": "1daa42b5-f14a-40f9-af1e-7b041d7ff537",
+                "code": "NC-AUTO-WL-26092026-FQQ-BL02-CIV-33",
+                "workArea": "BL02",
+                "status": "approved"
+              }
+            ],
+            "rfiMatrix": {
+              "tcSet": "full",
+              "file": "rfi-tracker.drs-solar-26092026-FQQ.uat.desktop.full.json",
+              "done": 9,
+              "problems": 0,
+              "at": "2026-09-26T15:01:38.153Z"
+            },
+            "ncMatrix": {
+              "tcSet": "full",
+              "file": "nc-tracker.drs-solar-26092026-FQQ.uat.desktop.full.json",
+              "done": 4,
+              "problems": 0,
+              "at": "2026-09-26T15:16:11.620Z"
+            }
+          }
+        },
+        {
+          "tag": "28092026-RIE",
+          "createdAt": "2026-09-28T05:51:58.894Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-28092026-RIE",
+          "id": "68a801b7-ef49-4bf2-8ef5-194613c3efae",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-28092026-RIE",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-28092026-RIE.csv",
+          "catalogVersion": "v3",
+          "pinned": {
+            "BL01": "v3",
+            "BL02": "v3",
+            "Culvert-01": "v3",
+            "Drain-01": "v3",
+            "Road-01": "v3"
+          },
+          "serviceOrder": {
+            "number": "9974756261",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v3",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9974756261",
+                "BL02": "9974756261"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9974756261",
+                "BL02": "9974756261"
+              },
+              "Piling - MMS": {
+                "BL01": "9974756261",
+                "BL02": "9974756261"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9974756261",
+                "BL02": "9974756261"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System",
+              "EA - Piling - MMS",
+              "EA - Piling - Inverter",
+              "EA - Piling - LT Cable Hanger System"
+            ]
+          }
+        },
+        {
+          "tag": "28092026-LPW",
+          "createdAt": "2026-09-28T06:04:44.992Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-28092026-LPW",
+          "id": "c923ad4b-1d2d-4771-a7be-da16693565de",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-28092026-LPW",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "BL03",
+            "BL04",
+            "BL05",
+            "BL06",
+            "BL07",
+            "BL08",
+            "BL09",
+            "BL10",
+            "BL11",
+            "BL12",
+            "BL13",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-28092026-LPW.csv",
+          "catalogVersion": "v3",
+          "pinned": {
+            "BL01": "v3",
+            "BL02": "v3",
+            "BL03": "v3",
+            "BL04": "v3",
+            "BL05": "v3",
+            "BL06": "v3",
+            "BL07": "v3",
+            "BL08": "v3",
+            "BL09": "v3",
+            "BL10": "v3",
+            "BL11": "v3",
+            "BL12": "v3",
+            "BL13": "v3",
+            "Culvert-01": "v3",
+            "Drain-01": "v3",
+            "Road-01": "v3"
+          },
+          "serviceOrder": {
+            "number": "9975558531",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v3",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9975558531",
+                "BL02": "9975558531",
+                "BL03": "9975558531",
+                "BL04": "9975558531",
+                "BL05": "9975558531",
+                "BL06": "9975558531",
+                "BL07": "9975558531",
+                "BL08": "9975558531",
+                "BL09": "9975558531",
+                "BL10": "9975558531",
+                "BL11": "9975558531",
+                "BL12": "9975558531",
+                "BL13": "9975558531"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9975558531",
+                "BL02": "9975558531",
+                "BL03": "9975558531",
+                "BL04": "9975558531",
+                "BL05": "9975558531",
+                "BL06": "9975558531",
+                "BL07": "9975558531",
+                "BL08": "9975558531",
+                "BL09": "9975558531",
+                "BL10": "9975558531",
+                "BL11": "9975558531",
+                "BL12": "9975558531",
+                "BL13": "9975558531"
+              },
+              "Piling - MMS": {
+                "BL01": "9975558531",
+                "BL02": "9975558531",
+                "BL03": "9975558531",
+                "BL04": "9975558531",
+                "BL05": "9975558531",
+                "BL06": "9975558531",
+                "BL07": "9975558531",
+                "BL08": "9975558531",
+                "BL09": "9975558531",
+                "BL10": "9975558531",
+                "BL11": "9975558531",
+                "BL12": "9975558531",
+                "BL13": "9975558531"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9975558531",
+                "BL02": "9975558531",
+                "BL03": "9975558531",
+                "BL04": "9975558531",
+                "BL05": "9975558531",
+                "BL06": "9975558531",
+                "BL07": "9975558531",
+                "BL08": "9975558531",
+                "BL09": "9975558531",
+                "BL10": "9975558531",
+                "BL11": "9975558531",
+                "BL12": "9975558531",
+                "BL13": "9975558531"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System",
+              "EA - Piling - MMS",
+              "EA - Piling - Inverter",
+              "EA - Piling - LT Cable Hanger System"
+            ]
+          },
+          "pulse": {
+            "env": "uat",
+            "users": {
+              "CI": {
+                "name": "CIDRSsswUser205",
+                "email": "CIDRSsswUser205@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION SERVICE CONTRACTOR"
+              },
+              "EE": {
+                "name": "EEDRSdjuUser205",
+                "email": "EEDRSdjuUser205@adani.com",
+                "role": "Execution Engineer",
+                "userType": "AGEL",
+                "vendor": null
+              },
+              "QI": {
+                "name": "QIDRStqvUser205",
+                "email": "QIDRStqvUser205@adani.com",
+                "role": "Quality Inspector",
+                "userType": "AGEL",
+                "vendor": null
+              }
+            },
+            "wam": {
+              "roles": [
+                "CI",
+                "EE",
+                "QI"
+              ],
+              "areas": [
+                "BL01",
+                "BL02",
+                "BL03",
+                "BL04",
+                "BL05"
+              ],
+              "assigned": [],
+              "at": "2026-09-28T10:55:08.896Z"
+            },
+            "rfiMatrix": {
+              "tcSet": "full",
+              "file": "rfi-tracker.drs-solar-28092026-LPW.uat.desktop.full.json",
+              "done": 9,
+              "problems": 0,
+              "at": "2026-09-28T07:26:28.873Z"
+            }
+          }
+        },
+        {
+          "tag": "30092026-KRT",
+          "createdAt": "2026-09-30T07:01:51.450Z",
+          "stagesDone": [
+            "D4",
+            "D5"
+          ],
+          "name": "AUTO-Solar-30092026-KRT",
+          "id": "79d760aa-6bb3-4a95-bdfe-a86c192bc9c7",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-30092026-KRT",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-30092026-KRT.csv"
+        },
+        {
+          "tag": "01102026-CPW",
+          "createdAt": "2026-10-01T13:20:54.498Z",
+          "stagesDone": [
+            "D4",
+            "D5"
+          ],
+          "name": "AUTO-Solar-01102026-CPW",
+          "id": "0e04c5fd-45bc-4408-a5d7-72ff76a4320e",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-01102026-CPW",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-01102026-CPW.csv"
+        },
+        {
+          "tag": "01102026-TGB",
+          "createdAt": "2026-10-01T13:22:58.947Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-01102026-TGB",
+          "id": "0a150ad1-a237-450e-b827-1d5494717529",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-01102026-TGB",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-01102026-TGB.csv",
+          "catalogVersion": "v1",
+          "pinned": {
+            "BL01": "v1",
+            "BL02": "v1",
+            "Culvert-01": "v1",
+            "Drain-01": "v1",
+            "Road-01": "v1"
+          },
+          "serviceOrder": {
+            "number": "9961144305",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9961144305",
+                "BL02": "9961144305"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9961144305",
+                "BL02": "9961144305"
+              },
+              "Piling - MMS": {
+                "BL01": "9961144305",
+                "BL02": "9961144305"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9961144305",
+                "BL02": "9961144305"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System",
+              "EA - Piling - MMS",
+              "EA - Piling - Inverter",
+              "EA - Piling - LT Cable Hanger System"
+            ]
+          }
+        },
+        {
+          "tag": "12102026-RZO",
+          "createdAt": "2026-10-12T07:26:43.059Z",
+          "stagesDone": [
+            "D4",
+            "D5"
+          ],
+          "name": "AUTO-Solar-12102026-RZO",
+          "id": "809191c6-96ea-400c-b372-fc8e4f0ec4d1",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-12102026-RZO",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-12102026-RZO.csv"
+        },
+        {
+          "tag": "14102026-MTQ",
+          "createdAt": "2026-10-14T11:22:40.610Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-14102026-MTQ",
+          "id": "e1324479-9208-4ec5-9b22-68ee86a63a44",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-14102026-MTQ",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-14102026-MTQ.csv",
+          "catalogVersion": "v1",
+          "pinned": {
+            "BL01": "v1",
+            "BL02": "v1",
+            "Culvert-01": "v1",
+            "Drain-01": "v1",
+            "Road-01": "v1"
+          },
+          "serviceOrder": {
+            "number": "9977014504",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9977014504",
+                "BL02": "9977014504"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9977014504",
+                "BL02": "9977014504"
+              },
+              "Piling - MMS": {
+                "BL01": "9977014504",
+                "BL02": "9977014504"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9977014504",
+                "BL02": "9977014504"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - MMS — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - Inverter — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — BL01, BL02"
+            ]
+          }
+        },
+        {
+          "tag": "15102026-QOT",
+          "createdAt": "2026-10-15T05:28:56.098Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-15102026-QOT",
+          "id": "ab7feb52-1f65-4c1b-87bd-1a43a146cd2f",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-15102026-QOT",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-15102026-QOT.csv",
+          "catalogVersion": "v1",
+          "pinned": {
+            "BL01": "v1",
+            "BL02": "v1",
+            "Culvert-01": "v1",
+            "Drain-01": "v1",
+            "Road-01": "v1"
+          },
+          "serviceOrder": {
+            "number": "9942193357",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9942193357",
+                "BL02": "9942193357"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9942193357",
+                "BL02": "9942193357"
+              },
+              "Piling - MMS": {
+                "BL01": "9942193357",
+                "BL02": "9942193357"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9942193357",
+                "BL02": "9942193357"
+              }
+            }
+          },
+          "soLineMapping": {
+            "line": "10-10",
+            "subActivities": [
+              "EA - Piling - Robotic Docking System — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - MMS — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - Inverter — Solar · All sites v1 — BL01, BL02",
+              "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — BL01, BL02"
+            ]
+          }
+        },
+        {
+          "tag": "15102026-UQX",
+          "createdAt": "2026-10-15T06:40:34.284Z",
+          "stagesDone": [
+            "D4",
+            "D5"
+          ],
+          "name": "AUTO-Solar-15102026-UQX",
+          "id": "69d3e2ca-e691-42e5-bcc7-dfb1dd5276f0",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-15102026-UQX",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01",
+            "VER-ALL-V2",
+            "VER-SITE-V1",
+            "VER-SITE-V2"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-15102026-UQX.csv",
+          "abandoned": true,
+          "abandonedReason": "stopped 2026-10-15 at the start of D6 (pinning, possibly partial) so D04 would not make a single-line SO; the rerun made AUTO-Solar-15102026-SNP instead (D02 resumes only projects without D5)"
+        },
+        {
+          "tag": "15102026-SNP",
+          "createdAt": "2026-10-15T06:43:46.030Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-15102026-SNP",
+          "id": "8d94c14b-8ca7-470d-83ef-c74328083ec3",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "AUTOMATION SITE",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-15102026-SNP",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01",
+            "VER-ALL-V2",
+            "VER-SITE-V1",
+            "VER-SITE-V2"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-15102026-SNP.csv",
+          "catalogVersion": "v1",
+          "catalogLabel": "All sites v1",
+          "pinned": {
+            "BL01": "All sites v1",
+            "BL02": "All sites v1",
+            "Culvert-01": "All sites v1",
+            "Drain-01": "All sites v1",
+            "Road-01": "All sites v1",
+            "VER-ALL-V2": "All sites v2",
+            "VER-SITE-V1": "AUTOMATION SITE v1",
+            "VER-SITE-V2": "AUTOMATION SITE v2"
+          },
+          "serviceOrder": {
+            "number": "9946699160",
+            "vendorCode": "997248",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1"
+              },
+              {
+                "lineNumber": 20,
+                "serviceItemNo": 20,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2"
+              },
+              {
+                "lineNumber": 30,
+                "serviceItemNo": 30,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "AUTOMATION SITE v1"
+              },
+              {
+                "lineNumber": 40,
+                "serviceItemNo": 40,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "AUTOMATION SITE v2"
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9946699160",
+                "BL02": "9946699160"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9946699160",
+                "BL02": "9946699160"
+              },
+              "Piling - MMS": {
+                "BL01": "9946699160",
+                "BL02": "9946699160"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9946699160",
+                "BL02": "9946699160"
+              }
+            },
+            "byVersion": {
+              "All sites v1": {
+                "Piling - Inverter": {
+                  "BL01": "9946699160",
+                  "BL02": "9946699160"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL01": "9946699160",
+                  "BL02": "9946699160"
+                },
+                "Piling - MMS": {
+                  "BL01": "9946699160",
+                  "BL02": "9946699160"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL01": "9946699160",
+                  "BL02": "9946699160"
+                }
+              },
+              "All sites v2": {
+                "Piling - Inverter": {
+                  "VER-ALL-V2": "9946699160"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "VER-ALL-V2": "9946699160"
+                },
+                "Piling - MMS": {
+                  "VER-ALL-V2": "9946699160"
+                },
+                "Piling - Robotic Docking System": {
+                  "VER-ALL-V2": "9946699160"
+                }
+              },
+              "AUTOMATION SITE v1": {
+                "Piling - Inverter": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "Piling - MMS": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "Piling - Robotic Docking System": {
+                  "VER-SITE-V1": "9946699160"
+                }
+              },
+              "AUTOMATION SITE v2": {
+                "Piling - Inverter": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "Piling - MMS": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "Piling - Robotic Docking System": {
+                  "VER-SITE-V2": "9946699160"
+                }
+              }
+            }
+          },
+          "soLineMapping": {
+            "lines": {
+              "10-10": {
+                "version": "All sites v1",
+                "subActivities": [
+                  "EA - Piling - Robotic Docking System — Solar · All sites v1 — BL01, BL02",
+                  "EA - Piling - MMS — Solar · All sites v1 — BL01, BL02",
+                  "EA - Piling - Inverter — Solar · All sites v1 — BL01, BL02",
+                  "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — BL01, BL02"
+                ]
+              },
+              "20-20": {
+                "version": "All sites v2",
+                "subActivities": [
+                  "EA - Piling - Robotic Docking System — Solar · All sites v2 — VER-ALL-V2",
+                  "EA - Piling - MMS — Solar · All sites v2 — VER-ALL-V2",
+                  "EA - Piling - Inverter — Solar · All sites v2 — VER-ALL-V2",
+                  "EA - Piling - LT Cable Hanger System — Solar · All sites v2 — VER-ALL-V2"
+                ]
+              },
+              "30-30": {
+                "version": "AUTOMATION SITE v1",
+                "subActivities": [
+                  "EA - Piling - Robotic Docking System — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
+                  "EA - Piling - MMS — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
+                  "EA - Piling - Inverter — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
+                  "EA - Piling - LT Cable Hanger System — Solar · AUTOMATION SITE v1 — VER-SITE-V1"
+                ]
+              },
+              "40-40": {
+                "version": "AUTOMATION SITE v2",
+                "subActivities": [
+                  "EA - Piling - Robotic Docking System — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
+                  "EA - Piling - MMS — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
+                  "EA - Piling - Inverter — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
+                  "EA - Piling - LT Cable Hanger System — Solar · AUTOMATION SITE v2 — VER-SITE-V2"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "vendor": {
+        "code": "997248",
+        "name": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "updatedAt": "2026-10-15T06:43:34.950Z",
+      "spv": "VIJESPV",
+      "cluster": "Rajasthan",
+      "site": "AUTOMATION SITE",
+      "catalogs": {
+        "AUTOMATION SITE": {
+          "S1": {
+            "label": "AUTOMATION SITE v1",
+            "source": "All sites v1",
+            "status": "locked",
+            "draftedAt": "2026-10-15T06:12:42.700Z",
+            "updatedAt": "2026-10-15T06:25:08.242Z",
+            "copied": {
+              "source": "All sites v1",
+              "newestLocked": "All sites v5",
+              "matchesSource": true,
+              "matchesNewest": false,
+              "distinguishable": true
+            },
+            "newestLocked": "All sites v5",
+            "codes": {
+              "Civil": [
+                "PC01",
+                "QC01"
+              ],
+              "Electrical": [
+                "PE01",
+                "QE01"
+              ]
+            },
+            "lockedAt": "2026-10-15T06:25:08.242Z"
+          },
+          "S2": {
+            "label": "AUTOMATION SITE v2",
+            "source": "AUTOMATION SITE v1",
+            "newestLocked": "AUTOMATION SITE v1",
+            "status": "locked",
+            "draftedAt": "2026-10-15T06:27:47.509Z",
+            "updatedAt": "2026-10-15T06:35:48.023Z",
+            "copied": {
+              "source": "AUTOMATION SITE v1",
+              "newestLocked": "AUTOMATION SITE v1",
+              "matchesSource": true,
+              "matchesNewest": true,
+              "distinguishable": false
+            },
+            "inheritedCodes": {
+              "Civil": [
+                "PC01",
+                "QC01"
+              ],
+              "Electrical": [
+                "PE01",
+                "QE01"
+              ]
+            },
+            "codes": {
+              "Civil": [
+                "PC02",
+                "QC02"
+              ],
+              "Electrical": [
+                "PE02",
+                "QE02"
+              ]
+            },
+            "lockedAt": "2026-10-15T06:35:48.022Z"
+          }
+        }
+      }
+    }
+  }
+}

@@ -71,7 +71,64 @@ async function openFromPendingWithMe(page, rfiCode, context, opts = {}) {
   const list = new RFIListPage(page);
   await list.waitForGrid();
   try {
-    await list.openRowByCode(rfiCode, opts);
+    try {
+      await list.openRowByCode(rfiCode, opts);
+    } catch (firstErr) {
+      // OBSERVED RETRY (2026-09-26, DRS integration matrices on pulse-uat): in
+      // every "not in Pending with me" failure there, the saved HTML showed the
+      // row PRESENT in column 1 with the exact code — the lookup had simply run
+      // before the freshly-updated list was usable (it alternated: the lookup
+      // right after a successful resubmit failed, the next one worked). One
+      // reload + re-navigate, logged either way, tells that apart from a real
+      // "never became visible" — which still throws below, unchanged.
+      // PATIENT, AND MEASURED (2026-09-26): one reload was not always enough on
+      // pulse-uat — ROW_DIAG caught CIV-37 VISIBLE seconds after two 15 s looks
+      // had failed. So keep reloading (every ~20 s, up to ~90 s) and log how
+      // long the record took: a slow list is a measurement, not a missing RFI.
+      console.log(`  [observe] ROW_LATE ${rfiCode}${context ? ` (${context})` : ''}: not usable on first look — retrying with reloads`);
+      const started = Date.now();
+      let opened = false;
+      for (let attempt = 1; attempt <= 4 && !opened; attempt++) {
+        await page.reload({ waitUntil: 'networkidle' }).catch(() => {});
+        await dashboard.dismissToastIfPresent();
+        await dashboard.goToMyTasks();
+        await myTasks.pendingWithMeTile.waitFor({ state: 'visible', timeout: 30000 });
+        await myTasks.clickPendingWithMe();
+        await list.waitForGrid();
+        opened = await list.openRowByCode(rfiCode, opts).then(() => true).catch(() => false);
+      }
+      try {
+        if (!opened) throw new Error('still not openable');
+        console.log(`  [observe] ROW_LATE ${rfiCode}: found after ${Math.round((Date.now() - started) / 1000)}s of retries (timing, not a missing record)`);
+      } catch {
+        console.log(`  [observe] ROW_MISSING ${rfiCode}: still not usable after a reload`);
+        // WHAT THE LOOKUP SAW (app owner could not reproduce this by hand,
+        // 2026-09-26 — so record the grid state, including the horizontal
+        // scroll openRowByCode uses to reach the Actions column's eye icon).
+        const diag = await list.grid.evaluate((grid, code) => {
+          const rows = [...grid.querySelectorAll('.rdg-row[role="row"]')];
+          const row = rows.find((r) => {
+            const c = r.querySelector('[aria-colindex="1"]');
+            return c && c.textContent.includes(code);
+          });
+          const box = (el) => { const b = el.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)]; };
+          return {
+            rows: rows.length,
+            scrollLeft: grid.scrollLeft, scrollWidth: grid.scrollWidth, clientWidth: grid.clientWidth,
+            scrollTop: grid.scrollTop,
+            rowFound: !!row,
+            rowIndex: row && row.getAttribute('aria-rowindex'),
+            cells: row ? [...row.querySelectorAll('[role="gridcell"]')].map((c) => `${c.getAttribute('aria-colindex')}:${box(c).join('x')}${c.getAttribute('aria-selected') === 'true' ? ':sel' : ''}`) : [],
+            eyeIcon: !!(row && row.querySelector('svg.lucide-eye')),
+          };
+        }, rfiCode).catch((e) => ({ error: e.message }));
+        const rowLoc = list.getRowByCode(rfiCode, opts);
+        diag.playwrightMatches = await rowLoc.count().catch(() => -1);
+        diag.playwrightVisible = await rowLoc.first().isVisible().catch(() => false);
+        console.log(`  [observe] ROW_DIAG ${rfiCode}: ${JSON.stringify(diag)}`);
+        throw firstErr;
+      }
+    }
   } catch (err) {
     const wrapped = new Error(
       `RFI ${rfiCode} not found in "Pending with me"${context ? ` (${context})` : ''} — ` +

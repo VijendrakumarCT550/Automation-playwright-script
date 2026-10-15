@@ -5,8 +5,8 @@
       "rfi": {
         "R_READ": {
           "key": "R_READ",
-          "id": "1de115e1-3d1f-413c-86ba-b47e968e6020",
-          "code": "RFI-A-06c-BL07-CIV-32",
+          "id": "cb60f64b-68fe-4aa1-b9b1-5fd0b1e31f88",
+          "code": "RFI-A-06c-BL07-CIV-693",
           "purpose": "Family R — reassigners open the modal and read it",
           "mutated": false,
           "ground": {
@@ -14,18 +14,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S01",
+          "workSections": "R02-S09",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:09:20.374Z"
+          "recordedAt": "2026-10-09T06:50:15.821Z"
         },
         "H_HANDOFF": {
           "key": "H_HANDOFF",
-          "id": "2e89387b-f72e-46c8-b0c1-72ae8183cfc5",
-          "code": "RFI-A-06c-BL07-CIV-33",
+          "id": "6f287d42-209d-4264-a3f8-b83aa2bf0621",
+          "code": "RFI-A-06c-BL07-CIV-694",
           "purpose": "Family H — reassign the CI and watch both queues",
           "mutated": true,
           "ground": {
@@ -33,18 +33,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S02",
+          "workSections": "R02-S10",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:09:34.927Z"
+          "recordedAt": "2026-10-09T06:50:34.291Z"
         },
         "C_CI_UNMAPPED": {
           "key": "C_CI_UNMAPPED",
-          "id": "15fc12af-9634-492f-b2e1-651184ee925c",
-          "code": "RFI-A-06c-BL07-CIV-34",
+          "id": "d54c07cb-e9a3-4c72-90ee-6b4d20f67351",
+          "code": "RFI-A-06c-BL07-CIV-695",
           "purpose": "Family C — hand to CI_A (no WAM at all), can it be worked?",
           "mutated": true,
           "ground": {
@@ -52,18 +52,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S03",
+          "workSections": "R02-S11",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:09:49.037Z"
+          "recordedAt": "2026-10-09T06:50:52.289Z"
         },
         "C_CI_FOREIGN": {
           "key": "C_CI_FOREIGN",
-          "id": "af78bac2-5024-4e7c-a4f4-4886f84daa0d",
-          "code": "RFI-A-06c-BL07-CIV-35",
+          "id": "3d48210f-611d-48a5-aee6-63f9e1bcb957",
+          "code": "RFI-A-06c-BL07-CIV-696",
           "purpose": "Family C — hand to CI_B (mapped only in the other location)",
           "mutated": true,
           "ground": {
@@ -71,19 +71,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S04",
+          "workSections": "R02-S12",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:12:10.103Z",
-          "repairedFrom": "RFI-A-06c-BL07-CIV-DRAFT"
+          "recordedAt": "2026-10-09T06:51:09.766Z"
         },
         "C_EE_UNMAPPED": {
           "key": "C_EE_UNMAPPED",
-          "id": "2308635e-adeb-4be4-8cf0-dad217211aff",
-          "code": "RFI-A-06c-BL07-CIV-36",
+          "id": "64770336-46cc-4b51-8579-b40e3b42118b",
+          "code": "RFI-A-06c-BL07-CIV-697",
           "purpose": "Family C — hand the EE leg to EE_A (init-only)",
           "mutated": true,
           "ground": {
@@ -91,19 +90,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S05",
+          "workSections": "R03-S01",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:12:11.428Z",
-          "repairedFrom": "RFI-A-06c-BL07-CIV-DRAFT"
+          "recordedAt": "2026-10-09T06:51:27.653Z"
         },
         "S_SNAPSHOT": {
           "key": "S_SNAPSHOT",
-          "id": "cd16258f-b73c-451c-9633-56ac04f6319a",
-          "code": "RFI-A-06c-BL07-CIV-37",
+          "id": "9aa9cf69-41c8-47a0-85bd-5d99284593fd",
+          "code": "RFI-A-06c-BL07-CIV-698",
           "purpose": "Family S — rewrite WAM afterwards, record must keep its users",
           "mutated": true,
           "ground": {
@@ -111,19 +109,18 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S06",
+          "workSections": "R03-S02",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:12:12.769Z",
-          "repairedFrom": "RFI-A-06c-BL07-CIV-DRAFT"
+          "recordedAt": "2026-10-09T06:51:45.116Z"
         },
         "I_INTEGRITY": {
           "key": "I_INTEGRITY",
-          "id": "5bc567fa-8256-490f-bee2-e56d51e16464",
-          "code": "RFI-A-06c-BL07-CIV-38",
+          "id": "96a4a2eb-69ee-4885-820a-ee91d271a440",
+          "code": "RFI-A-06c-BL07-CIV-699",
           "purpose": "Family I — version and fields unchanged across a swap",
           "mutated": true,
           "ground": {
@@ -131,21 +128,193 @@
             "package": "Civil",
             "workArea": "BL07"
           },
-          "workSections": "R01-S07",
+          "workSections": "R03-S03",
           "createdBy": {
             "key": "CI_C",
-            "name": "RACIC89385637",
-            "email": "racic89385637@adani.com"
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
           },
-          "recordedAt": "2026-09-19T22:12:14.060Z",
-          "repairedFrom": "RFI-A-06c-BL07-CIV-DRAFT"
+          "recordedAt": "2026-10-09T06:52:03.435Z"
+        },
+        "H_FUTURE_QI": {
+          "key": "H_FUTURE_QI",
+          "id": "95e60b45-4b25-4ef6-aff4-fc5095dd8c76",
+          "code": "RFI-A-06c-BL07-CIV-700",
+          "purpose": "Family H2 — reassign the QI while the record is still with the EE",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S04",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:52:21.453Z"
+        },
+        "H_PAST_CI": {
+          "key": "H_PAST_CI",
+          "id": "08f7f862-c4bc-4680-aa97-ef625c9e1878",
+          "code": "RFI-A-06c-BL07-CIV-701",
+          "purpose": "Family H3 — reassign the CI while the record is with the QI; the rejection must land on the NEW CI",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S05",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:52:38.693Z"
+        },
+        "I_CONTENT": {
+          "key": "I_CONTENT",
+          "id": "d33ed9aa-99c5-45e7-8e2b-5071e6a89a83",
+          "code": "RFI-A-06c-BL07-CIV-702",
+          "purpose": "Family I2 — observations and the attached photo unchanged across a swap",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S06",
+          "observation": "I2 content marker",
+          "photos": 1,
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:52:58.515Z"
+        },
+        "I_LINKED_NC": {
+          "key": "I_LINKED_NC",
+          "id": "02f1e515-1862-4263-bf4b-2a615f96752f",
+          "code": "RFI-A-06c-BL07-CIV-703",
+          "purpose": "Family I4 — a linked NC raised AFTER the CI was reassigned goes to the NEW CI",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S07",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:53:17.075Z"
+        },
+        "C_CI_WRONG_PKG": {
+          "key": "C_CI_WRONG_PKG",
+          "id": "1e4b67fa-a1e4-4bf1-b9ba-bdfa9132e4f4",
+          "code": "RFI-A-06c-BL07-CIV-704",
+          "purpose": "Family C4 — hand to CI_D (right location, WRONG package)",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S08",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:53:34.972Z"
+        },
+        "C_CI_WRONG_AREA": {
+          "key": "C_CI_WRONG_AREA",
+          "id": "8484d488-6009-4561-a39f-f8bc4dbfea6d",
+          "code": "RFI-A-06c-BL07-CIV-705",
+          "purpose": "Family C4 — hand to CI_E (right package, WRONG work area)",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S09",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:53:53.049Z"
+        },
+        "C_EE_WIND": {
+          "key": "C_EE_WIND",
+          "id": "8d357bba-0b75-4f95-96d4-e3e4adda1a10",
+          "code": "RFI-A-06c-BL07-CIV-706",
+          "purpose": "Family C6 — hand the EE leg to EE_B (solar AND wind provisioning, no WAM)",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S10",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:54:09.995Z"
+        },
+        "S_SNAPSHOT_EE_QI": {
+          "key": "S_SNAPSHOT_EE_QI",
+          "id": "ccc2d765-8519-4b19-9798-2076e9ec1d68",
+          "code": "RFI-A-06c-BL07-CIV-707",
+          "purpose": "Family S5 — remap the area's EE and QI, record must keep its own",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S11",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:54:27.511Z"
+        },
+        "D_USER_DEMAP": {
+          "key": "D_USER_DEMAP",
+          "id": "4ef4ea51-aff9-4c2e-8784-abddd8940a37",
+          "code": "RFI-A-06c-BL07-CIV-708",
+          "purpose": "Demap the record's OWN CI from every WAM row — does its live work survive?",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "workSections": "R03-S12",
+          "createdBy": {
+            "key": "CI_C",
+            "name": "RACIC53588874",
+            "email": "racic53588874@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:54:44.634Z"
         }
       },
       "nc": {
         "R_READ_NC": {
           "key": "R_READ_NC",
-          "id": "38522d72-488b-489e-8fc8-77981e526fdb",
-          "code": "NC-A-06c-BL07-CIV-39",
+          "id": "50a4fc92-e411-47cc-af3c-e947ca2fd232",
+          "code": "NC-A-06c-BL07-CIV-41",
           "purpose": "Family R — the NC half of the modal-reading pass",
           "mutated": false,
           "ground": {
@@ -160,15 +329,15 @@
           ],
           "createdBy": {
             "key": "QI_D",
-            "name": "RAQID50924219",
-            "email": "raqid50924219@adani.com"
+            "name": "RAQID11574767",
+            "email": "raqid11574767@adani.com"
           },
-          "recordedAt": "2026-09-19T22:13:11.235Z"
+          "recordedAt": "2026-10-09T06:55:20.611Z"
         },
         "H_HANDOFF_NC": {
           "key": "H_HANDOFF_NC",
-          "id": "2ace876b-124f-43a1-b071-89b1eb569fbd",
-          "code": "NC-A-06c-BL07-CIV-40",
+          "id": "4c032de8-9df3-4302-91e6-9d7d9ad083c4",
+          "code": "NC-A-06c-BL07-CIV-42",
           "purpose": "Family H — reassign an NC and watch both queues",
           "mutated": true,
           "ground": {
@@ -183,16 +352,15 @@
           ],
           "createdBy": {
             "key": "QI_D",
-            "name": "RAQID50924219",
-            "email": "raqid50924219@adani.com"
+            "name": "RAQID11574767",
+            "email": "raqid11574767@adani.com"
           },
-          "recordedAt": "2026-09-19T22:15:38.361Z",
-          "repairedFrom": "NC-A-06c-BL07-CIV-9fbd"
+          "recordedAt": "2026-10-09T06:55:43.361Z"
         },
         "C_QI_UNMAPPED_NC": {
           "key": "C_QI_UNMAPPED_NC",
-          "id": "9786e2c6-be46-4f05-bfaf-15f04c4af4e9",
-          "code": "NC-A-06c-BL07-CIV-41",
+          "id": "bb6f4644-e3d0-4b67-9fe8-76680ac93964",
+          "code": "NC-A-06c-BL07-CIV-43",
           "purpose": "Family C — hand to QI_A (init-only), can it be worked?",
           "mutated": true,
           "ground": {
@@ -207,10 +375,33 @@
           ],
           "createdBy": {
             "key": "QI_D",
-            "name": "RAQID50924219",
-            "email": "raqid50924219@adani.com"
+            "name": "RAQID11574767",
+            "email": "raqid11574767@adani.com"
           },
-          "recordedAt": "2026-09-19T22:14:08.774Z"
+          "recordedAt": "2026-10-09T06:56:07.824Z"
+        },
+        "B_CLOSED_NC": {
+          "key": "B_CLOSED_NC",
+          "id": "9d5aeb1c-58dd-463b-8cb0-d3ae3bbfe00e",
+          "code": "NC-A-06c-BL07-CIV-44",
+          "purpose": "Family B2 — closed by a full NC cycle, then must NOT be reassignable",
+          "mutated": true,
+          "ground": {
+            "workLocation": "A-06c",
+            "package": "Civil",
+            "workArea": "BL07"
+          },
+          "description": "Reassignment pool B_CLOSED_NC - Family B2 — closed by a full NC cycle, then must NOT be reassignable",
+          "workSections": [
+            "R01-S01",
+            "R01-S02"
+          ],
+          "createdBy": {
+            "key": "QI_D",
+            "name": "RAQID11574767",
+            "email": "raqid11574767@adani.com"
+          },
+          "recordedAt": "2026-10-09T06:56:32.224Z"
         }
       }
     }

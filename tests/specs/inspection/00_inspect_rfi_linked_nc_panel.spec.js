@@ -450,13 +450,10 @@ test('4. fill the panel from what the dump found, and push the rejection through
   const results = {};
 
   results.ncDescription = await fillByAnyLabel(page, /nc description/i, 'Linked NC raised by recon (G-01)');
-  // Defect Type became a searchable DROPDOWN on the standalone NC form
-  // (2026-09-17). Try that shape first and keep the original free-text attempt
-  // as the fallback — which one succeeds is itself the finding for the panel.
-  results.defectType = await selectSearchableByAnyLabel(page, /defect type/i, src.defectType);
-  if (!results.defectType.ok) {
-    results.defectType = await fillByAnyLabel(page, /defect type/i, 'Workmanship defect');
-  }
+  // Defect Type is a dropdown now (app change, 2026-09-24) on this panel as
+  // well as the standalone NC form, so the old free-text fallback is gone —
+  // a failed pick here is a real finding, not a shape to retry as text.
+  results.defectType = await selectSearchableByAnyLabel(page, /defect type/i, src.defectType || '__first__');
   results.ncQuantity = await fillByAnyLabel(page, /nc quantity/i, String(src.ncQuantity || 1));
   results.remark = await fillByAnyLabel(page, /remark/i, 'Not Ok - linked NC recon');
   results.category = await selectByAnyLabel(page, /category/i, src.category || 'Critical');

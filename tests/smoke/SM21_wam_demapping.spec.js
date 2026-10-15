@@ -145,7 +145,7 @@ test.describe('Smoke stage SM21 - WAM demapping (Clear value)', () => {
     const originalNames = before ? before.split(',').map((n) => n.trim()).filter(Boolean) : [];
     console.log(`  before clear: ${row} = [${originalNames.join(', ') || '(empty)'}]`);
 
-    const namesToRestore = [...originalNames];
+    let namesToRestore = [...originalNames];
     if (!namesToRestore.includes(pad.name)) {
       console.log(`  seeding "${pad.name}" so this clears a populated row`);
       await wam.addAssigneeToRow(row, pad.name);
@@ -177,6 +177,11 @@ test.describe('Smoke stage SM21 - WAM demapping (Clear value)', () => {
     // One at a time: addAssigneeToRow only ever adds, so the row is rebuilt
     // incrementally. Failures are collected rather than thrown so that one
     // un-restorable name does not abandon the rest still-unrestored.
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): restore at most
+    // MAX_ROW_ASSIGNEES names, never every captured one — re-adding them all
+    // is what rebuilt a 40-name row that pushed its dropdown out of reach.
+    namesToRestore = wam.capRestoreList(namesToRestore, [pad.name]);
+    console.log(`  restoring (capped): [${namesToRestore.join(", ")}]`);
     const restoreFailures = [];
     for (const name of namesToRestore) {
       try {

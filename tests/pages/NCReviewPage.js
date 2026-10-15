@@ -117,10 +117,34 @@ class NCReviewPage extends BasePage {
     );
   }
 
+  // Selects an OK / Not Ok radio and verifies it took.
+  //
+  // App change 2026-09-24: QI's NC review now opens with OK ALREADY CHECKED,
+  // and its hidden <input> then refuses even a force-click ("Element is not
+  // visible"). So: skip when already checked; otherwise try the force-click
+  // (the long-standing path, the real <input> is covered by a styled sibling),
+  // and fall back to clicking the visible element the input's aria-labelledby
+  // names.
+  async _selectRadio(radio) {
+    if (await radio.isChecked().catch(() => false)) return;
+
+    const clicked = await radio.click({ force: true, timeout: 5000 })
+      .then(() => true).catch(() => false);
+    if (!clicked) {
+      const labelledBy = await radio.getAttribute('aria-labelledby').catch(() => null);
+      const id = labelledBy && labelledBy.split(/\s+/)[0];
+      if (!id) throw new Error('NC review radio could not be clicked and has no aria-labelledby to fall back to');
+      await this.page.locator(`[id="${id}"]`).click();
+    }
+
+    if (!(await radio.isChecked().catch(() => false))) {
+      throw new Error('NC review radio did not become checked after clicking');
+    }
+  }
+
   async approve() {
-    // force:true — same custom-radio pattern already confirmed for RFI
-    // (the real <input> is visually covered by a sibling styled control).
-    await this.okRadio.click({ force: true });
+    // OK may already be pre-selected — see _selectRadio.
+    await this._selectRadio(this.okRadio);
     // Capture Photo + the acknowledgement checkbox are both newly
     // mandatory on approve, not just reject.
     await this._capturePhotoVerified();
@@ -131,7 +155,7 @@ class NCReviewPage extends BasePage {
   }
 
   async reject(remarks) {
-    await this.notOkRadio.click({ force: true });
+    await this._selectRadio(this.notOkRadio);
     await this.remarksInput.waitFor({ state: 'visible', timeout: 5000 });
     await this.remarksInput.fill(remarks);
     // Capture Photo + acknowledgement checkbox are mandatory here too —

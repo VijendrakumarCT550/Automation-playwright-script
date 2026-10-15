@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { loginAsFlowUser } = require('../utils/helpers');
 const { fleetFor } = require('../utils/reassign-fleet');
 const {
-  GROUND, RFI_POOL, RFI_CREATOR, recordsFor, recordRecord,
+  GROUND, RFI_POOL, RFI_CREATOR, recordsFor, recordRecord, resetPool,
 } = require('../utils/reassign-records');
 const { getVisibleCodeFor } = require('../utils/rfi-dependency-flow');
 const MyTasksPage = require('../pages/MyTasksPage');
@@ -30,7 +30,10 @@ const RFIChecklistPage = require('../pages/RFIChecklistPage');
 //
 // IDEMPOTENT. A pool entry already recorded for this deployment is skipped, so
 // a re-run costs nothing and creates nothing. Delete an entry from
-// fixtures/reassign-records.json to have it raised again.
+// fixtures/reassign-records.json to have it raised again - or, to start a whole
+// fresh pool (RFI AND NC) for this deployment, set REASSIGN_POOL_RESET=1 for this
+// spec only. Only 42 honours it: 43 runs after 42 and must never wipe the RFIs
+// 42 just raised.
 //
 // GROUND COST — REAL AND PERMANENT: each RFI consumes a Work Section on BL07,
 // the band the app owner freed for this work
@@ -41,6 +44,8 @@ const RFIChecklistPage = require('../pages/RFIChecklistPage');
 // Usage:
 //   $env:PULSE_ENV="test"
 //   npx playwright test tests/specs/42_reassign_rfi_records_setup.spec.js --project=chromium --workers=1
+// Fresh pool (clears this deployment's rfi + nc entries first):
+//   $env:REASSIGN_POOL_RESET="1"; npx playwright test tests/specs/42_reassign_rfi_records_setup.spec.js --project=chromium --workers=1; Remove-Item Env:REASSIGN_POOL_RESET
 //
 // Runs BEFORE 43_reassign_nc_records_setup.spec.js — see NC_POOL's comment: a
 // non-approved NC blocks RFI create for the same (checkpoint, work section).
@@ -146,6 +151,10 @@ async function resetToMyTasks() {
 test(`raise the ${RFI_POOL.length}-record RFI pool for the reassignment specs`, async () => {
   test.setTimeout(45 * 60 * 1000);
 
+  if (process.env.REASSIGN_POOL_RESET === '1') {
+    const dropped = resetPool();
+    console.log(`  REASSIGN_POOL_RESET=1: cleared ${dropped.rfi} RFI and ${dropped.nc} NC pool entr${dropped.rfi + dropped.nc === 1 ? 'y' : 'ies'} for this deployment`);
+  }
   const already = recordsFor().rfi;
 
   for (const entry of RFI_POOL) {
@@ -191,7 +200,20 @@ test(`raise the ${RFI_POOL.length}-record RFI pool for the reassignment specs`, 
       await rfiCreate.clickProceed();
 
       const checklist = new RFIChecklistPage(page);
-      await checklist.fillAllObservations('OK - as per standard', true);
+      // A pool entry may carry its own observation text and a photo, so a
+      // family that checks CONTENT (I2) has something recognisable to compare.
+      // Every other entry keeps the original default.
+      const observation = entry.observation || 'OK - as per standard';
+      await checklist.fillAllObservations(observation, true);
+      let photos = null;
+      if (entry.attachPhoto) {
+        const attach = await checklist.attachPhotoToFirstItem();
+        expect(
+          attach.imagesAfter,
+          `${entry.key}: the photo did not attach (images ${attach.imagesBefore} -> ${attach.imagesAfter})`
+        ).toBeGreaterThan(attach.imagesBefore);
+        photos = attach.imagesAfter;
+      }
       await checklist.submitRFI();
 
       // confirmSubmit already waited for /rfi/<id>/view, the only reliable
@@ -222,6 +244,8 @@ test(`raise the ${RFI_POOL.length}-record RFI pool for the reassignment specs`, 
         mutated: entry.mutated,
         ground: GROUND,
         workSections: workSections || null,
+        ...(entry.observation ? { observation } : {}),
+        ...(photos != null ? { photos } : {}),
         createdBy: { key: RFI_CREATOR, name: creator.name, email: creator.email },
       });
 

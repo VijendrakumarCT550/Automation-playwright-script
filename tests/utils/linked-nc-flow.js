@@ -40,10 +40,15 @@ const NCReviewPage = require('../pages/NCReviewPage');
 // The regression tier's RFI data in the shape fillPageOne() takes. Imported
 // from rfi-flow-turns rather than retyped so this cannot drift from the ground
 // the tracked 9-TC regression actually passes on.
+// SPEC_WORK_LOCATION / SPEC_WORK_AREA (2026-09-26): optional overrides the DRS
+// integration wrappers (tests/integration/IN1x_*) set to run specs 36-38 on a
+// DRS project's ground. Unset, the fixture is RFI_DATA's exactly as before.
+// Getters, not values: this module is cached per process, so a value read at
+// first load would pin whichever ground the first requiring file had.
 const FIXTURE = {
   baseData: {
-    workLocation: RFI_DATA.workLocation,
-    workArea: RFI_DATA.workArea,
+    get workLocation() { return process.env.SPEC_WORK_LOCATION || RFI_DATA.workLocation; },
+    get workArea() { return process.env.SPEC_WORK_AREA || RFI_DATA.workArea; },
     package: RFI_DATA.package,
     subPackage: RFI_DATA.subPackage,
     activity: RFI_DATA.activity,

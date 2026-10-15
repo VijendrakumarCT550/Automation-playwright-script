@@ -479,6 +479,14 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
 const SOLAR_CHAIN = smokeChain('solar', 'solar-e2e');
 const WIND_CHAIN = smokeChain('wind', 'wind-e2e');
 
+// THE DRS CHAIN (docs/drs-pulse-integration.md): the same smoke stages, run
+// unchanged on the newest DRS project that is ready for Pulse, as
+// `smoke-drs-*`. Emitted ONLY when that project exists and its DRS env is paired
+// with this run's PULSE_ENV — otherwise nothing is added and the rest of the
+// config is untouched (currentDrsSmokeKey never throws).
+const DRS_SMOKE_KEY = require('./tests/integration/drs-smoke-profile').currentDrsSmokeKey();
+const DRS_CHAIN = DRS_SMOKE_KEY ? smokeChain('drs', DRS_SMOKE_KEY) : [];
+
 module.exports = defineConfig({
   testDir: './tests',
   // App has a post-login loading screen (NN% spinner) that can take 3–5 min
@@ -526,7 +534,46 @@ module.exports = defineConfig({
       // by the smoke-* projects below, and running its stages unordered
       // under `chromium` would e.g. try to map a Service Order for users
       // that don't exist yet.
-      testIgnore: [...RFI_FLOW_SPECS, ...NC_FLOW_SPECS, /[\\/]smoke[\\/]/],
+      //
+      // tests/drs/ and tests/integration/ are excluded too: the DRS → Pulse
+      // integration suites (docs/drs-pulse-integration.md) run against DRS,
+      // not Pulse, and write permanent records there, so they must only ever
+      // run when asked for by name via the `drs` project below.
+      testIgnore: [
+        ...RFI_FLOW_SPECS, ...NC_FLOW_SPECS,
+        /[\\/]smoke[\\/]/, /[\\/]drs[\\/]/, /[\\/]integration[\\/]/,
+        // DRS Setting (Package Configurator catalog specs, tests/drs-setting/):
+        // no specs yet; ignored here so none can ever run unordered under `chromium`.
+        /[\\/]drs-setting[\\/]/,
+      ],
+    },
+
+    // DRS setup + exploration (docs/drs-pulse-integration.md). URLs come from
+    // tests/config/drs-environments.js (DRS_ENV), never from this file's Pulse
+    // baseURL. Kept apart from every Pulse project on purpose.
+    {
+      name: 'drs',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /[\\/]drs[\\/].*\.spec\.js$/,
+    },
+
+    // DRS Setting - the Packages Configurator catalog specs
+    // (tests/drs-setting, RUNBOOK.md). Same DRS host and
+    // login as `drs`; its own project because it edits the CATALOG, not a project.
+    // PC_MODE=verify (default) is read-only; PC_MODE=build creates nodes.
+    {
+      name: 'drs-setting',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /[\\/]drs-setting[\\/].*\.spec\.js$/,
+    },
+
+    // Phase 2 of the DRS → Pulse integration: Pulse users, WAM and the RFI/NC
+    // flows on the project the `drs` setup chain created. Runs against PULSE
+    // (PULSE_ENV), reading tests/fixtures/drs/drs-setup.json for its ground.
+    {
+      name: 'integration',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /[\\/]integration[\\/].*\.spec\.js$/,
     },
 
     // RFI flow regression: CI creates/resubmits -> EE reviews -> QI reviews,
@@ -589,6 +636,7 @@ module.exports = defineConfig({
     // and dependency-enforcement coverage.
     ...WIND_CHAIN,
     ...SOLAR_CHAIN,
+    ...DRS_CHAIN,
   ],
   outputDir: 'test-results/',
 });

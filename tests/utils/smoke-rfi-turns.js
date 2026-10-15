@@ -306,7 +306,23 @@ async function resubmitFor(page, ctx, tcId) {
   // unchanged.
   let sectionUnchanged = true;
 
-  if (ws && ws.selected === 0) {
+  // DECIDE FROM THE FIELD, NOT THE SUMMARY (2026-09-26). The summary boxes load
+  // late and read "0 / <total>" for a moment on every resubmit; the engine took
+  // that as "cleared", re-selected — and a click on an already-chosen option of
+  // this multi-select REMOVES it, emptying the field and silently blocking
+  // Proceed. Seen as TC-02/TC-07 "PROCEED_DID_NOT_NAVIGATE" and TC-05's
+  // re-select on a locked page; the screenshots showed the section still
+  // selected (TC-05: chip "R03-T11"). Only a field that is STILL empty after it
+  // has had time to fill counts as cleared.
+  const fieldCount = await createPage.readWorkSectionFieldCount({ timeout: 10000 });
+  ctx.log('  ' + tcId + ': work section field on resubmit holds ' + fieldCount + ' section(s)');
+  if (fieldCount === 0 && locked) {
+    // Page 1 is locked after a checklist rejection, so nothing here may be
+    // re-selected — an empty field is then a genuine finding, reported by name.
+    ctx.log('  [observe] WS_EMPTY_ON_LOCKED_PAGE ' + tcId + ': Work Section empty on a locked page-1 resubmit');
+  }
+
+  if (fieldCount === 0 && !locked) {
     // THIS RFI's OWN section, recorded at create time — not resolveWorkSection's
     // answer. On wind the two agree (one section per area, named after it), but
     // on solar resolveWorkSection returns null, which means "first option" and

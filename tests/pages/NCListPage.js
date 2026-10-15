@@ -39,6 +39,21 @@ class NCListPage extends BasePage {
   // RFIListPage was already made layout-aware for this; NCListPage never was.
   // Written independently rather than importing RFI's version, per the standing
   // instruction to keep NC isolated from RFI's files (see this file's header).
+  // WHICH LAYOUT IS ON SCREEN — WAITED FOR, not sampled (2026-09-26, NC copy).
+  // hasGrid() is one immediate isVisible() check (which never polls), and
+  // right after a navigation or reload the desktop grid is not painted yet —
+  // so openRowByCode took the MOBILE branch on desktop and waited 15 s for a
+  // card that never exists there. That was the whole "listed but cannot be
+  // opened" pattern in the DRS matrices: every ROW_DIAG showed the row present
+  // and visible with the grid never scrolled. This races the two layouts and
+  // returns whichever actually appears.
+  async layoutFor(code) {
+    const grid = this.grid.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'grid');
+    const card = this.cardByCode(code).waitFor({ state: 'visible', timeout: 15000 }).then(() => 'cards');
+    const winner = await Promise.any([grid, card]).catch(() => null);
+    return winner || ((await this.hasGrid()) ? 'grid' : 'cards');
+  }
+
   async hasGrid() {
     return this.grid.isVisible().catch(() => false);
   }
@@ -133,9 +148,16 @@ class NCListPage extends BasePage {
     return 'grid';
   }
 
+  // WHOLE-CELL match, never substring: `NC-A-06c-BL07-CIV-4` is also a prefix of
+  // CIV-40 and CIV-41, so a substring filter resolved to 3 rows and the spec died
+  // on a strict-mode violation (spec 51 I4, 2026-10-09). A code may be given as a
+  // RegExp by a caller that already wants its own matching.
   getRowByCode(code) {
+    const exact = code instanceof RegExp
+      ? code
+      : new RegExp('^\\s*' + String(code).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$');
     return this.grid.locator('.rdg-row[role="row"]').filter({
-      has: this.page.locator('[role="gridcell"][aria-colindex="1"]', { hasText: code }),
+      has: this.page.locator('[role="gridcell"][aria-colindex="1"]', { hasText: exact }),
     });
   }
 
@@ -165,6 +187,68 @@ class NCListPage extends BasePage {
     return row;
   }
 
+  // USER-LIKE GRID HANDLING (app owner, 2026-09-26) — NC's own copy, never
+  // shared across the NC/RFI page objects.
+  //
+  // The ID column is RESIZABLE and truncates long codes (DRS-project codes like
+  // RFI-AUTO-WL-26092026-FQQ-BL03-CIV-10 render as 'RFI-AUTO-WL-26092026-FQQ-BLO…').
+  // Matching reads the cell's full text, so it still works, but a user widens
+  // the column by dragging its header edge — so this does too, whenever the
+  // first ID cell is visibly cut off.
+  async widenIdColumnIfTruncated() {
+    const truncated = () => this.grid.evaluate((g) => {
+      const c = g.querySelector('.rdg-row [role="gridcell"][aria-colindex="1"]');
+      return !!c && c.scrollWidth > c.clientWidth + 1;
+    }).catch(() => false);
+    if (!(await truncated())) return;
+    const header = this.grid.locator('[role="columnheader"][aria-colindex="1"]').first();
+    const hb = await header.boundingBox().catch(() => null);
+    if (!hb) return;
+    const x = hb.x + hb.width - 2;
+    const y = hb.y + hb.height / 2;
+    await this.page.mouse.move(x, y);
+    await this.page.mouse.down();
+    await this.page.mouse.move(x + 220, y, { steps: 8 });
+    await this.page.mouse.up();
+    await this.page.waitForTimeout(300);
+    console.log('  [observe] ID_COLUMN_WIDENED' + ((await truncated()) ? ' (still truncated)' : ''));
+  }
+
+  // One step right, the way a user does: drag the grid's HORIZONTAL SCROLLBAR
+  // (the slider under the rows). Falls back to horizontal wheel input, then to
+  // a code-level scroll, each logged. Returns false once the grid is at its
+  // right edge.
+  async scrollGridRightLikeUser() {
+    const state = () => this.grid.evaluate((el) => ({
+      left: el.scrollLeft, max: el.scrollWidth - el.clientWidth,
+      bar: el.offsetHeight - el.clientHeight, // native horizontal scrollbar thickness
+    }));
+    const s0 = await state();
+    if (s0.left >= s0.max - 1) return false;
+    const box = await this.grid.boundingBox();
+    if (box && s0.bar > 2) {
+      const y = box.y + box.height - s0.bar / 2;
+      await this.page.mouse.move(box.x + 30, y);
+      await this.page.mouse.down();
+      await this.page.mouse.move(box.x + box.width - 20, y, { steps: 10 });
+      await this.page.mouse.up();
+      await this.page.waitForTimeout(400);
+      if ((await state()).left !== s0.left) return true;
+    }
+    if (box) await this.page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height / 2, 120));
+    await this.page.mouse.wheel(600, 0);
+    await this.page.waitForTimeout(400);
+    if ((await state()).left !== s0.left) {
+      console.log('  [observe] SCROLL_WHEEL: scrollbar drag did not move the grid — used the wheel');
+      return true;
+    }
+    console.log('  [observe] SCROLL_FALLBACK: neither scrollbar nor wheel moved the grid — code-level scroll');
+    await this.grid.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
+    await this.page.waitForTimeout(400);
+    return false;
+  }
+
+
   // Finds the row by its visible code — scrolling down first, since newly
   // touched rows sort to the bottom (see scrollToRowByCode) — then scrolls
   // the grid right until the Actions column renders for THIS row (re-found
@@ -191,7 +275,7 @@ class NCListPage extends BasePage {
     // timed out. Presence in the DOM is not visibility. Clicking the code
     // expands the card in place, which is the same behaviour RFIListPage
     // documents for RFI's mobile card.
-    if (!(await this.hasGrid())) {
+    if ((await this.layoutFor(code)) === 'cards') {
       // Scroll first — the list is virtualized, so a card further down does not
       // exist in the DOM until it is scrolled into range.
       const card = await this.scrollToCardByCode(code);
@@ -234,20 +318,19 @@ class NCListPage extends BasePage {
     }
 
     const row = await this.scrollToRowByCode(code);
+    await this.widenIdColumnIfTruncated();
     await row.waitFor({ state: 'visible', timeout: 15000 });
     const rowIndex = await row.getAttribute('aria-rowindex');
 
     let eyeButton = this.getRowByAriaIndex(rowIndex).locator('[role="gridcell"]').last()
       .locator('button:has(svg.lucide-eye)').first();
+    // SCROLL LIKE A USER (app owner, 2026-09-26): drag the grid's horizontal
+    // scrollbar step by step until THIS row's eye icon shows — see
+    // scrollGridRightLikeUser. (Writing scrollLeft in code is what made listed
+    // records intermittently 'not openable' in the matrices — not an app bug.)
     for (let i = 0; i < 20; i++) {
       if (await eyeButton.isVisible({ timeout: 500 }).catch(() => false)) break;
-      const atEnd = await this.grid.evaluate(el => {
-        const before = el.scrollLeft;
-        el.scrollLeft = el.scrollWidth;
-        return el.scrollLeft === before;
-      });
-      await this.page.waitForTimeout(400);
-      if (atEnd) break;
+      if (!(await this.scrollGridRightLikeUser())) break;
     }
     // Last attempt with a real timeout so a genuine failure throws for
     // real, rather than silently clicking nothing.

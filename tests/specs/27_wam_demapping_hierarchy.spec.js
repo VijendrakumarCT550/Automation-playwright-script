@@ -139,7 +139,7 @@ test.describe('Cluster Admin can demap (Clear value) roles below its own tier', 
     const originalNames = before ? before.split(',').map(n => n.trim()).filter(Boolean) : [];
     console.log(`Cluster Admin: before clear, ${rowLabel} = [${originalNames.join(', ') || '(empty)'}]`);
 
-    const namesToRestore = [...originalNames];
+    let namesToRestore = [...originalNames];
     if (!namesToRestore.includes(sad.name)) {
       await wam.addAssigneeToRow(rowLabel, sad.name);
       namesToRestore.push(sad.name);
@@ -160,6 +160,11 @@ test.describe('Cluster Admin can demap (Clear value) roles below its own tier', 
     expect(afterClear, 'Site Admin row should be empty after Clear + Submit persisted').toBe('');
     console.log(`Cluster Admin: after clear (persisted), Site Admin row is empty, as expected`);
 
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): restore at most
+    // MAX_ROW_ASSIGNEES names, never every captured one — re-adding them all
+    // is what rebuilt a 40-name row that pushed its dropdown out of reach.
+    namesToRestore = wam.capRestoreList(namesToRestore, [sad.name]);
+    console.log(`  restoring (capped): [${namesToRestore.join(", ")}]`);
     const restoreFailures = [];
     const finalRowLabel = await wam.resolveRowLabel(SITE_ROW_CANDIDATES);
     for (const name of namesToRestore) {
@@ -222,7 +227,7 @@ test.describe('Site Admin can demap (Clear value) roles below its own tier', () 
     const originalNames = before ? before.split(',').map(n => n.trim()).filter(Boolean) : [];
     console.log(`Site Admin: before clear, ${UNTOUCHED_WORK_LOCATION} = [${originalNames.join(', ') || '(empty)'}]`);
 
-    const namesToRestore = [...originalNames];
+    let namesToRestore = [...originalNames];
     if (!namesToRestore.includes(pad.name)) {
       await wam.addAssigneeToRow(UNTOUCHED_WORK_LOCATION, pad.name);
       namesToRestore.push(pad.name);
@@ -243,6 +248,11 @@ test.describe('Site Admin can demap (Clear value) roles below its own tier', () 
     expect(afterClear, 'Plot Admin row should be empty after Clear + Submit persisted').toBe('');
     console.log(`Site Admin: after clear (persisted), ${UNTOUCHED_WORK_LOCATION} is empty, as expected`);
 
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): restore at most
+    // MAX_ROW_ASSIGNEES names, never every captured one — re-adding them all
+    // is what rebuilt a 40-name row that pushed its dropdown out of reach.
+    namesToRestore = wam.capRestoreList(namesToRestore, [pad.name]);
+    console.log(`  restoring (capped): [${namesToRestore.join(", ")}]`);
     const restoreFailures = [];
     for (const name of namesToRestore) {
       try {

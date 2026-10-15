@@ -128,11 +128,27 @@ test.describe('Smoke stage SM18 - online-role extensive sweep', () => {
         ? { field: 'Work Locations', expectedOptions: [workLocation] }
         : (suite.jurisdiction || null);
 
-      const childVisibilityChecks = (suite.childVisibilityChecks || []).map((c) =>
-        c.cascadeFromProfile
-          ? { targetRole: c.targetRole, extraCascade: { workLocation } }
-          : c
-      );
+      // Cluster and Site come from the profile too, not the driver's fixed
+      // Gujarat/KHAVDA set: on a DRS project (Rajasthan / AUTOMATION SITE) that
+      // set matched nothing and Site Admin's check failed at the Cluster pick
+      // (2026-09-27). The profile's Cluster goes first, in both cases, with the
+      // old set kept as a fallback for the long-established ground.
+      const withCase = (values) => [...new Set([].concat(values).filter(Boolean)
+        .flatMap((v) => [String(v), String(v).toUpperCase()]))];
+      const profileCascade = {
+        cluster: withCase([profile.cluster, 'KHAVDA', 'Gujarat', 'Khavda']),
+        // A single value: WAMPage.fillAssignmentFilters takes a candidate list
+        // for Cluster only, and picks Site with a plain selectDropdownOption.
+        site: profile.site || 'KHAVDA',
+      };
+      const childVisibilityChecks = (suite.childVisibilityChecks || []).map((c) => ({
+        targetRole: c.targetRole,
+        extraCascade: {
+          ...profileCascade,
+          ...(c.cascadeFromProfile ? { workLocation } : {}),
+          ...(c.extraCascade || {}),
+        },
+      }));
 
       await runOnlineRoleRegressionSuite(browser, {
         prefix: suite.key,

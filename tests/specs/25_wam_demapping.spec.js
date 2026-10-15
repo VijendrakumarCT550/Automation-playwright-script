@@ -136,7 +136,7 @@ test.describe('WAM de-mapping (Clear value) actually persists', () => {
     // Ensure there's actually something to clear — add the known PAD
     // user if the row came back empty, so this test exercises clearing
     // a POPULATED multi-assignee row, not a no-op.
-    const namesToRestore = [...originalNames];
+    let namesToRestore = [...originalNames];
     if (!namesToRestore.includes(pad.name)) {
       await wam.addAssigneeToRow(MULTI_ROW_LOCATION, pad.name);
       namesToRestore.push(pad.name);
@@ -162,6 +162,11 @@ test.describe('WAM de-mapping (Clear value) actually persists', () => {
 
     // Restore every originally-captured (or just-added) name — one at a
     // time, since addAssigneeToRow only adds, never removes.
+    // Row cap (WAMPage.enforceRowCap, 2026-09-26): restore at most
+    // MAX_ROW_ASSIGNEES names, never every captured one — re-adding them all
+    // is what rebuilt a 40-name row that pushed its dropdown out of reach.
+    namesToRestore = wam.capRestoreList(namesToRestore, [pad.name]);
+    console.log(`  restoring (capped): [${namesToRestore.join(", ")}]`);
     const restoreFailures = [];
     for (const name of namesToRestore) {
       try {
