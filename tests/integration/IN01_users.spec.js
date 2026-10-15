@@ -2,10 +2,11 @@ const { test, expect } = require('@playwright/test');
 const { adminFreshLogin } = require('../utils/helpers');
 const { nextBatchNumber } = require('../utils/user-counter-utils');
 const { createSmokeUser } = require('../utils/smoke-user-factory');
-const { profileForSpec, requireAvailable, recordPulse, recordedPulse, drsUsers } = require('./drs-profile');
+const { profileForSpec, requireAvailable, recordPulse, recordedPulse, drsUsers, packageProfile } = require('./drs-profile');
 
 // ===========================================================================
-// IN01 — PULSE USERS FOR THE DRS PROJECT: CI (vendor user), EE, QI.
+// IN01 — PULSE USERS FOR THE DRS PROJECT: CI (vendor user), EE, QI (+ PM/EL/QL, and
+// CIE = the Electrical vendor's CI when the project has an Electrical SO).
 // docs/drs-pulse-integration.md §9.
 //
 // PER DRS PROJECT, not per environment: a person appears in a WAM row only if
@@ -50,7 +51,10 @@ test(`IN01. CI / EE / QI exist for ${profile.drs.project.name}`, async ({ browse
   try {
     for (const roleKey of missing) {
       console.log(`  creating ${roleKey} (batch ${batch}) scoped to ${profile.workLocations[0]} …`);
-      const { entry } = await createSmokeUser(page, dashboard, profile, roleKey, batch);
+      // CIE is the ELECTRICAL vendor's CI (DRS: one vendor + SO per package), so it is
+      // created against that vendor; every other role uses the Civil profile.
+      const asProfile = roleKey === 'CIE' ? packageProfile(profile, 'Electrical') : profile;
+      const { entry } = await createSmokeUser(page, dashboard, asProfile, roleKey, batch);
       // Recorded per user, the moment it exists — a user has no delete.
       recordPulse(profile, {
         users: { ...(recordedPulse(profile).users || {}), [roleKey]: {

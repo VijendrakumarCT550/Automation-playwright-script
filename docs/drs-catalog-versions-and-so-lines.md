@@ -16,9 +16,9 @@ Related: [`tests/drs-setting/README.md`](../tests/drs-setting/README.md), [`test
 | Term | Meaning |
 |---|---|
 | **Catalog** | The hierarchy **Package → Sub-Package → Activity → Sub-Activity → Inspection Point (checkpoint)** for one project type. Packages (Civil, Electrical, Mechanical) are managed upstream and read-only. |
-| **Chain** | The list of versions for one project type and one scope. **All sites** is the type-wide chain; a site (e.g. *Khavda*, *AUTOMATION SITE*) can have its own chain. |
+| **Chain** | The list of versions for one project type and one scope. **All sites** is the type-wide chain; a site (e.g. *Khavda*, *Automation Site 01*) can have its own chain. |
 | **Catalog version** | One release of the catalog in one chain. |
-| **Version label** | Chain + number, e.g. `All sites v2`, `Khavda v1`, `AUTOMATION SITE v1`. Each chain counts its own numbers, so `All sites v1` and `AUTOMATION SITE v1` are different versions. |
+| **Version label** | Chain + number, e.g. `All sites v2`, `Khavda v1`, `Automation Site 01 v1`. Each chain counts its own numbers, so `All sites v1` and `Automation Site 01 v1` are different versions. |
 | **Draft** | A version that can still be edited. |
 | **Locked** | A version that can never be edited again. |
 | **Pin** | The catalog version chosen for one **Work Area**. |
@@ -37,7 +37,7 @@ Related: [`tests/drs-setting/README.md`](../tests/drs-setting/README.md), [`test
 
 ### 2.2 Making a draft
 - **New draft copies the version that is selected when you click it.** Any version can be the source.
-  - *Live 2026-10-15:* with **All sites v1** selected, New draft for AUTOMATION SITE produced **AUTOMATION SITE v1** as a copy of **All sites v1**, not of the newest locked version (All sites v5).
+  - *Live 2026-10-15:* with **All sites v1** selected, New draft for AUTOMATION SITE produced **Automation Site 01 v1** as a copy of **All sites v1**, not of the newest locked version (All sites v5).
   - The guide (§4.6) says a draft always copies the *newest* locked version. **That is out of date — follow the app.**
 - A new draft **recomputes positions**, so its tree can list the same sub-packages in a different order. Compare a copy by the *set* of names, not the order.
 - **One open draft per chain.** A second New draft is refused: *"A draft already exists for this project type and site, and only one may be open at a time…"*.
@@ -110,14 +110,19 @@ Per code: 1 sub-package, 2 activities, 4 sub-activities, 12 inspection points (*
 
 ---
 
-## 4. The AUTOMATION SITE catalog versions
+## 4. The Automation Site 01 catalog versions
 
-Built by `tests/drs-setting/catalog_site_versions.spec.js` and recorded in `tests/fixtures/drs/drs-setup.json` under `catalogs["AUTOMATION SITE"]`.
+> **Site renamed, 2026-10-15:** `AUTOMATION SITE` → **`Automation Site 01`** (same DRS uuid `e97c5ffe-149b-417d-97d0-45b03fcff3a1`).
+> - **Why:** a UAT redeploy had deleted the first AUTOMATION SITE in DRS, but Pulse kept it, because the delete never synced. D01 then recreated the name, so Pulse listed two "AUTOMATION SITE"s.
+> - **How:** renaming our site in place keeps its catalog chain and projects. Its version labels follow the name: the versions built as "AUTOMATION SITE v1/v2" now read **Automation Site 01 v1/v2**, verified live.
+> - **In code:** D01 renames any site still carrying a former name (`tests/drs/drs-data.js` `siteFormerNames`), and rewrites the state file to match.
+
+Built by `tests/drs-setting/catalog_site_versions.spec.js` and recorded in `tests/fixtures/drs/drs-setup.json` under `catalogs["Automation Site 01"]`.
 
 | Step | Source selected | New version | Codes added | Contents | State |
 |---|---|---|---|---|---|
-| S1 | All sites v1 | **AUTOMATION SITE v1** | PC01, QC01, PE01, QE01 | All sites v1 + the four 01 codes | **locked** 2026-10-15 |
-| S2 | AUTOMATION SITE v1 | **AUTOMATION SITE v2** | PC02, QC02, PE02, QE02 | AUTOMATION SITE v1 (01 codes inherited) + the four 02 codes | **locked** 2026-10-15 |
+| S1 | All sites v1 | **Automation Site 01 v1** | PC01, QC01, PE01, QE01 | All sites v1 + the four 01 codes | **locked** 2026-10-15 |
+| S2 | Automation Site 01 v1 | **Automation Site 01 v2** | PC02, QC02, PE02, QE02 | Automation Site 01 v1 (01 codes inherited) + the four 02 codes | **locked** 2026-10-15 |
 
 Each step:
 1. Checks the site has no version the spec did not record.
@@ -140,13 +145,19 @@ The DRS project chain (`npm run drs:setup`, `tests/drs/setup/D01–D06`) creates
 |---|---|---|---|
 | BL01, BL02 (… BLnn) | All sites v1 | 300 each | Pulse integration ground — `tests/integration/drs-profile.js` uses `/^BL\d+$/` only, so it is unchanged |
 | Culvert-01, Drain-01, Road-01 | All sites v1 | 10 each | as before |
-| **VER-ALL-V2** | **All sites v2** | 60 | a second All-sites version |
-| **VER-SITE-V1** | **AUTOMATION SITE v1** | 60 | site version 1 |
-| **VER-SITE-V2** | **AUTOMATION SITE v2** | 60 | site version 2 |
+| **BL03 AS-v2** | **All sites v2** | 60 | a second All-sites version |
+| **BL04 S-v1** | **Automation Site 01 v1** | 60 | site version 1 |
+| **BL05 S-v2** | **Automation Site 01 v2** | 60 | site version 2 |
 
-- The plan lives in `tests/drs/drs-data.js` (`versionAreas`, `versionFor(workArea)`). `DRS_VERSION_AREAS=0` leaves the VER-* areas out.
-- **D03** pins every Work Area to its planned version and checks the tree badge by its full label (`AUTOMATION SITE v1`, not just `v1`). It never changes an existing pin.
-- The AUTOMATION SITE versions must be **locked** before D03 runs, so run `catalog_site_versions.spec.js` first.
+**Naming (app owner, 2026-10-15): `BL<nn> AS-v<n>` / `BL<nn> S-v<n>`.**
+- **AS** = All sites, **S** = the site's own version, and `v<n>` is the version number.
+- `<nn>` continues after the run's plain BL areas: with `DRS_WORK_AREAS=2` they are BL03, BL04 and BL05; with 13, BL14 onward.
+- The name carries the version, and `versionFor(workArea)` reads it back from the name.
+- **Older projects:** AUTO-Solar-15102026-SNP still has its first names, `VER-ALL-V2`, `VER-SITE-V1` and `VER-SITE-V2`. They are still understood (same versions), but new projects use the new names.
+- **Code:** `tests/drs/drs-data.js` (`versionAreas`, `versionAreaNames`, `versionFor`, `isVersionArea`, `isSiteVersionArea`). `DRS_VERSION_AREAS=0` leaves these areas out.
+
+- **D03** pins every Work Area to its planned version and checks the tree badge by its full label (`Automation Site 01 v1`, not just `v1`). It never changes an existing pin.
+- The Automation Site 01 versions must be **locked** before D03 runs, so run `catalog_site_versions.spec.js` first.
 
 ---
 
@@ -173,8 +184,8 @@ So the same name shows **once per version**, for example:
 ```
 EA - Piling - MMS — Solar · All sites v1 — BL01, BL02
 EA - Piling - MMS — Solar · All sites v2 — VER-ALL-V2
-EA - Piling - MMS — Solar · AUTOMATION SITE v1 — VER-SITE-V1
-EA - Piling - MMS — Solar · AUTOMATION SITE v2 — VER-SITE-V2
+EA - Piling - MMS — Solar · Automation Site 01 v1 — VER-SITE-V1
+EA - Piling - MMS — Solar · Automation Site 01 v2 — VER-SITE-V2
 ```
 
 **These are not duplicates.** Each belongs to a different version and a different set of Work Areas. Automation must always match the **full label**, never the bare name.
@@ -193,8 +204,8 @@ When a project carries several catalog versions, **create one SO line per versio
 |---|---|---|
 | 10-10 | All sites v1 | BL01, BL02 |
 | 20-20 | All sites v2 | VER-ALL-V2 |
-| 30-30 | AUTOMATION SITE v1 | VER-SITE-V1 |
-| 40-40 | AUTOMATION SITE v2 | VER-SITE-V2 |
+| 30-30 | Automation Site 01 v1 | VER-SITE-V1 |
+| 40-40 | Automation Site 01 v2 | VER-SITE-V2 |
 
 ### 8.2 Why: how a WMC is generated
 - **When a vendor can generate one:** a vendor can generate a **WMC for an SO line** once the **RFIs for every inspection point** of that line's sub-activities are **approved on every Work Section** of the Work Areas involved.
@@ -202,6 +213,34 @@ When a project carries several catalog versions, **create one SO line per versio
 - **One version per WMC:** the system **refuses** to generate a WMC when the selected Work Areas are on **different versions**, or mix pinned and unpinned. Its message names each Work Area and its version: *"The selected work areas are on different catalog versions: … One WMC covers one version."* (guide §12).
 - **What goes wrong with a mixed line:** a line mapped across versions would cover Work Areas on several versions, and could never yield one valid WMC. One line per version keeps each line billable on its own.
 - **A subset is allowed:** mapping only some of a version's sub-activities to a line is fine. The WMC for that line then waits only on those sub-activities' RFIs.
+
+> **Updated 2026-10-15 (app owner):**
+> - **Two SOs:** one per package, Civil (our service contractor) and Electrical (AUTOMATION ELECTRICAL CONTRACTOR, its own vendor and its own Pulse CI).
+> - **At most 2 sub-activities per SO line:** a version with more gets more lines.
+>
+> The tables in §8.1 and §8.4 show the earlier single-SO layout (project SNP). The current plan is `drs-data.js` `soPlan`, and the full WMC background is in [`drs-wmc.md`](drs-wmc.md).
+
+### 8.2b Verified live: two SOs, 2 sub-activities per line (2026-10-15, AUTO-Solar-15102026-ZTV)
+
+| SO | Vendor | Lines | Mapped |
+|---|---|---|---|
+| **9952376933** Civil | 997248 AUTOMATION SERVICE CONTRACTOR | 20 | 40 sub-activities, 2 per line |
+| **9952398464** Electrical | 999080 AUTOMATION ELECTRICAL CONTRACTOR | 12 | 24 sub-activities, 2 per line |
+
+- **Line check:** the read-only checker (`00_drs_explore_round12_so_line_versions.spec.js`) passed on all 32 lines: one version each, at most 2, none empty.
+- **Work Areas:** BL01/BL02 on All sites v1, plus `BL03 AS-v2`, `BL04 S-v1`, `BL05 S-v2`.
+
+**Pulse:**
+- **Users (IN01, batch 223):** CI `CIDRSbgbUser223` (Civil vendor), **CIE `CIEDRSwzaUser223` (Electrical vendor)**, and EE `EEDRSsbyUser223` / QI `QIDRSedmUser223`, shared by both packages.
+- **WAM:** per package, on BL04 S-v1 and BL05 S-v2.
+- **RFIs (IN15), each CI → EE → QI approved:**
+
+| Package | Area | RFI |
+|---|---|---|
+| Civil | BL04 S-v1 | RFI-AUTO-WL-15102026-ZTV-BL04 S-v1-CIV-0 (PC01.1.1 Checkpoint a) |
+| Civil | BL05 S-v2 | RFI-…-BL05 S-v2-CIV-1 (PC02.1.1 Checkpoint a) |
+| Electrical | BL04 S-v1 | RFI-…-BL04 S-v1-ELE-2 (PE01.1.1 Checkpoint a) |
+| Electrical | BL05 S-v2 | RFI-…-BL05 S-v2-ELE-3 (PE02.1.1 Checkpoint a) |
 
 ### 8.3 How the automation follows it
 - **D04** creates the project's SO with **one line per version** the run pins (line numbers 10, 20, 30, 40 …). Each line is recorded with its version.
@@ -217,10 +256,44 @@ Project **AUTO-Solar-15102026-SNP**, SO **9946699160**, whole chain D01–D06 gr
 |---|---|---|---|
 | 10-10 | All sites v1 | BL01, BL02 | 4 Piling (Inverter, LT Cable Hanger System, MMS, Robotic Docking System) |
 | 20-20 | All sites v2 | VER-ALL-V2 | the same 4, v2 copies |
-| 30-30 | AUTOMATION SITE v1 | VER-SITE-V1 | the same 4, site v1 copies |
-| 40-40 | AUTOMATION SITE v2 | VER-SITE-V2 | the same 4, site v2 copies |
+| 30-30 | Automation Site 01 v1 | VER-SITE-V1 | the same 4, site v1 copies |
+| 40-40 | Automation Site 01 v2 | VER-SITE-V2 | the same 4, site v2 copies |
 
 After the reload, each line held exactly its own version's 4 sub-activities and none of another version's.
+
+### 8.5 Our catalog's sub-activities on the site lines (2026-10-15)
+
+D05 now also maps the **new Civil activities** of each site version (`<code>.1 Activity`, `<code>.2 Activity` for every code the version carries; `tests/drs/drs-data.js` `catalogCodes`). D06 then puts their sub-activities on that version's line:
+
+| SO line | Version | Sub-activities |
+|---|---|---|
+| 30-30 | Automation Site 01 v1 | 4 Piling + PC01.1.1 … QC01.2.2 (8) = **12** |
+| 40-40 | Automation Site 01 v2 | 4 Piling + PC01/QC01 (8) + PC02/QC02 (8) = **20** |
+
+- **The PC01/QC01 chips on line 40-40 are v2's own copies.** A new draft copies the nodes it inherits, so every one of them is labelled `· Automation Site 01 v2 —`. One line still holds one version.
+- **Verify any time:** `tests/drs/inspection/00_drs_explore_round12_so_line_versions.spec.js` (read-only) fails if any line holds another version's sub-activity.
+- **Naming in DRS:** DRS prefixes our sub-activities with their UOM (`PER UNIT - PC01.1.1 Sub Activity`). Pulse shows the bare name.
+
+### 8.6 RFI on our catalog in Pulse (IN15, verified 2026-10-15)
+
+`tests/integration/IN15_rfi_site_catalog.spec.js` runs the existing RFI flow on the new catalog chain and the new work region.
+
+**WAM:** CI (with our SO), EE and QI are mapped on VER-SITE-V1 and VER-SITE-V2.
+
+**RFI cycle (CI raises → EE approves → QI approves)**, on each area's own newest Civil code:
+
+| Work Area | Version | Chain | RFI | Result |
+|---|---|---|---|---|
+| VER-SITE-V1 | Automation Site 01 v1 | PC01 Sub Package → PC01.1 Activity → PC01.1.1 Sub Activity → PC01.1.1 Checkpoint a (Micro Pile Checklist) | RFI-AUTO-WL-15102026-SNP-VER-SITE-V1-CIV-0 | approved |
+| VER-SITE-V2 | Automation Site 01 v2 | PC02 … PC02.1.1 Checkpoint a | RFI-AUTO-WL-15102026-SNP-VER-SITE-V2-CIV-1 | approved |
+| VER-SITE-V1 | Automation Site 01 v1 | **Electrical**: PE01 Sub Package → PE01.1 Activity → PE01.1.1 Sub Activity → PE01.1.1 Checkpoint a | RFI-AUTO-WL-15102026-SNP-VER-SITE-V1-ELE-2 | approved |
+| VER-SITE-V2 | Automation Site 01 v2 | **Electrical**: PE02 … PE02.1.1 Checkpoint a | RFI-AUTO-WL-15102026-SNP-VER-SITE-V2-ELE-3 | approved |
+
+**WAM is per package:** the Package filter is part of the assignment, so IN15 maps CI (with our SO), EE and QI on the site areas once for Civil and once for Electrical. `IN15_PACKAGES=Electrical` runs one package only; `D05_PACKAGES` does the same for SO Configuration.
+
+For Electrical, D05 maps `PE0n.1/.2` and `QE0n.1/.2` (no Piling), and D06 adds their sub-activities to the same version lines. Line 30-30 then holds **20** sub-activities and line 40-40 holds **36**, still one version per line.
+
+Users: IN01 batch 222 (CIDRSjrnUser222, EEDRSvgpUser222, QIDRSahkUser222, plus PM/EL/QL) on AUTO-WL-15102026-SNP.
 
 ## 9. Run order
 
@@ -231,6 +304,12 @@ npx playwright test --project=drs-setting tests/drs-setting/catalog_site_version
 # 2. A fresh DRS project: masters, project + tree (incl. VER-* areas), pins, SO with one line
 #    per version, SO Configuration per version, SO Line Mapping per line
 npm run drs:setup
+#    (re-run one stage on an existing project:  $env:DRS_PROJECT_TAG="15102026-SNP")
+
+# 3. Pulse: users of the project, then WAM + RFI on our catalog
+$env:PULSE_ENV="uat"; $env:DRS_ENV="uat"
+npx playwright test --project=integration tests/integration/IN01_users.spec.js --workers=1
+npx playwright test --project=integration tests/integration/IN15_rfi_site_catalog.spec.js --workers=1
 ```
 
 Other switches:
@@ -253,6 +332,7 @@ Other switches:
 | SO Configuration filters cascade, nothing pre-filled | `DrsSoConfigPage.open()` picks all four in order |
 | Sub Activity picker is a multi-select that stays open; its name changes once a chip is in | D06 opens it once and clicks every option |
 | A sub-activity mapped to one SO line is no longer offered on the others (16 → 12 → 8 → 4) | D06 maps each line from its own card, in line order |
+| Pulse kept a site that a UAT redeploy deleted in DRS, so two sites shared one name after it was recreated | Our site renamed to `Automation Site 01` (D01 renames in place) |
 | `npm run drs:setup` makes a NEW project once the newest one has its tree (D02 resumes only before D5) | A stopped run's project is marked `abandoned` in the state file (UQX, 2026-10-15) |
 
 ---

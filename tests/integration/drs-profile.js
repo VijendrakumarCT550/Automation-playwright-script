@@ -22,7 +22,10 @@ const READY_STAGE = 'D8'; // SO Configuration — "ready for Pulse" (docs, Phase
 // PM / EL / QL added 2026-10-08: NC creation opened up to the Project Manager,
 // Execution Lead and Quality Lead (alongside QI and EE), so the NC matrix needs
 // one user of each. They are creators only — they carry no flow step.
-const PREFIXES = { CI: 'CIDRS', EE: 'EEDRS', QI: 'QIDRS', PM: 'PMDRS', EL: 'ELDRS', QL: 'QLDRS' };
+// CIE added 2026-10-15: the Electrical package has its own vendor + SO (DRS D01/D04),
+// so it has its own Contractor Incharge, a VENDOR user of the Electrical vendor.
+// EE and QI are shared across packages (app owner).
+const PREFIXES = { CI: 'CIDRS', CIE: 'CIEDRS', EE: 'EEDRS', QI: 'QIDRS', PM: 'PMDRS', EL: 'ELDRS', QL: 'QLDRS' };
 
 function drsProject() {
   const env = state.envRecord(DRS_ENV);
@@ -69,6 +72,19 @@ function drsIntegrationProfile() {
   };
   const groundAreas = [...new Set([rfiArea, ncArea, ...matrix.rfi, ...matrix.nc])];
   const so = project.serviceOrder.number;
+  // One vendor + SO per package (DRS D01/D04, 2026-10-15); older projects have the
+  // Civil one only.
+  const vendorEntry = (v, number) => v && number && {
+    category: 'Service Contractor',
+    name: v.name,
+    serviceOrder: `${number} - ${v.name}`,
+    serviceOrderCandidates: [`${number} - ${v.name}`, number],
+  };
+  const electricalSo = project.serviceOrders && project.serviceOrders.Electrical;
+  const vendors = {
+    Civil: vendorEntry(env.vendor, so),
+    ...(electricalSo && env.vendorElectrical ? { Electrical: vendorEntry(env.vendorElectrical, electricalSo.number) } : {}),
+  };
 
   return {
     // The tag is part of the key so every DRS project gets its OWN tracker
@@ -85,23 +101,20 @@ function drsIntegrationProfile() {
     site: project.site,
     workLocations: [project.workLocation],
     packages: ['Civil'],
-    vendor: {
-      category: 'Service Contractor',
-      name: env.vendor.name,
-      // Pulse renders SOs as "<number> - <VENDOR>"; the bare number is the
-      // fallback candidate (WAM's Service Order is an Ark combobox, substring).
-      serviceOrder: `${so} - ${env.vendor.name}`,
-      serviceOrderCandidates: [`${so} - ${env.vendor.name}`, so],
-    },
+    // Pulse renders SOs as "<number> - <VENDOR>"; the bare number is the
+    // fallback candidate (WAM's Service Order is an Ark combobox, substring).
+    vendor: vendors.Civil,
+    vendors,
     users: {
       source: 'created',
-      order: ['CI', 'EE', 'QI', 'PM', 'EL', 'QL'],
+      order: ['CI', 'EE', 'QI', 'PM', 'EL', 'QL', ...(vendors.Electrical ? ['CIE'] : [])],
       // RFI/NC flow actors only. PM/EL/QL are NC creators, mapped by IN06's own
       // prerequisite (ensureWorkAreaMapping) rather than the chain's SM03.
       flowRoles: ['CI', 'EE', 'QI'],
       prefixes: PREFIXES,
       roles: {
         [PREFIXES.CI]: { role: 'Contractor Incharge', userType: 'VENDOR' },
+        [PREFIXES.CIE]: { role: 'Contractor Incharge', userType: 'VENDOR' },
         [PREFIXES.EE]: { role: 'Execution Engineer', userType: 'AGEL' },
         [PREFIXES.QI]: { role: 'Quality Inspector', userType: 'AGEL' },
         [PREFIXES.PM]: { role: 'Project Manager', userType: 'AGEL' },
@@ -147,6 +160,16 @@ function drsIntegrationProfile() {
     drs: { env: DRS_ENV, tag: project.tag, project, pulseKey },
   };
 }
+
+// The profile as one PACKAGE sees it: that package's vendor + SO (WAM's Service
+// Order filter, a VENDOR user's vendor) and `packages: [pkg]` (WAM's Package
+// filter). And the CI role key of that package: CI (Civil), CIE (Electrical).
+function packageProfile(profile, pkg) {
+  const vendor = (profile.vendors && profile.vendors[pkg]) || null;
+  if (!vendor) throw new Error(`${profile.drs.project.name} has no ${pkg} vendor/SO - run DRS D01 + D04 (one SO per package)`);
+  return { ...profile, packages: [pkg], vendor };
+}
+const ciRoleFor = (pkg) => (pkg === 'Electrical' ? 'CIE' : 'CI');
 
 // For SPEC FILES: never throws at file-load time. Playwright loads every spec
 // for `--list` or an unfiltered run, and a pairing/state error thrown during
@@ -209,4 +232,7 @@ function drsUsers(profile, roles = ['CI', 'EE', 'QI']) {
   return out;
 }
 
-module.exports = { drsIntegrationProfile, profileForSpec, requireAvailable, recordPulse, recordedPulse, drsUsers, PREFIXES };
+module.exports = {
+  drsIntegrationProfile, profileForSpec, requireAvailable, recordPulse, recordedPulse, drsUsers, PREFIXES,
+  packageProfile, ciRoleFor,
+};

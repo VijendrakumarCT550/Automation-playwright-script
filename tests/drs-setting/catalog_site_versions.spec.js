@@ -39,7 +39,7 @@ const counter = require('./pc-counter');
 // ===========================================================================
 
 const ENV = drsEnv();
-const SITE = process.env.CATALOG_SITE || 'AUTOMATION SITE';
+const SITE = process.env.CATALOG_SITE || require('../drs/drs-data').site;
 const PACKAGES = ['Civil', 'Electrical'];
 const OUT = path.resolve(__dirname, '../../drs-explore/catalog-site-versions');
 const STEPS = [

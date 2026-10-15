@@ -8,14 +8,14 @@ const DATA = require('../drs-data');
 // ===========================================================================
 // D04 — MANUAL SERVICE ORDER (Configuration → 3b). docs/drs-pulse-integration.md §3.
 //
-// One SO per project, contracted to our own vendor (D01), with ONE LINE PER
-// CATALOG VERSION the run pins (drs-data.js soLinesFor; app owner 2026-10-15 -
-// docs/drs-catalog-versions-and-so-lines.md §8): line 10 = All sites v1 (BL),
-// 20 = All sites v2, 30 = AUTOMATION SITE v1, 40 = AUTOMATION SITE v2. A WMC
-// covers one version, so D06 maps each line to its own version's sub-activities.
-// An SO cannot be deleted,
-// so the number is recorded the moment the server accepts it, and a rerun
-// that finds it listed reuses it.
+// ONE SO PER PACKAGE (app owner, 2026-10-15; docs/drs-catalog-versions-and-so-
+// lines.md §8): Civil -> our Civil vendor (D01 `vendor`), Electrical -> the
+// Electrical vendor (D01 `vendorElectrical`). Lines come from drs-data.js soPlan:
+// per catalog version the run pins, that version's sub-activities in PAIRS - at
+// most 2 per line, one version per line (a WMC covers one version) - so D06 can
+// map each line exactly. Each line is recorded with its version + planned pair.
+// An SO cannot be deleted, so each is recorded the moment the server accepts it,
+// and a rerun that finds it listed reuses it.
 //
 // SO number: "99" + 8 digits from the clock — 10 digits like drs-uat's real
 // SOs (4810023149), in a range none of them use.
@@ -48,37 +48,37 @@ test.afterAll(async () => {
   if (context) await context.close();
 });
 
-test('D7. create the project\'s manual service order', async () => {
-  test.setTimeout(5 * 60 * 1000);
-  const vendor = state.envRecord(ENV.key).vendor;
-  await so.gotoList(run.id);
+test('D7. create the project\'s manual service orders - one per package', async () => {
+  test.setTimeout(10 * 60 * 1000);
+  const env = state.envRecord(ENV.key);
+  const plan = DATA.soPlan(env, run.workAreas);
+  const vendorFor = { Civil: env.vendor, Electrical: env.vendorElectrical };
+  const recorded = { ...(run.serviceOrders || {}) };
 
-  if (run.serviceOrder && await so.soListed(run.serviceOrder.number)) {
-    console.log(`  SO already exists: ${run.serviceOrder.number}`);
-    // Back-fill the advanced vendor fields on an SO created before they were
-    // set (app owner, 2026-09-26: they label the SO in SO Configuration).
-    if (!run.serviceOrder.vendorHeaderSet) {
-      const res = await so.editVendorDetails(run.serviceOrder.number, vendor.code, vendor.name);
-      console.log(`  edit SO vendor header → ${res.method} HTTP ${res.status}\n    ${res.body.slice(0, 300)}`);
-      expect(res.status, `SO edit answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
-      state.upsertProject(ENV.key, run.tag, { serviceOrder: { ...run.serviceOrder, vendorHeaderSet: true } });
+  for (const [pkg, lines] of Object.entries(plan)) {
+    const vendor = vendorFor[pkg];
+    expect(vendor, `no ${pkg} vendor recorded on ${ENV.key} - run D01 first`).toBeTruthy();
+    console.log(`  ${pkg}: ${lines.length} line(s) for ${vendor.code} — ${vendor.name}`);
+    for (const l of lines) console.log(`    ${l.lineNumber}-${l.serviceItemNo}  ${l.version}  ${l.subActivities.join(' + ')}`);
+
+    await so.gotoList(run.id);
+    if (recorded[pkg] && await so.soListed(recorded[pkg].number)) {
+      console.log(`  ${pkg} SO already exists: ${recorded[pkg].number}`);
+      continue;
     }
-    state.markStageDone(ENV.key, run.tag, 'D7');
-    return;
+    // "99" + 8 digits from the clock, + the package's index so two SOs made in the
+    // same millisecond never collide.
+    const number = `99${String(Date.now() + DATA.SO_PACKAGES.indexOf(pkg)).slice(-8)}`;
+    const res = await so.createServiceOrder({ number, vendorCode: vendor.code, vendorName: vendor.name, lines });
+    console.log(`  create ${pkg} SO ${number} (vendor "${res.vendorText}") → HTTP ${res.status} ${res.url}\n    ${res.body.slice(0, 300)}`);
+    expect(res.status, `${pkg} SO create answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
+    recorded[pkg] = { number, package: pkg, vendorCode: vendor.code, vendorName: vendor.name, vendorText: res.vendorText, vendorHeaderSet: true, lines };
+    // `serviceOrder` stays the Civil SO - what the Pulse side (BL ground) reads.
+    state.upsertProject(ENV.key, run.tag, { serviceOrders: recorded, ...(pkg === 'Civil' ? { serviceOrder: recorded.Civil } : {}) });
+
+    await so.gotoList(run.id);
+    expect(await so.soListed(number), `${pkg} SO ${number} not in the list after a ${res.status}`).toBe(true);
+    await dump(`so-list-after-${pkg.toLowerCase()}`);
   }
-
-  const number = `99${String(Date.now()).slice(-8)}`;
-  const lines = DATA.soLinesFor(run.workAreas);
-  console.log(`  lines: ${lines.map((l) => `${l.lineNumber}-${l.serviceItemNo} -> ${l.version}`).join(' | ')}`);
-  const res = await so.createServiceOrder({ number, vendorCode: vendor.code, vendorName: vendor.name, lines });
-  console.log(`  create SO ${number} (vendor "${res.vendorText}") → HTTP ${res.status} ${res.url}\n    ${res.body.slice(0, 300)}`);
-  expect(res.status, `SO create answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
-  state.upsertProject(ENV.key, run.tag, {
-    serviceOrder: { number, vendorCode: vendor.code, vendorText: res.vendorText, vendorHeaderSet: true, lines },
-  });
-
-  await so.gotoList(run.id);
-  await dump('so-list-after-create');
-  expect(await so.soListed(number), `SO ${number} not in the list after a ${res.status}`).toBe(true);
   state.markStageDone(ENV.key, run.tag, 'D7');
 });

@@ -105,7 +105,11 @@ class DrsProjectPage {
   //     (stage-d03 aria: "text: All sites v1 ∗").
   async workAreaVersionBadge(workArea, { label = false } = {}) {
     const text = await this.treeItem(workArea, 2).innerText().catch(() => '');
-    const line = text.split('\n').map((t) => t.replace(/∗/g, '').trim()).find((t) => /\bv\d+$/.test(t)) || '';
+    // Skip the row's own NAME line: version Work Areas are named "BL04 S-v1", which
+    // also ends in "v1" (live 2026-10-15: the name "WABL03 AS-v2" was read as a pin).
+    const line = text.split('\n').map((t) => t.replace(/∗/g, '').trim())
+      .filter((t) => !t.includes(workArea))
+      .find((t) => /\bv\d+$/.test(t)) || '';
     if (label) return line;
     const m = line.match(/\bv\d+\b/);
     return m ? m[0] : '';

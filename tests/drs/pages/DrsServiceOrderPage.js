@@ -1,3 +1,4 @@
+const { expect } = require('@playwright/test');
 const { openCombobox } = require('../utils/drs-ui');
 
 // Configuration → 3b. Create Service Order (manual SO). docs §3, §11 round 3.
@@ -98,6 +99,16 @@ class DrsServiceOrderPage {
       await this.lineField('Actual Qty').fill(String(line.actualQty));
       await this.lineField('Price Unit').fill(String(line.priceUnit));
       await this.lineField('UOM').fill(String(line.uom));
+      // THE SERVICE CODE goes in Optional Line Fields → "Activity Code" (app owner,
+      // 2026-10-15; the step-5 card shows it as "Service Code"). The newest line's
+      // section is the last one; it opens on a click (inspection round 13).
+      if (line.serviceCode) {
+        await this.page.getByText('Optional Line Fields', { exact: true }).last().click();
+        const box = this.page.getByText('Activity Code', { exact: true }).last().locator('xpath=following::input[1]');
+        await box.waitFor({ state: 'visible', timeout: 10000 });
+        await box.fill(String(line.serviceCode));
+        await expect(box).toHaveValue(String(line.serviceCode));
+      }
     }
 
     const response = this.page.waitForResponse(

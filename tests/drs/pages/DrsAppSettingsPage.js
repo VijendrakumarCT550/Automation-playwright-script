@@ -56,6 +56,27 @@ class DrsAppSettingsPage {
     return this.treeItem(site, 2).isVisible().catch(() => false);
   }
 
+  // RENAMES a Site in place (same uuid; round 11, 2026-10-15: the Site pane has an
+  // editable Name* and Save). Returns the save call's answer.
+  async renameSite(cluster, from, to) {
+    if (!(await this.siteExists(cluster, from))) throw new Error(`no Site "${from}" under ${cluster} to rename`);
+    await this.treeItem(from, 2).click();
+    const nameBox = this.page.getByRole('textbox', { name: 'Name*' });
+    await nameBox.waitFor({ state: 'visible', timeout: 15000 });
+    await this.page.waitForTimeout(800);
+    const shown = (await nameBox.inputValue()).trim();
+    if (shown !== from) throw new Error(`the pane shows "${shown}", not "${from}" - not renaming`);
+    await nameBox.fill(to);
+    const response = this.page.waitForResponse(
+      (r) => ['PATCH', 'PUT', 'POST'].includes(r.request().method())
+        && /\/api\/v1\/locations-configurator/.test(r.url()) && !/\/query\//.test(r.url()),
+      { timeout: 60000 },
+    );
+    await this.page.getByRole('button', { name: 'Save', exact: true }).click();
+    const res = await response;
+    return { status: res.status(), method: res.request().method(), body: await res.text().catch(() => '') };
+  }
+
   async createSite(cluster, site) {
     await this.gotoLocations();
     const clusterItem = this.treeItem(cluster, 1);

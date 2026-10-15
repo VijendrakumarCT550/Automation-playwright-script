@@ -52,6 +52,15 @@ function incompleteProject(envKey, finalStage) {
     .find((p) => !p.abandoned && !(p.stagesDone || []).includes(finalStage)) || null;
 }
 
+// The project a stage works on: DRS_PROJECT_TAG when set (to re-run a stage on a
+// project that already finished the chain - e.g. adding mappings later), else the
+// newest unfinished one.
+function targetProject(envKey, finalStage) {
+  const tag = process.env.DRS_PROJECT_TAG;
+  if (tag) return (envRecord(envKey).projects || []).find((p) => p.tag === tag) || null;
+  return incompleteProject(envKey, finalStage);
+}
+
 function latestProject(envKey) {
   const { projects = [] } = envRecord(envKey);
   return projects[projects.length - 1] || null;
@@ -77,7 +86,29 @@ function markStageDone(envKey, tag, stage) {
   return upsertProject(envKey, tag, { stagesDone: [...done] });
 }
 
+// After a Site RENAME in DRS (same uuid - D01): rewrite every record that names the
+// old site, so later stages and the Pulse profiles look for the new name. Touches
+// the env's `site`, each project's `site`, and every version label of the site's
+// chain ("<old> v1" -> "<new> v1": pins, SO Configuration, SO lines, catalogs).
+function renameSite(envKey, from, to) {
+  const store = load();
+  const env = store.environments[envKey];
+  if (!env) return null;
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const label = new RegExp(`${esc(from)}( v\\d+)`, 'g');
+  const rewrite = (obj) => JSON.parse(JSON.stringify(obj).replace(label, `${to}$1`));
+  if (env.site === from) env.site = to;
+  env.projects = (env.projects || []).map((p) => (p.site === from ? { ...rewrite(p), site: to } : p));
+  if (env.catalogs && env.catalogs[from]) {
+    env.catalogs[to] = rewrite(env.catalogs[from]);
+    delete env.catalogs[from];
+  }
+  env.updatedAt = new Date().toISOString();
+  save(store);
+  return env;
+}
+
 module.exports = {
   STATE_PATH, load, envRecord, updateEnv, incompleteProject, latestProject,
-  upsertProject, markStageDone,
+  upsertProject, markStageDone, renameSite, targetProject,
 };

@@ -19,7 +19,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -166,7 +166,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -209,7 +209,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -463,7 +463,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -549,7 +549,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -746,7 +746,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -773,7 +773,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -804,7 +804,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -886,7 +886,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -917,7 +917,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -1003,7 +1003,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -1085,7 +1085,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -1121,7 +1121,7 @@
           "type": "Solar",
           "spv": "VIJESPV",
           "cluster": "Rajasthan",
-          "site": "AUTOMATION SITE",
+          "site": "Automation Site 01",
           "pairedPulse": [
             "uat"
           ],
@@ -1147,8 +1147,8 @@
             "Drain-01": "All sites v1",
             "Road-01": "All sites v1",
             "VER-ALL-V2": "All sites v2",
-            "VER-SITE-V1": "AUTOMATION SITE v1",
-            "VER-SITE-V2": "AUTOMATION SITE v2"
+            "VER-SITE-V1": "Automation Site 01 v1",
+            "VER-SITE-V2": "Automation Site 01 v2"
           },
           "serviceOrder": {
             "number": "9946699160",
@@ -1181,7 +1181,7 @@
                 "actualQty": 100,
                 "priceUnit": 1,
                 "uom": "EA",
-                "version": "AUTOMATION SITE v1"
+                "version": "Automation Site 01 v1"
               },
               {
                 "lineNumber": 40,
@@ -1190,7 +1190,7 @@
                 "actualQty": 100,
                 "priceUnit": 1,
                 "uom": "EA",
-                "version": "AUTOMATION SITE v2"
+                "version": "Automation Site 01 v2"
               }
             ]
           },
@@ -1248,7 +1248,19 @@
                   "VER-ALL-V2": "9946699160"
                 }
               },
-              "AUTOMATION SITE v1": {
+              "Automation Site 01 v1": {
+                "PE01.1 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "PE01.2 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "QE01.1 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "QE01.2 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
                 "Piling - Inverter": {
                   "VER-SITE-V1": "9946699160"
                 },
@@ -1259,10 +1271,46 @@
                   "VER-SITE-V1": "9946699160"
                 },
                 "Piling - Robotic Docking System": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "PC01.1 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "PC01.2 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "QC01.1 Activity": {
+                  "VER-SITE-V1": "9946699160"
+                },
+                "QC01.2 Activity": {
                   "VER-SITE-V1": "9946699160"
                 }
               },
-              "AUTOMATION SITE v2": {
+              "Automation Site 01 v2": {
+                "PE01.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PE01.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QE01.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QE01.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PE02.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PE02.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QE02.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QE02.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
                 "Piling - Inverter": {
                   "VER-SITE-V2": "9946699160"
                 },
@@ -1273,6 +1321,30 @@
                   "VER-SITE-V2": "9946699160"
                 },
                 "Piling - Robotic Docking System": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PC01.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PC01.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QC01.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QC01.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PC02.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "PC02.2 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QC02.1 Activity": {
+                  "VER-SITE-V2": "9946699160"
+                },
+                "QC02.2 Activity": {
                   "VER-SITE-V2": "9946699160"
                 }
               }
@@ -1299,22 +1371,2803 @@
                 ]
               },
               "30-30": {
-                "version": "AUTOMATION SITE v1",
+                "version": "Automation Site 01 v1",
                 "subActivities": [
-                  "EA - Piling - Robotic Docking System — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
-                  "EA - Piling - MMS — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
-                  "EA - Piling - Inverter — Solar · AUTOMATION SITE v1 — VER-SITE-V1",
-                  "EA - Piling - LT Cable Hanger System — Solar · AUTOMATION SITE v1 — VER-SITE-V1"
+                  "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "EA - Piling - MMS — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "EA - Piling - Inverter — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1",
+                  "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — VER-SITE-V1"
                 ]
               },
               "40-40": {
-                "version": "AUTOMATION SITE v2",
+                "version": "Automation Site 01 v2",
                 "subActivities": [
-                  "EA - Piling - Robotic Docking System — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
-                  "EA - Piling - MMS — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
-                  "EA - Piling - Inverter — Solar · AUTOMATION SITE v2 — VER-SITE-V2",
-                  "EA - Piling - LT Cable Hanger System — Solar · AUTOMATION SITE v2 — VER-SITE-V2"
+                  "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "EA - Piling - MMS — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "EA - Piling - Inverter — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - PE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2",
+                  "PER UNIT - QE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — VER-SITE-V2"
                 ]
+              }
+            }
+          },
+          "pulse": {
+            "env": "uat",
+            "users": {
+              "CI": {
+                "name": "CIDRSjrnUser222",
+                "email": "CIDRSjrnUser222@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION SERVICE CONTRACTOR",
+                "createdAt": "2026-10-15T07:43:45.028Z"
+              },
+              "EE": {
+                "name": "EEDRSvgpUser222",
+                "email": "EEDRSvgpUser222@adani.com",
+                "role": "Execution Engineer",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T07:43:58.690Z"
+              },
+              "QI": {
+                "name": "QIDRSahkUser222",
+                "email": "QIDRSahkUser222@adani.com",
+                "role": "Quality Inspector",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T07:44:12.693Z"
+              },
+              "PM": {
+                "name": "PMDRSaejUser222",
+                "email": "PMDRSaejUser222@adani.com",
+                "role": "Project Manager",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T07:44:29.560Z"
+              },
+              "EL": {
+                "name": "ELDRSyseUser222",
+                "email": "ELDRSyseUser222@adani.com",
+                "role": "Execution Lead",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T07:44:43.604Z"
+              },
+              "QL": {
+                "name": "QLDRSeezUser222",
+                "email": "QLDRSeezUser222@adani.com",
+                "role": "Quality Lead",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T07:44:57.288Z"
+              }
+            },
+            "siteCatalogWam": {
+              "Civil": {
+                "roles": [
+                  "CI",
+                  "EE",
+                  "QI"
+                ],
+                "areas": [
+                  "VER-SITE-V1",
+                  "VER-SITE-V2"
+                ],
+                "assigned": [
+                  "CI@VER-SITE-V1",
+                  "CI@VER-SITE-V2",
+                  "EE@VER-SITE-V1",
+                  "EE@VER-SITE-V2",
+                  "QI@VER-SITE-V1",
+                  "QI@VER-SITE-V2"
+                ],
+                "at": "2026-10-15T07:45:53.010Z"
+              },
+              "Electrical": {
+                "roles": [
+                  "CI",
+                  "EE",
+                  "QI"
+                ],
+                "areas": [
+                  "VER-SITE-V1",
+                  "VER-SITE-V2"
+                ],
+                "assigned": [
+                  "CI@VER-SITE-V1",
+                  "CI@VER-SITE-V2",
+                  "EE@VER-SITE-V1",
+                  "EE@VER-SITE-V2",
+                  "QI@VER-SITE-V1",
+                  "QI@VER-SITE-V2"
+                ],
+                "at": "2026-10-15T08:01:42.304Z"
+              }
+            },
+            "siteCatalogRfis": [
+              {
+                "id": "add10995-e0c2-436c-8b68-56f77ecb4982",
+                "code": "RFI-AUTO-WL-15102026-SNP-VER-SITE-V1-CIV-0",
+                "workArea": "VER-SITE-V1",
+                "version": "Automation Site 01 v1",
+                "catalogCode": "PC01",
+                "checkpoint": "PC01.1.1 Checkpoint a",
+                "workSection": "R01-T08",
+                "status": "approved"
+              },
+              {
+                "id": "31c852fb-8be5-4b35-abd8-f32b598d3dca",
+                "code": "RFI-AUTO-WL-15102026-SNP-VER-SITE-V2-CIV-1",
+                "workArea": "VER-SITE-V2",
+                "version": "Automation Site 01 v2",
+                "catalogCode": "PC02",
+                "checkpoint": "PC02.1.1 Checkpoint a",
+                "workSection": "R01-T10",
+                "status": "approved"
+              },
+              {
+                "id": "b230f0d5-31d5-454b-8785-9ebc60971370",
+                "code": "RFI-AUTO-WL-15102026-SNP-VER-SITE-V1-ELE-2",
+                "package": "Electrical",
+                "workArea": "VER-SITE-V1",
+                "version": "Automation Site 01 v1",
+                "catalogCode": "PE01",
+                "checkpoint": "PE01.1.1 Checkpoint a",
+                "workSection": "R01-T11",
+                "status": "approved"
+              },
+              {
+                "id": "93f2db3b-9ef9-497d-9243-8746b68554f1",
+                "code": "RFI-AUTO-WL-15102026-SNP-VER-SITE-V2-ELE-3",
+                "package": "Electrical",
+                "workArea": "VER-SITE-V2",
+                "version": "Automation Site 01 v2",
+                "catalogCode": "PE02",
+                "checkpoint": "PE02.1.1 Checkpoint a",
+                "workSection": "R03-T04",
+                "status": "approved"
+              }
+            ]
+          }
+        },
+        {
+          "tag": "15102026-ZTV",
+          "createdAt": "2026-10-15T08:17:44.668Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-15102026-ZTV",
+          "id": "ae3fd5f6-3c35-4e35-9151-7a8c6c17a35e",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "Automation Site 01",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-15102026-ZTV",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01",
+            "BL03 AS-v2",
+            "BL04 S-v1",
+            "BL05 S-v2"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-15102026-ZTV.csv",
+          "catalogVersion": "v1",
+          "catalogLabel": "All sites v1",
+          "pinned": {
+            "BL01": "All sites v1",
+            "BL02": "All sites v1",
+            "Culvert-01": "All sites v1",
+            "Drain-01": "All sites v1",
+            "Road-01": "All sites v1",
+            "BL03 AS-v2": "All sites v2",
+            "BL04 S-v1": "Automation Site 01 v1",
+            "BL05 S-v2": "Automation Site 01 v2"
+          },
+          "serviceOrders": {
+            "Civil": {
+              "number": "9952376933",
+              "package": "Civil",
+              "vendorCode": "997248",
+              "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+              "vendorText": "997248 — Automation Service Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Robotic Docking System"
+                  ]
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Robotic Docking System"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Robotic Docking System"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.1.1 Sub Activity",
+                    "PC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.2.1 Sub Activity",
+                    "PC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 90,
+                  "serviceItemNo": 90,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.1.1 Sub Activity",
+                    "QC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 100,
+                  "serviceItemNo": 100,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.2.1 Sub Activity",
+                    "QC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 110,
+                  "serviceItemNo": 110,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 120,
+                  "serviceItemNo": 120,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Robotic Docking System"
+                  ]
+                },
+                {
+                  "lineNumber": 130,
+                  "serviceItemNo": 130,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.1.1 Sub Activity",
+                    "PC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 140,
+                  "serviceItemNo": 140,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.2.1 Sub Activity",
+                    "PC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 150,
+                  "serviceItemNo": 150,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.1.1 Sub Activity",
+                    "QC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 160,
+                  "serviceItemNo": 160,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.2.1 Sub Activity",
+                    "QC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 170,
+                  "serviceItemNo": 170,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.1.1 Sub Activity",
+                    "PC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 180,
+                  "serviceItemNo": 180,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.2.1 Sub Activity",
+                    "PC02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 190,
+                  "serviceItemNo": 190,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.1.1 Sub Activity",
+                    "QC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 200,
+                  "serviceItemNo": 200,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.2.1 Sub Activity",
+                    "QC02.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            },
+            "Electrical": {
+              "number": "9952398464",
+              "package": "Electrical",
+              "vendorCode": "999080",
+              "vendorName": "AUTOMATION ELECTRICAL CONTRACTOR",
+              "vendorText": "999080 — Automation Electrical Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.1.1 Sub Activity",
+                    "PE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.2.1 Sub Activity",
+                    "PE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.1.1 Sub Activity",
+                    "QE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.2.1 Sub Activity",
+                    "QE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.1.1 Sub Activity",
+                    "PE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.2.1 Sub Activity",
+                    "PE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.1.1 Sub Activity",
+                    "QE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.2.1 Sub Activity",
+                    "QE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 90,
+                  "serviceItemNo": 90,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.1.1 Sub Activity",
+                    "PE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 100,
+                  "serviceItemNo": 100,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.2.1 Sub Activity",
+                    "PE02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 110,
+                  "serviceItemNo": 110,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.1.1 Sub Activity",
+                    "QE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 120,
+                  "serviceItemNo": 120,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.2.1 Sub Activity",
+                    "QE02.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            }
+          },
+          "serviceOrder": {
+            "number": "9952376933",
+            "package": "Civil",
+            "vendorCode": "997248",
+            "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 20,
+                "serviceItemNo": 20,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Robotic Docking System"
+                ]
+              },
+              {
+                "lineNumber": 30,
+                "serviceItemNo": 30,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 40,
+                "serviceItemNo": 40,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Robotic Docking System"
+                ]
+              },
+              {
+                "lineNumber": 50,
+                "serviceItemNo": 50,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 60,
+                "serviceItemNo": 60,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Robotic Docking System"
+                ]
+              },
+              {
+                "lineNumber": 70,
+                "serviceItemNo": 70,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.1.1 Sub Activity",
+                  "PC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 80,
+                "serviceItemNo": 80,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.2.1 Sub Activity",
+                  "PC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 90,
+                "serviceItemNo": 90,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.1.1 Sub Activity",
+                  "QC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 100,
+                "serviceItemNo": 100,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.2.1 Sub Activity",
+                  "QC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 110,
+                "serviceItemNo": 110,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 120,
+                "serviceItemNo": 120,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Robotic Docking System"
+                ]
+              },
+              {
+                "lineNumber": 130,
+                "serviceItemNo": 130,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.1.1 Sub Activity",
+                  "PC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 140,
+                "serviceItemNo": 140,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.2.1 Sub Activity",
+                  "PC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 150,
+                "serviceItemNo": 150,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.1.1 Sub Activity",
+                  "QC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 160,
+                "serviceItemNo": 160,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.2.1 Sub Activity",
+                  "QC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 170,
+                "serviceItemNo": 170,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.1.1 Sub Activity",
+                  "PC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 180,
+                "serviceItemNo": 180,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.2.1 Sub Activity",
+                  "PC02.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 190,
+                "serviceItemNo": 190,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.1.1 Sub Activity",
+                  "QC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 200,
+                "serviceItemNo": 200,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.2.1 Sub Activity",
+                  "QC02.2.2 Sub Activity"
+                ]
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - Inverter": {
+                "BL01": "9952376933",
+                "BL02": "9952376933"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9952376933",
+                "BL02": "9952376933"
+              },
+              "Piling - MMS": {
+                "BL01": "9952376933",
+                "BL02": "9952376933"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9952376933",
+                "BL02": "9952376933"
+              }
+            },
+            "byVersion": {
+              "All sites v1": {
+                "Piling - Inverter": {
+                  "BL01": "9952376933",
+                  "BL02": "9952376933"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL01": "9952376933",
+                  "BL02": "9952376933"
+                },
+                "Piling - MMS": {
+                  "BL01": "9952376933",
+                  "BL02": "9952376933"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL01": "9952376933",
+                  "BL02": "9952376933"
+                }
+              },
+              "All sites v2": {
+                "Piling - Inverter": {
+                  "BL03 AS-v2": "9952376933"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL03 AS-v2": "9952376933"
+                },
+                "Piling - MMS": {
+                  "BL03 AS-v2": "9952376933"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL03 AS-v2": "9952376933"
+                }
+              },
+              "Automation Site 01 v1": {
+                "Piling - Inverter": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "Piling - MMS": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "PC01.1 Activity": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "PC01.2 Activity": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "QC01.1 Activity": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "QC01.2 Activity": {
+                  "BL04 S-v1": "9952376933"
+                },
+                "PE01.1 Activity": {
+                  "BL04 S-v1": "9952398464"
+                },
+                "PE01.2 Activity": {
+                  "BL04 S-v1": "9952398464"
+                },
+                "QE01.1 Activity": {
+                  "BL04 S-v1": "9952398464"
+                },
+                "QE01.2 Activity": {
+                  "BL04 S-v1": "9952398464"
+                }
+              },
+              "Automation Site 01 v2": {
+                "Piling - Inverter": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "Piling - MMS": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "PC01.1 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "PC01.2 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "QC01.1 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "QC01.2 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "PC02.1 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "PC02.2 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "QC02.1 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "QC02.2 Activity": {
+                  "BL05 S-v2": "9952376933"
+                },
+                "PE01.1 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "PE01.2 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "QE01.1 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "QE01.2 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "PE02.1 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "PE02.2 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "QE02.1 Activity": {
+                  "BL05 S-v2": "9952398464"
+                },
+                "QE02.2 Activity": {
+                  "BL05 S-v2": "9952398464"
+                }
+              }
+            }
+          },
+          "soLineMapping": {
+            "Civil": {
+              "number": "9952376933",
+              "lines": {
+                "10-10": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - Inverter — Solar · All sites v1 — BL01, BL02",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — BL01, BL02"
+                  ]
+                },
+                "20-20": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v1 — BL01, BL02",
+                    "EA - Piling - Robotic Docking System — Solar · All sites v1 — BL01, BL02"
+                  ]
+                },
+                "30-30": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - Inverter — Solar · All sites v2 — BL03 AS-v2",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v2 — BL03 AS-v2"
+                  ]
+                },
+                "40-40": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v2 — BL03 AS-v2",
+                    "EA - Piling - Robotic Docking System — Solar · All sites v2 — BL03 AS-v2"
+                  ]
+                },
+                "50-50": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "EA - Piling - Inverter — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "60-60": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "70-70": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "80-80": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "90-90": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "100-100": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "110-110": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "EA - Piling - Inverter — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "120-120": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "130-130": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "140-140": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "150-150": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "160-160": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "170-170": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "180-180": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "190-190": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "200-200": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                }
+              }
+            },
+            "Electrical": {
+              "number": "9952398464",
+              "lines": {
+                "10-10": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "20-20": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "30-30": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "40-40": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "50-50": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "60-60": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "70-70": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "80-80": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "90-90": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "100-100": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "110-110": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "120-120": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                }
+              }
+            }
+          },
+          "pulse": {
+            "env": "uat",
+            "users": {
+              "CI": {
+                "name": "CIDRSbgbUser223",
+                "email": "CIDRSbgbUser223@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION SERVICE CONTRACTOR",
+                "createdAt": "2026-10-15T08:27:05.309Z"
+              },
+              "EE": {
+                "name": "EEDRSsbyUser223",
+                "email": "EEDRSsbyUser223@adani.com",
+                "role": "Execution Engineer",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T08:27:18.798Z"
+              },
+              "QI": {
+                "name": "QIDRSedmUser223",
+                "email": "QIDRSedmUser223@adani.com",
+                "role": "Quality Inspector",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T08:27:32.477Z"
+              },
+              "PM": {
+                "name": "PMDRScskUser223",
+                "email": "PMDRScskUser223@adani.com",
+                "role": "Project Manager",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T08:27:49.137Z"
+              },
+              "EL": {
+                "name": "ELDRSlrbUser223",
+                "email": "ELDRSlrbUser223@adani.com",
+                "role": "Execution Lead",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T08:28:02.737Z"
+              },
+              "QL": {
+                "name": "QLDRSlsmUser223",
+                "email": "QLDRSlsmUser223@adani.com",
+                "role": "Quality Lead",
+                "userType": "AGEL",
+                "vendor": null,
+                "createdAt": "2026-10-15T08:28:16.369Z"
+              },
+              "CIE": {
+                "name": "CIEDRSwzaUser223",
+                "email": "CIEDRSwzaUser223@adani.com",
+                "role": "Contractor Incharge",
+                "userType": "VENDOR",
+                "vendor": "AUTOMATION ELECTRICAL CONTRACTOR",
+                "createdAt": "2026-10-15T08:28:36.052Z"
+              }
+            },
+            "siteCatalogWam": {
+              "Civil": {
+                "roles": [
+                  "CI",
+                  "EE",
+                  "QI"
+                ],
+                "areas": [
+                  "BL04 S-v1",
+                  "BL05 S-v2"
+                ],
+                "assigned": [
+                  "CI@BL04 S-v1",
+                  "CI@BL05 S-v2",
+                  "EE@BL04 S-v1",
+                  "EE@BL05 S-v2",
+                  "QI@BL04 S-v1",
+                  "QI@BL05 S-v2"
+                ],
+                "at": "2026-10-15T08:29:28.949Z"
+              },
+              "Electrical": {
+                "roles": [
+                  "CIE",
+                  "EE",
+                  "QI"
+                ],
+                "areas": [
+                  "BL04 S-v1",
+                  "BL05 S-v2"
+                ],
+                "assigned": [
+                  "CIE@BL04 S-v1",
+                  "CIE@BL05 S-v2",
+                  "EE@BL04 S-v1",
+                  "EE@BL05 S-v2",
+                  "QI@BL04 S-v1",
+                  "QI@BL05 S-v2"
+                ],
+                "at": "2026-10-15T08:32:39.916Z"
+              }
+            },
+            "siteCatalogRfis": [
+              {
+                "id": "3bf58ed6-def7-4204-af39-23177029a9f1",
+                "code": "RFI-AUTO-WL-15102026-ZTV-BL04 S-v1-CIV-0",
+                "package": "Civil",
+                "workArea": "BL04 S-v1",
+                "version": "Automation Site 01 v1",
+                "catalogCode": "PC01",
+                "checkpoint": "PC01.1.1 Checkpoint a",
+                "workSection": "R02-T01",
+                "status": "approved"
+              },
+              {
+                "id": "2a04dbae-b9d6-4e9c-96c5-b68f976bb566",
+                "code": "RFI-AUTO-WL-15102026-ZTV-BL05 S-v2-CIV-1",
+                "package": "Civil",
+                "workArea": "BL05 S-v2",
+                "version": "Automation Site 01 v2",
+                "catalogCode": "PC02",
+                "checkpoint": "PC02.1.1 Checkpoint a",
+                "workSection": "R04-T02",
+                "status": "approved"
+              },
+              {
+                "id": "24421fe0-4fa4-4c62-8cda-4d89770148fb",
+                "code": "RFI-AUTO-WL-15102026-ZTV-BL04 S-v1-ELE-2",
+                "package": "Electrical",
+                "workArea": "BL04 S-v1",
+                "version": "Automation Site 01 v1",
+                "catalogCode": "PE01",
+                "checkpoint": "PE01.1.1 Checkpoint a",
+                "workSection": "R01-T04",
+                "status": "approved"
+              },
+              {
+                "id": "ecba7b68-5070-4e90-8285-ac5d146425fb",
+                "code": "RFI-AUTO-WL-15102026-ZTV-BL05 S-v2-ELE-3",
+                "package": "Electrical",
+                "workArea": "BL05 S-v2",
+                "version": "Automation Site 01 v2",
+                "catalogCode": "PE02",
+                "checkpoint": "PE02.1.1 Checkpoint a",
+                "workSection": "R01-T03",
+                "status": "approved"
+              }
+            ]
+          }
+        },
+        {
+          "tag": "15102026-RHY",
+          "createdAt": "2026-10-15T09:20:04.888Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-15102026-RHY",
+          "id": "00872772-749b-4191-9994-6619251c0444",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "Automation Site 01",
+          "pairedPulse": [
+            "uat"
+          ],
+          "workLocation": "AUTO-WL-15102026-RHY",
+          "workAreas": [
+            "BL01",
+            "BL02",
+            "Culvert-01",
+            "Drain-01",
+            "Road-01",
+            "BL03 AS-v2",
+            "BL04 S-v1",
+            "BL05 S-v2"
+          ],
+          "sectionsPerArea": 300,
+          "csv": "locations-15102026-RHY.csv",
+          "catalogVersion": "v1",
+          "catalogLabel": "All sites v1",
+          "pinned": {
+            "BL01": "All sites v1",
+            "BL02": "All sites v1",
+            "Culvert-01": "All sites v1",
+            "Drain-01": "All sites v1",
+            "Road-01": "All sites v1",
+            "BL03 AS-v2": "All sites v2",
+            "BL04 S-v1": "Automation Site 01 v1",
+            "BL05 S-v2": "Automation Site 01 v2"
+          },
+          "serviceOrders": {
+            "Civil": {
+              "number": "9956077393",
+              "package": "Civil",
+              "vendorCode": "997248",
+              "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+              "vendorText": "997248 — Automation Service Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ],
+                  "serviceCode": "120021756"
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ],
+                  "serviceCode": "120036457"
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.1.1 Sub Activity",
+                    "PC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.2.1 Sub Activity",
+                    "PC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 90,
+                  "serviceItemNo": 90,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.1.1 Sub Activity",
+                    "QC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 100,
+                  "serviceItemNo": 100,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.2.1 Sub Activity",
+                    "QC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 110,
+                  "serviceItemNo": 110,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 120,
+                  "serviceItemNo": 120,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ]
+                },
+                {
+                  "lineNumber": 130,
+                  "serviceItemNo": 130,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.1.1 Sub Activity",
+                    "PC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 140,
+                  "serviceItemNo": 140,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.2.1 Sub Activity",
+                    "PC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 150,
+                  "serviceItemNo": 150,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.1.1 Sub Activity",
+                    "QC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 160,
+                  "serviceItemNo": 160,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.2.1 Sub Activity",
+                    "QC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 170,
+                  "serviceItemNo": 170,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.1.1 Sub Activity",
+                    "PC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 180,
+                  "serviceItemNo": 180,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.2.1 Sub Activity",
+                    "PC02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 190,
+                  "serviceItemNo": 190,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.1.1 Sub Activity",
+                    "QC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 200,
+                  "serviceItemNo": 200,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.2.1 Sub Activity",
+                    "QC02.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            },
+            "Electrical": {
+              "number": "9956099198",
+              "package": "Electrical",
+              "vendorCode": "999080",
+              "vendorName": "AUTOMATION ELECTRICAL CONTRACTOR",
+              "vendorText": "999080 — Automation Electrical Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.1.1 Sub Activity",
+                    "PE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.2.1 Sub Activity",
+                    "PE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.1.1 Sub Activity",
+                    "QE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.2.1 Sub Activity",
+                    "QE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.1.1 Sub Activity",
+                    "PE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.2.1 Sub Activity",
+                    "PE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.1.1 Sub Activity",
+                    "QE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.2.1 Sub Activity",
+                    "QE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 90,
+                  "serviceItemNo": 90,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.1.1 Sub Activity",
+                    "PE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 100,
+                  "serviceItemNo": 100,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.2.1 Sub Activity",
+                    "PE02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 110,
+                  "serviceItemNo": 110,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.1.1 Sub Activity",
+                    "QE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 120,
+                  "serviceItemNo": 120,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Automation Site 01 v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.2.1 Sub Activity",
+                    "QE02.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            }
+          },
+          "serviceOrder": {
+            "number": "9956077393",
+            "package": "Civil",
+            "vendorCode": "997248",
+            "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+            "vendorText": "997248 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ],
+                "serviceCode": "120021756"
+              },
+              {
+                "lineNumber": 20,
+                "serviceItemNo": 20,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ],
+                "serviceCode": "120036457"
+              },
+              {
+                "lineNumber": 30,
+                "serviceItemNo": 30,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 40,
+                "serviceItemNo": 40,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ]
+              },
+              {
+                "lineNumber": 50,
+                "serviceItemNo": 50,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 60,
+                "serviceItemNo": 60,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ]
+              },
+              {
+                "lineNumber": 70,
+                "serviceItemNo": 70,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.1.1 Sub Activity",
+                  "PC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 80,
+                "serviceItemNo": 80,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.2.1 Sub Activity",
+                  "PC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 90,
+                "serviceItemNo": 90,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.1.1 Sub Activity",
+                  "QC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 100,
+                "serviceItemNo": 100,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.2.1 Sub Activity",
+                  "QC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 110,
+                "serviceItemNo": 110,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 120,
+                "serviceItemNo": 120,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ]
+              },
+              {
+                "lineNumber": 130,
+                "serviceItemNo": 130,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.1.1 Sub Activity",
+                  "PC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 140,
+                "serviceItemNo": 140,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.2.1 Sub Activity",
+                  "PC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 150,
+                "serviceItemNo": 150,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.1.1 Sub Activity",
+                  "QC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 160,
+                "serviceItemNo": 160,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.2.1 Sub Activity",
+                  "QC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 170,
+                "serviceItemNo": 170,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.1.1 Sub Activity",
+                  "PC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 180,
+                "serviceItemNo": 180,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.2.1 Sub Activity",
+                  "PC02.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 190,
+                "serviceItemNo": 190,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.1.1 Sub Activity",
+                  "QC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 200,
+                "serviceItemNo": 200,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Automation Site 01 v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.2.1 Sub Activity",
+                  "QC02.2.2 Sub Activity"
+                ]
+              }
+            ]
+          },
+          "soConfiguration": {
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Piling - MMS": {
+                "BL01": "9956077393",
+                "BL02": "9956077393"
+              },
+              "Piling - Inverter": {
+                "BL01": "9956077393",
+                "BL02": "9956077393"
+              },
+              "Piling - LT Cable Hanger System": {
+                "BL01": "9956077393",
+                "BL02": "9956077393"
+              },
+              "Piling - Robotic Docking System": {
+                "BL01": "9956077393",
+                "BL02": "9956077393"
+              },
+              "Robot Structure Installation": {
+                "BL01": "9956077393",
+                "BL02": "9956077393"
+              }
+            },
+            "byVersion": {
+              "All sites v1": {
+                "Piling - MMS": {
+                  "BL01": "9956077393",
+                  "BL02": "9956077393"
+                },
+                "Piling - Inverter": {
+                  "BL01": "9956077393",
+                  "BL02": "9956077393"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL01": "9956077393",
+                  "BL02": "9956077393"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL01": "9956077393",
+                  "BL02": "9956077393"
+                },
+                "Robot Structure Installation": {
+                  "BL01": "9956077393",
+                  "BL02": "9956077393"
+                }
+              },
+              "All sites v2": {
+                "Piling - MMS": {
+                  "BL03 AS-v2": "9956077393"
+                },
+                "Piling - Inverter": {
+                  "BL03 AS-v2": "9956077393"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL03 AS-v2": "9956077393"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL03 AS-v2": "9956077393"
+                },
+                "Robot Structure Installation": {
+                  "BL03 AS-v2": "9956077393"
+                }
+              },
+              "Automation Site 01 v1": {
+                "Piling - MMS": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "Piling - Inverter": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "Robot Structure Installation": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "PC01.1 Activity": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "PC01.2 Activity": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "QC01.1 Activity": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "QC01.2 Activity": {
+                  "BL04 S-v1": "9956077393"
+                },
+                "PE01.1 Activity": {
+                  "BL04 S-v1": "9956099198"
+                },
+                "PE01.2 Activity": {
+                  "BL04 S-v1": "9956099198"
+                },
+                "QE01.1 Activity": {
+                  "BL04 S-v1": "9956099198"
+                },
+                "QE01.2 Activity": {
+                  "BL04 S-v1": "9956099198"
+                }
+              },
+              "Automation Site 01 v2": {
+                "Piling - MMS": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "Piling - Inverter": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "Piling - Robotic Docking System": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "Robot Structure Installation": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "PC01.1 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "PC01.2 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "QC01.1 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "QC01.2 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "PC02.1 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "PC02.2 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "QC02.1 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "QC02.2 Activity": {
+                  "BL05 S-v2": "9956077393"
+                },
+                "PE01.1 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "PE01.2 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "QE01.1 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "QE01.2 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "PE02.1 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "PE02.2 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "QE02.1 Activity": {
+                  "BL05 S-v2": "9956099198"
+                },
+                "QE02.2 Activity": {
+                  "BL05 S-v2": "9956099198"
+                }
+              }
+            }
+          },
+          "soLineMapping": {
+            "Civil": {
+              "number": "9956077393",
+              "lines": {
+                "10-10": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v1 — BL01, BL02",
+                    "EA - Piling - Inverter — Solar · All sites v1 — BL01, BL02",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — BL01, BL02"
+                  ]
+                },
+                "20-20": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · All sites v1 — BL01, BL02",
+                    "NOT APPLICABLE - Installation of binders/clips, bridges, docking & reverse stations — Solar · All sites v1 — BL01, BL02"
+                  ]
+                },
+                "30-30": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v2 — BL03 AS-v2",
+                    "EA - Piling - Inverter — Solar · All sites v2 — BL03 AS-v2",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v2 — BL03 AS-v2"
+                  ]
+                },
+                "40-40": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · All sites v2 — BL03 AS-v2",
+                    "NOT APPLICABLE - Installation of binders/clips, bridges, docking & reverse stations — Solar · All sites v2 — BL03 AS-v2"
+                  ]
+                },
+                "50-50": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "EA - Piling - Inverter — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "60-60": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "NOT APPLICABLE - Installation of binders/clips, bridges, docking & reverse stations — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "70-70": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "80-80": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "90-90": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "100-100": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "110-110": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "EA - Piling - Inverter — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "EA - Piling - LT Cable Hanger System — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "120-120": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "NOT APPLICABLE - Installation of binders/clips, bridges, docking & reverse stations — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "130-130": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "140-140": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "150-150": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "160-160": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "170-170": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "180-180": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "190-190": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "200-200": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QC02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QC02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                }
+              }
+            },
+            "Electrical": {
+              "number": "9956099198",
+              "lines": {
+                "10-10": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "20-20": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "30-30": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "40-40": {
+                  "version": "Automation Site 01 v1",
+                  "subActivities": [
+                    "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1",
+                    "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v1 — BL04 S-v1"
+                  ]
+                },
+                "50-50": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "60-60": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "70-70": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE01.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE01.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "80-80": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE01.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE01.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "90-90": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "100-100": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - PE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - PE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "110-110": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE02.1.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE02.1.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                },
+                "120-120": {
+                  "version": "Automation Site 01 v2",
+                  "subActivities": [
+                    "PER UNIT - QE02.2.1 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2",
+                    "PER UNIT - QE02.2.2 Sub Activity — Solar · Automation Site 01 v2 — BL05 S-v2"
+                  ]
+                }
               }
             }
           }
@@ -1324,14 +4177,14 @@
         "code": "997248",
         "name": "AUTOMATION SERVICE CONTRACTOR"
       },
-      "updatedAt": "2026-10-15T06:43:34.950Z",
+      "updatedAt": "2026-10-15T09:19:53.801Z",
       "spv": "VIJESPV",
       "cluster": "Rajasthan",
-      "site": "AUTOMATION SITE",
+      "site": "Automation Site 01",
       "catalogs": {
-        "AUTOMATION SITE": {
+        "Automation Site 01": {
           "S1": {
-            "label": "AUTOMATION SITE v1",
+            "label": "Automation Site 01 v1",
             "source": "All sites v1",
             "status": "locked",
             "draftedAt": "2026-10-15T06:12:42.700Z",
@@ -1357,15 +4210,15 @@
             "lockedAt": "2026-10-15T06:25:08.242Z"
           },
           "S2": {
-            "label": "AUTOMATION SITE v2",
-            "source": "AUTOMATION SITE v1",
-            "newestLocked": "AUTOMATION SITE v1",
+            "label": "Automation Site 01 v2",
+            "source": "Automation Site 01 v1",
+            "newestLocked": "Automation Site 01 v1",
             "status": "locked",
             "draftedAt": "2026-10-15T06:27:47.509Z",
             "updatedAt": "2026-10-15T06:35:48.023Z",
             "copied": {
-              "source": "AUTOMATION SITE v1",
-              "newestLocked": "AUTOMATION SITE v1",
+              "source": "Automation Site 01 v1",
+              "newestLocked": "Automation Site 01 v1",
               "matchesSource": true,
               "matchesNewest": true,
               "distinguishable": false
@@ -1393,6 +4246,10 @@
             "lockedAt": "2026-10-15T06:35:48.022Z"
           }
         }
+      },
+      "vendorElectrical": {
+        "code": "999080",
+        "name": "AUTOMATION ELECTRICAL CONTRACTOR"
       }
     }
   }

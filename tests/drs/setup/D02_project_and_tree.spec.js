@@ -16,8 +16,10 @@ const { DrsProjectPage, buildLocationCsv, writeCsv } = require('../pages/DrsProj
 // under Rajasthan → AUTOMATION SITE (created by D01). Every name carries the
 // run tag, because the import UPDATES nodes with the same (parent, name).
 // Work Areas: BL01..BLnn + Culvert/Drain/Road, plus one Work Area per extra
-// catalog version (drs-data.js versionAreas: VER-ALL-V2, VER-SITE-V1, VER-SITE-V2),
-// each with its own Work Sections. DRS_VERSION_AREAS=0 leaves those out.
+// catalog version, named "BL<nn> AS-v<n>" (All sites) / "BL<nn> S-v<n>" (site),
+// numbered on after the plain BLs (drs-data.js versionAreaNames: BL03 AS-v2,
+// BL04 S-v1, BL05 S-v2), each with its own Work Sections. DRS_VERSION_AREAS=0
+// leaves those out.
 //
 // Needs D01 first. Run:
 //   npx playwright test --project=drs tests/drs/setup/D02_project_and_tree.spec.js
@@ -28,7 +30,7 @@ const OUT = path.resolve(__dirname, '../../../drs-explore/stage-d02');
 const WORK_AREAS = Number(process.env.DRS_WORK_AREAS || 2);
 // ~300 Work Sections in EACH BL Work Area (app owner, 2026-09-26) — see buildLocationCsv.
 const SECTIONS_PER_AREA = Number(process.env.DRS_SECTIONS_PER_AREA || 300);
-const VERSION_AREAS = process.env.DRS_VERSION_AREAS === '0' ? [] : DATA.versionAreas;
+const VERSION_AREAS = process.env.DRS_VERSION_AREAS === '0' ? [] : DATA.versionAreaNames(WORK_AREAS);
 
 test.describe.configure({ mode: 'serial' });
 
