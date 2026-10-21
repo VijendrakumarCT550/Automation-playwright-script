@@ -120,12 +120,23 @@ module.exports.versionAreaNames = (blCount, envRecord) => {
   return areas.map((a, i) => ({ name: `BL${String(blCount + i + 1).padStart(2, '0')} ${a.tag}`, sections: a.sections }));
 };
 
-module.exports.isVersionArea = (workArea) => Boolean(versionTagOf(workArea));
-module.exports.isSiteVersionArea = (workArea) => /^S-/.test(versionTagOf(workArea) || '');
+// ONBOARDING PROJECTS (tests/onboarding, app owner 2026-10-19) name their Work
+// Areas plainly - WA01, WA02 ... - so the version is not in the name: the project
+// record carries `areaVersions` { WA01: 'All sites v1', ... }. A stage that works
+// on a project calls bindProject(run) first; versionFor / isVersionArea then read
+// that map before falling back to the name.
+let AREA_VERSIONS = {};
+module.exports.bindProject = (run) => { AREA_VERSIONS = (run && run.areaVersions) || {}; };
 
-// The version label a Work Area is pinned to: read from its name, else the
-// default ("All sites v1").
+module.exports.isVersionArea = (workArea) => Boolean(AREA_VERSIONS[workArea]) || Boolean(versionTagOf(workArea));
+module.exports.isSiteVersionArea = (workArea) => (AREA_VERSIONS[workArea]
+  ? AREA_VERSIONS[workArea].startsWith(`${module.exports.site} v`)
+  : /^S-/.test(versionTagOf(workArea) || ''));
+
+// The version label a Work Area is pinned to: the bound project's map, else read
+// from its name, else the default ("All sites v1").
 module.exports.versionFor = (workArea) => {
+  if (AREA_VERSIONS[workArea]) return AREA_VERSIONS[workArea];
   const tag = versionTagOf(workArea);
   return tag ? versionOfTag(tag) : module.exports.catalogOptionLabel;
 };
@@ -135,9 +146,11 @@ module.exports.versionFor = (workArea) => {
 // state file's env record (inherited first, then its own):
 //   catalogCodes(env, 'Automation Site 01 v2', 'Civil') -> ['PC01', 'QC01', 'PC02', 'QC02']
 // [] for a version we did not build (All sites v1/v2) or one not locked yet.
+// Looks in EVERY chain the state records (the site chain, and "All sites" since the
+// onboarding suite builds All-sites versions too).
 module.exports.catalogCodes = (envRecord, version, pkg) => {
-  const chain = ((envRecord && envRecord.catalogs) || {})[module.exports.site] || {};
-  const rec = Object.values(chain).find((c) => c.label === version && c.status === 'locked');
+  const chains = Object.values((envRecord && envRecord.catalogs) || {});
+  const rec = chains.flatMap((c) => Object.values(c)).find((c) => c && c.label === version && c.status === 'locked');
   if (!rec) return [];
   return [...((rec.inheritedCodes || {})[pkg] || []), ...((rec.codes || {})[pkg] || [])];
 };

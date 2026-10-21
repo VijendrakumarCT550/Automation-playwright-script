@@ -114,7 +114,9 @@ async function createSmokeUser(page, dashboard, profile, roleKey, batchNumber) {
   // or another deployment's users. See user-counter-utils.js.
   const entry = {
     ...identity, role, userType,
-    profileKey: profile.key,
+    // usersKey: a per-catalog-version onboarding profile records its users under
+    // the project profile's key (smoke-users.js reads them back the same way).
+    profileKey: (profile.usersKeys && profile.usersKeys[roleKey]) || profile.usersKey || profile.key,
     // WHICH DEPLOYMENT this user actually exists on. Without it a later stage
     // cannot tell a usable user from one created against a different
     // environment — and it is what decides the bucket it is filed under.

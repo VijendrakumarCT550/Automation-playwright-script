@@ -8,6 +8,8 @@
     "drs:setup": "playwright test --project=drs tests/drs/setup --workers=1",
     "drs:setup:dev": "cross-env DRS_ENV=dev playwright test --project=drs tests/drs/setup --workers=1",
     "drs:catalog": "playwright test --project=drs-setting tests/drs-setting --workers=1",
+    "onboarding": "node tests/utils/run-onboarding.js",
+    "onboarding:uat": "cross-env DRS_ENV=uat PULSE_ENV=uat node tests/utils/run-onboarding.js",
     "drs:explore": "playwright test --project=drs tests/drs/inspection --workers=1",
     "integration": "playwright test --project=integration tests/integration --workers=1",
     "integration:uat": "cross-env PULSE_ENV=uat DRS_ENV=uat playwright test --project=integration tests/integration --workers=1",

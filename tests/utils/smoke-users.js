@@ -94,7 +94,13 @@ function inspectSmokeUsers(profile, roleKeys, { env = environmentKey() } = {}) {
     // would overwrite the record and, for a flow role, re-point every mapped
     // work-area row to the new user — a lot of destruction in response to what
     // is really a configuration mistake. Someone should look at it.
-    if (entry.profileKey !== profile.key) {
+    // `usersKey` (2026-10-21): the onboarding suite's per-catalog-version profiles
+    // have their OWN key (own trackers) but share the project's users, recorded
+    // under the project profile's key. Every other profile has no usersKey.
+    // `usersKeys[role]` (2026-10-21): one role taken from another profile - the
+    // version chains share the project's PM, whose WAM row is the single-assignee
+    // Work Location.
+    if (entry.profileKey !== ((profile.usersKeys && profile.usersKeys[roleKey]) || profile.usersKey || profile.key)) {
       broken.push(
         `${roleKey} (prefix "${prefix}"): recorded for profile "${entry.profileKey}", ` +
         `not "${profile.key}" — two profiles are sharing a prefix, which is a config bug`

@@ -235,7 +235,9 @@ class DrsProjectPage {
 //
 // `extraAreas` (app owner, 2026-10-15): further Work Areas with their own section
 // count - the catalog-version areas (drs-data.js versionAreas), one per version.
-function buildLocationCsv({ cluster, site, workLocation, workAreas = 2, sectionsPerArea = 300, extraAreas = [] }) {
+// `linearAreas: false` leaves out the Culvert-01 / Drain-01 / Road-01 areas (the
+// onboarding suite's project has only its WA01.. areas).
+function buildLocationCsv({ cluster, site, workLocation, workAreas = 2, sectionsPerArea = 300, extraAreas = [], linearAreas = true }) {
   const rows = ['cluster,site,worklocation,workarea,worksection,worksection_type'];
   const add = (wa, ws, type) => rows.push([cluster, site, workLocation, wa, ws, type].join(','));
   const pad = (n) => String(n).padStart(2, '0');
@@ -245,9 +247,23 @@ function buildLocationCsv({ cluster, site, workLocation, workAreas = 2, sections
     for (let i = 0; i < tables; i += 1) add(wa, `R${pad(Math.floor(i / 12) + 1)}-T${pad((i % 12) + 1)}`, 'TABLE');
     for (let i = 1; i <= inverters; i += 1) add(wa, `I${pad(i)}`, 'INVERTER');
   };
+  // A SECTION PLAN (onboarding suite, app owner 2026-10-19): { table, inverter,
+  // road, drain, cable, culvert } - TABLE "R<row>-T<table>" (rows of 12), INVERTER
+  // "I<nn>", and the linear types each "0-100m", "100-200m" ... The onboarding
+  // layout follows production: ROAD in Road<nn>, DRAIN in Drain<nn>, CULVERT in
+  // Culvert<nn>, CABLE in WA<nn>. Keep at most one linear type per plan: the import
+  // rejects two same-named sections of different types in one area
+  // (DUPLICATE_IN_PAYLOAD - observed, possibly a DRS bug, under app-owner review).
+  const addPlan = (wa, plan) => {
+    for (let i = 0; i < (plan.table || 0); i += 1) add(wa, `R${pad(Math.floor(i / 12) + 1)}-T${pad((i % 12) + 1)}`, 'TABLE');
+    for (let i = 1; i <= (plan.inverter || 0); i += 1) add(wa, `I${pad(i)}`, 'INVERTER');
+    for (const [key, type] of [['road', 'ROAD'], ['drain', 'DRAIN'], ['cable', 'CABLE'], ['culvert', 'CULVERT']]) {
+      for (let s = 0; s < (plan[key] || 0); s += 1) add(wa, `${s * 100}-${(s + 1) * 100}m`, type);
+    }
+  };
   for (let b = 1; b <= workAreas; b += 1) addBlock(`BL${pad(b)}`, sectionsPerArea);
-  for (const { name, sections } of extraAreas) addBlock(name, sections);
-  for (const [wa, type] of [['Culvert-01', 'CULVERT'], ['Drain-01', 'DRAIN'], ['Road-01', 'ROAD']]) {
+  for (const { name, sections, plan } of extraAreas) (plan ? addPlan(name, plan) : addBlock(name, sections));
+  for (const [wa, type] of linearAreas ? [['Culvert-01', 'CULVERT'], ['Drain-01', 'DRAIN'], ['Road-01', 'ROAD']] : []) {
     for (let s = 0; s < 10; s += 1) add(wa, `${s * 100}-${(s + 1) * 100}`, type);
   }
   return `${rows.join('\n')}\n`;

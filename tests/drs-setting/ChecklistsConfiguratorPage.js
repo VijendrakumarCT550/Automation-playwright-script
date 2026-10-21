@@ -28,14 +28,28 @@ class ChecklistsConfiguratorPage {
   search() { return this.page.getByPlaceholder(/Search by name, serial or SFQP/i).first(); }
 
   // The list card of a checklist: by name, and by SFQP when given (names repeat).
+  // The search is server-side and can take longer than a fixed wait as the list
+  // grows (live 2026-10-21, R6-S2: a checklist made a minute earlier was "not
+  // found" after 2 s), so the list is POLLED for up to 20 s per search term - by
+  // SFQP, then by name.
   async card(name, sfqp) {
-    await this.search().fill(sfqp || name);
-    await this.page.waitForTimeout(2000);
     const cards = this.page.getByRole('button').filter({ hasText: name });
-    const n = await cards.count();
-    for (let i = 0; i < n; i += 1) {
-      const lines = (await cards.nth(i).innerText()).split('\n').map((t) => t.trim()).filter(Boolean);
-      if (lines[0] === name && (!sfqp || lines[1] === sfqp)) return { card: cards.nth(i), sfqp: lines[1] };
+    const find = async () => {
+      const n = await cards.count();
+      for (let i = 0; i < n; i += 1) {
+        const lines = (await cards.nth(i).innerText().catch(() => '')).split('\n').map((t) => t.trim()).filter(Boolean);
+        if (lines[0] === name && (!sfqp || lines[1] === sfqp)) return { card: cards.nth(i), sfqp: lines[1] };
+      }
+      return null;
+    };
+    for (const term of [...new Set([sfqp || name, name])]) {
+      await this.search().fill(term);
+      const started = Date.now();
+      while (Date.now() - started < 20000) {
+        await this.page.waitForTimeout(1000);
+        const hit = await find();
+        if (hit) return hit;
+      }
     }
     return null;
   }

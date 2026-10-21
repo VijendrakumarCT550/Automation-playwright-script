@@ -241,6 +241,14 @@ class PackagesConfiguratorPage {
 
   async has(name) { return this.tree(name).isVisible().catch(() => false); }
 
+  // has() WITH a wait, for verification, where the node is expected to exist:
+  // a just-expanded parent's children can render a moment late, and isVisible
+  // never polls (live 2026-10-19, R2-S1: a locked version read QE01.1.1's three
+  // checkpoints as missing, 19/19 just before the lock).
+  async hasSoon(name, timeout = 5000) {
+    return this.tree(name).waitFor({ state: 'visible', timeout }).then(() => true, () => false);
+  }
+
   // Children are in the DOM only while the parent is expanded (gotcha 11). A
   // collapsed parent makes existing children look missing and CREATES DUPLICATES,
   // so every existence check goes through expand() first.
@@ -288,20 +296,40 @@ class PackagesConfiguratorPage {
   // toast alone is not enough: live 2026-10-15 the "Sub-Activity created" toast never
   // showed while the previous "Inspection Point created" one was still up, yet the
   // sub-activity WAS created (its edit form was open, Save disabled).
+  // Proof of a create is the NODE IN THE TREE (when the name is known), not the
+  // "… created" toast: a toast from the PREVIOUS create can still be showing, and
+  // once let a failed create pass (live 2026-10-20, R3-A1: DRS answered "Save failed
+  // - please try again" for PE12.1.2 Checkpoint a; the stale toast read as success
+  // and the next step could not find the node). "Save failed" is DRS's transient
+  // error: dismissed and Create clicked again, three tries in all.
   async submitCreate(panel, toastRe, name) {
-    await panel.getByRole('button', { name: 'Create' }).click();
+    const failed = this.page.getByText(/Save failed/i).first();
     const toast = this.page.getByText(toastRe).first();
-    const created = name
-      ? this.page.getByRole('tabpanel').filter({ has: this.page.getByRole('button', { name: 'Save', exact: true }) })
-        .getByRole('textbox', { name: /Name\*?$/ }).first()
-      : null;
-    await expect.poll(async () => {
-      if (await toast.isVisible().catch(() => false)) return true;
-      if (!created) return false;
-      const formShowsIt = (await created.inputValue().catch(() => '')) === name;
-      return formShowsIt && (await this.has(name));
-    }, { timeout: 20000, message: `"${name || toastRe}" was not created` }).toBe(true);
-    await this.page.waitForTimeout(1500); // gotcha 6: the tree re-renders
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      await panel.getByRole('button', { name: 'Create' }).click();
+      const outcome = await expect.poll(async () => {
+        if (await failed.isVisible().catch(() => false)) return 'failed';
+        if (name) return (await this.has(name)) ? 'created' : 'pending';
+        return (await toast.isVisible().catch(() => false)) ? 'created' : 'pending';
+      }, { timeout: 20000 }).not.toBe('pending').then(async () => {
+        if (await failed.isVisible().catch(() => false)) return 'failed';
+        return 'created';
+      }, () => 'pending');
+      if (outcome === 'created') {
+        await this.page.waitForTimeout(1500); // gotcha 6: the tree re-renders
+        return;
+      }
+      if (outcome === 'failed') {
+        console.log(`    ${name || toastRe}: DRS answered "Save failed" (try ${attempt}/3)`);
+        await this.page.getByRole('button', { name: /close|dismiss/i }).first().click({ timeout: 2000 }).catch(() => {});
+        await failed.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+        // A failed save can still have written the node - check before clicking again.
+        if (name && (await this.hasSoon(name, 3000))) { await this.page.waitForTimeout(1500); return; }
+        continue;
+      }
+      break;
+    }
+    throw new Error(`"${name || toastRe}" was not created${(await failed.isVisible().catch(() => false)) ? ' - DRS keeps answering "Save failed"' : ''}`);
   }
 
   // A Radix/Ark-style select that has a placeholder and no useful accessible name.
@@ -427,6 +455,68 @@ class PackagesConfiguratorPage {
 
   // Does the point's "Must be completed first" list hold `name`? (The tree is not
   // in the tab panel, so a name found in the panel is the dependency, not the node.)
+  // REMOVES the dependency of `cpName` on `prevName` (onboarding suite, second
+  // draft: the first draft's dependencies are taken off again). The listed
+  // dependency is a row holding "<serial> — <prevName>" and a remove button; click
+  // it, "Save dependencies", and prove the row is gone. Idempotent.
+  async removeDependency(cpName, prevName) {
+    await this.select(cpName);
+    const edit = this.editPanel();
+    await edit.getByText('Must be completed first', { exact: true }).first().scrollIntoViewIfNeeded();
+    if (!(await this.hasDependency(edit, prevName, 4000))) return false;
+    const removed = await edit.evaluate((root, prev) => {
+      const re = new RegExp(`(^|— )${prev.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+      const label = [...root.querySelectorAll('*')].find((el) => !el.closest('[role="option"], [role="listbox"]')
+        && [...el.childNodes].some((n) => n.nodeType === 3 && re.test(n.textContent.trim())));
+      if (!label) return 'no row';
+      let row = label;
+      while (row && row !== root && !row.querySelector('button')) row = row.parentElement;
+      const btn = row && row !== root && row.querySelector('button');
+      if (!btn) return 'no button';
+      btn.click();
+      return 'clicked';
+    }, prevName);
+    if (removed !== 'clicked') throw new Error(`${cpName}: could not remove the dependency on ${prevName} (${removed})`);
+    await this.page.waitForTimeout(500);
+    await edit.getByRole('button', { name: 'Save dependencies' }).click();
+    await expect(edit.getByText(/not saved yet/i)).toHaveCount(0, { timeout: 15000 });
+    // RE-SELECTED, then POLLED. Live 2026-10-19: right after the save the panel still
+    // showed the removed name somewhere for a while (twice: once for seconds, once
+    // for >15 s), while a fresh load of the same point read "No preceding inspection
+    // points" and matched nothing (inspection round 23). Re-selecting the point
+    // re-reads it the way a fresh load does.
+    await this.page.waitForTimeout(800);
+    await this.select(cpName);
+    await expect.poll(() => this.hasDependency(this.editPanel(), prevName, 500), {
+      timeout: 15000, message: `${cpName}: dependency on ${prevName} still shown after removing it`,
+    }).toBe(false);
+    return true;
+  }
+
+  // Brings an EXISTING code's dependencies from one plan to another (pc-data
+  // DEPENDENCY_PLANS): removes what `from` had and `to` does not, adds what `to` has.
+  async reconcileDependencies(L, from, to) {
+    const before = buildTree(L, { dependencies: from });
+    const after = buildTree(L, { dependencies: to });
+    for (const [ai, act] of after.activities.entries()) {
+      for (const [si, sub] of act.subActivities.entries()) {
+        await this.expand(sub.name).catch(() => {});
+        for (const [ci, cp] of sub.checkpoints.entries()) {
+          const was = before.activities[ai].subActivities[si].checkpoints[ci].after;
+          if (was && was !== cp.after) await this.removeDependency(cp.name, was);
+          if (cp.after) { await this.select(cp.name); await this.ensureDependency(cp); }
+        }
+      }
+    }
+  }
+
+  // "No preceding inspection points. This one can start at any time." - a point
+  // with no dependency at all (strict verification of a plan).
+  async hasNoDependency(panel, timeout = 5000) {
+    return panel.getByText(/No preceding inspection points/i).first().waitFor({ state: 'visible', timeout })
+      .then(() => true).catch(() => false);
+  }
+
   // A listed dependency carries its serial and path ("L.1.1.1 — PC03.1.1 Checkpoint a"
   // …), so the match is on " — <name>" anywhere in the text, and never on the
   // combobox (an input's value is not text) nor on an open option (excluded).
@@ -498,21 +588,26 @@ class PackagesConfiguratorPage {
     await this.expand(pkg);
     // No sub-package means none of its 18 descendants exist either - report the
     // whole tree as missing so the count reads 0/19, not a misleading 18/19.
-    if (!(await this.has(t.name))) return { missing: expectedNames(L), wrongChecklist, missingDependency };
+    if (!(await this.hasSoon(t.name))) return { missing: expectedNames(L), wrongChecklist, missingDependency };
     await this.expand(t.name);
     for (const a of t.activities) {
-      if (!(await this.has(a.name))) { missing.push(a.name); continue; }
+      if (!(await this.hasSoon(a.name))) { missing.push(a.name); continue; }
       await this.expand(a.name);
       for (const s of a.subActivities) {
-        if (!(await this.has(s.name))) { missing.push(s.name); continue; }
+        if (!(await this.hasSoon(s.name))) { missing.push(s.name); continue; }
         await this.expand(s.name);
         for (const c of s.checkpoints) {
-          if (!(await this.has(c.name))) { missing.push(c.name); continue; }
+          if (!(await this.hasSoon(c.name))) { missing.push(c.name); continue; }
           await this.select(c.name);
           // Locked versions open read-only (gotcha 18), so the panel is not always an edit form.
           const panel = this.page.getByRole('tabpanel').first();
           if (!(await this.hasChecklistChip(panel, c.checklist))) wrongChecklist.push(`${c.name} (expected ${c.checklist.chip})`);
           if (c.after && !(await this.hasDependency(panel, c.after))) missingDependency.push(`${c.name} (after ${c.after})`);
+          // A dependency PLAN is checked strictly: a point it gives none must have none
+          // (that is what proves a removal stuck).
+          if (!c.after && opts.dependencies && opts.dependencies !== true && !(await this.hasNoDependency(panel))) {
+            missingDependency.push(`${c.name} (should have NO dependency)`);
+          }
         }
       }
     }

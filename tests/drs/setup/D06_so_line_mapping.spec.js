@@ -36,13 +36,19 @@ const DATA = require('../drs-data');
 const ENV = drsEnv();
 const OUT = path.resolve(__dirname, '../../../drs-explore/stage-d06');
 
-test.describe.configure({ mode: 'serial' });
 
-let context, page, dump, run;
+// ONE TEST PER SO (2026-10-21), so the onboarding runner can map the Civil and
+// Electrical SOs in parallel workers (npm run drs:setup keeps --workers=1). The
+// project is resolved at load time; each SO records its mapping atomically and D9
+// is marked once every SO is in.
+test.describe.configure({ mode: 'parallel' });
+const run = state.targetProject(ENV.key, 'D9');
+DATA.bindProject(run); // WA01-style areas: versions from the project's areaVersions
+
+let context, page, dump;
 
 test.beforeAll(async ({ browser }) => {
   test.setTimeout(5 * 60 * 1000);
-  run = state.targetProject(ENV.key, 'D9');
   expect(run, `no unfinished project on ${ENV.key}`).toBeTruthy();
   expect(run.stagesDone, `${run.name}: SO Configuration not done — run D05 first`).toContain('D8');
   context = await browser.newContext({ viewport: { width: 1700, height: 1100 } });
@@ -134,11 +140,13 @@ function serviceOrders() {
     lines: (run.serviceOrder.lines || []).map((l) => ({ ...l, version: l.version || DATA.catalogOptionLabel })) }];
 }
 
-test('D9. map every SO line to its planned sub-activities (max 2, one catalog version)', async () => {
-  test.setTimeout(30 * 60 * 1000);
-  const record = {};
+const SOS = run ? serviceOrders() : [];
+if (!run) test('D9. SO Line Mapping', () => { throw new Error(`no unfinished project on ${ENV.key}`); });
 
-  for (const so of serviceOrders()) {
+for (const so of SOS) {
+  test(`D9. ${so.package} SO ${so.number}: every line holds its planned sub-activities (max 2, one catalog version)`, async () => {
+    test.setTimeout(30 * 60 * 1000);
+    const record = {};
     console.log(`\n  SO ${so.number} (${so.package}): ${so.lines.length} line(s)`);
     await openLineMapping(so.number);
     let added = 0;
@@ -216,8 +224,10 @@ test('D9. map every SO line to its planned sub-activities (max 2, one catalog ve
       expect(res.status(), `${so.package} SO line mapping save answered ${res.status()}: ${body.slice(0, 300)}`).toBeLessThan(300);
     }
 
-    // Proof after a reload: each line holds exactly what it should, of its version.
-    await openLineMapping(so.number);
+    // Proof: each line holds exactly what it should, of its version - re-read
+    // from DRS after a Save (the one reload); with nothing to change, the cards
+    // just read are current.
+    if (added) await openLineMapping(so.number);
     await dump(`so-${so.package.toLowerCase()}-after-reload`);
     record[so.package] = { number: so.number, lines: {} };
     for (const line of so.lines) {
@@ -236,11 +246,14 @@ test('D9. map every SO line to its planned sub-activities (max 2, one catalog ve
       }
       expect(after.length, `${so.package} line ${key} is empty after save`).toBeGreaterThan(0);
       record[so.package].lines[key] = { version: line.version, subActivities: after };
-      console.log(`    ${key} after reload: ${after.length} chip(s) of ${line.version}`);
+      console.log(`    ${key}${added ? ' after reload' : ''}: ${after.length} chip(s) of ${line.version}`);
     }
-  }
-  await expect(page.getByText('No sub activities mapped')).toHaveCount(0);
+    await expect(page.getByText('No sub activities mapped')).toHaveCount(0);
 
-  state.upsertProject(ENV.key, run.tag, { soLineMapping: record });
-  state.markStageDone(ENV.key, run.tag, 'D9');
-});
+    // Recorded atomically (parallel workers); D9 is done once every SO is in.
+    state.mutateProject(ENV.key, run.tag, (p) => {
+      p.soLineMapping = { ...(p.soLineMapping || {}), ...record };
+      if (SOS.every((x) => p.soLineMapping[x.package])) p.stagesDone = [...new Set([...(p.stagesDone || []), 'D9'])];
+    });
+  });
+}

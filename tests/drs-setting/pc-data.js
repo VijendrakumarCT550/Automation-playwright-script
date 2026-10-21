@@ -57,8 +57,10 @@ const forkMark = (of) => ({ text: `Question no 7 (fork of ${of})`, type: 'Text',
 // RE/QA/SFQP/C/124, FORMAT QA-C/F-10 - like this it works"), in a 9xx range keyed by
 // the build's counter so ours stand out: PC03 -> SERIAL C_93_1, SFQP RE/QA/SFQP/C/931,
 // FORMAT QA-C/F-931. (The first try, "AUTO/SFQP/PC03/1" etc., got the 500 too.)
-function siteChecklists(code) {
-  const name = (n) => `AUTO ${code} Checklist ${n}`;
+// `prefix` (onboarding suite, app owner 2026-10-19): the run counter goes in the
+// name - "AUTO R1 PC05 Checklist 1" - so every run's checklists are told apart.
+function siteChecklists(code, prefix = '') {
+  const name = (n) => `AUTO ${prefix ? `${prefix} ` : ''}${code} Checklist ${n}`;
   const k = `9${Number(String(code).replace(/\D/g, ''))}`; // PC03 -> "93"
   return [
     { n: 1, name: name(1), kind: 'new', serial: `C_${k}_1`, sfqp: `RE/QA/SFQP/C/${k}1`, format: `QA-C/F-${k}1`, questions: QUESTIONS },
@@ -69,6 +71,19 @@ function siteChecklists(code) {
     { n: 6, name: name(6), kind: 'fork', from: { n: 3 }, addQuestions: [forkMark(name(3))] },
   ];
 }
+
+// DEPENDENCY PLANS (onboarding suite, app owner 2026-10-19) - Civil P-code only,
+// in BOTH chains (All sites and site):
+//   FIRST draft, its new code:   PCxx.1.1  b <- a      PCxx.1.2  b <- a, c <- b
+//   SECOND draft (from the first's locked version):
+//     the INHERITED PCxx: every first-draft dependency REMOVED, and
+//                         PCxx.2.1 / PCxx.2.2  b <- a, c <- b ADDED
+//     its own new code:   the first-draft plan.
+// The Pulse side then shows the removal AND the addition synced.
+const DEPENDENCY_PLANS = {
+  first: { '1.1': ['b'], '1.2': ['b', 'c'] },
+  secondInherited: { '2.1': ['b', 'c'], '2.2': ['b', 'c'] },
+};
 
 // Which of the six goes on which checkpoint: sub-activity "<a>.<s>" -> letter -> n.
 const SITE_CHECKLIST_BINDING = { '2.1': { a: 1, b: 2, c: 3 }, '2.2': { a: 4, b: 5, c: 6 } };
@@ -84,7 +99,9 @@ const checklistRef = (made) => ({ search: made.name, label: `${made.name} — ${
 //   checklists: { 1: { name, sfqp }, ... 6: {...} } - the made checklists; the
 //               .2.1 / .2.2 checkpoints bind them (SITE_CHECKLIST_BINDING).
 //   dependencies: true - checkpoint b gets `after` = a's name, c gets b's
-//               ("Must be completed first"; the a -> b -> c chain).
+//               ("Must be completed first"; the a -> b -> c chain), everywhere; OR a
+//               PLAN { '<a>.<s>': ['b', 'c'] } - only the listed checkpoints wait
+//               for the one before them (DEPENDENCY_PLANS below).
 function buildTree(L, opts = {}) {
   return {
     name: `${L} Sub Package`, code: L, letter: L,
@@ -100,7 +117,9 @@ function buildTree(L, opts = {}) {
             description: `${L}.${a}.${s} checkpoint ${c}`,
             type: 'question', optional: false, checklistRequired: true,
             checklist: own ? checklistRef(opts.checklists[own]) : CHECKLIST[c],
-            ...(opts.dependencies && i > 0 ? { after: `${L}.${a}.${s} Checkpoint ${all[i - 1]}` } : {}),
+            ...(i > 0 && (opts.dependencies === true
+              || (opts.dependencies && (opts.dependencies[`${a}.${s}`] || []).includes(c)))
+              ? { after: `${L}.${a}.${s} Checkpoint ${all[i - 1]}` } : {}),
           };
         }),
       })),
@@ -196,7 +215,7 @@ function selectedPackages(env = process.env) {
 }
 
 module.exports = {
-  QUESTIONS, MIXED_QUESTIONS, SAFE_QUESTIONS, siteChecklists, SITE_CHECKLIST_BINDING, checklistRef,
+  QUESTIONS, MIXED_QUESTIONS, SAFE_QUESTIONS, siteChecklists, DEPENDENCY_PLANS, SITE_CHECKLIST_BINDING, checklistRef,
   RUNS, CHECKLIST, PACKAGES, buildTree, expectedNames, versionPrefix, selectedRuns, selectedPackages, mode,
   assertLetters, codesFor, highestCounter,
 };

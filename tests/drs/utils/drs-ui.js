@@ -104,7 +104,9 @@ async function chooseOption(page, combo, text) {
   const escaped = String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const option = page.locator('[role="option"]:visible')
     .filter({ hasText: new RegExp(`^\\s*${escaped}\\s*$`) }).first();
-  if (!(await option.isVisible().catch(() => false))) {
+  // waitFor, not isVisible (which never polls): a list can still be loading
+  // (D05, 2026-10-19: Work Location "not offered" on the 11th open of the page).
+  if (!(await option.waitFor({ state: 'visible', timeout: 8000 }).then(() => true, () => false))) {
     await page.keyboard.press('Escape').catch(() => {});
     return false;
   }

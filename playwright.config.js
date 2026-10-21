@@ -287,13 +287,16 @@ const SMOKE_VIEWPORTS = [
 // incrementally without the config referencing files that aren't written yet — a
 // missing testMatch would otherwise produce a project that silently passes with
 // zero tests and lets later stages run on nothing.
-function smokeChain(chainName, profileKey, extraUse = {}) {
+// `opts.only` (2026-10-21): emit ONLY the stages with these ids - the onboarding
+// suite's per-catalog-version RFI / NC chains. Every existing chain passes none.
+function smokeChain(chainName, profileKey, extraUse = {}, opts = {}) {
   const projects = [];
   let previous = null;
 
   const matcher = (file) =>
     new RegExp(`[\\\\/]smoke[\\\\/]${file.replace(/\./g, '\\.')}$`);
   const exists = (file) => fs.existsSync(pathMod.join(__dirname, 'tests', 'smoke', file));
+  const included = (stage) => !opts.only || opts.only.includes(stage.id);
 
   // NO `dependencies` field, and this is the single most consequential line in
   // this file — found live 2026-09-05, the hard way.
@@ -383,7 +386,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // Setup: strictly sequential, each depending on the previous.
   for (const stage of SMOKE_SETUP_STAGES) {
     if (stage.requiresFeatureGround && !getProfile(profileKey).featureGround) continue;
-    if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
+    if (exists(stage.file) && included(stage)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
   // Everything after setup hangs off the LAST setup stage, not off each other.
@@ -398,7 +401,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // non-setup stage, so it is an independent leaf: if draft-autosave fails, the
   // flows still run and report on their own merits.
   for (const stage of SMOKE_PRE_FLOW_STAGES) {
-    if (exists(stage.file)) pushLeaf(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
+    if (exists(stage.file) && included(stage)) pushLeaf(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
   // STAGE outer, VIEWPORT inner, so the emitted order is
@@ -408,7 +411,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // sequence the app owner specified.
   for (const stage of SMOKE_FLOW_STAGES) {
     for (const viewport of viewports) {
-      if (exists(stage.file)) {
+      if (exists(stage.file) && included(stage)) {
         pushLeaf(`smoke-${chainName}-${stage.id}-${viewport.id}`, stage.file, viewport.device);
       }
     }
@@ -442,7 +445,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // dedicated regardless, now for real isolation rather than a misdiagnosed one.
   previous = setupTail;
   for (const stage of SMOKE_TAIL_STAGES) {
-    if (exists(stage.file)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
+    if (exists(stage.file) && included(stage)) push(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
   }
 
   // FEATURE-DEPTH stages (SM10+): independent sibling leaves off setupTail, so a
@@ -455,7 +458,7 @@ function smokeChain(chainName, profileKey, extraUse = {}) {
   // emitting stages that would fail in beforeAll.
   if (getProfile(profileKey).featureGround) {
     for (const stage of SMOKE_FEATURE_STAGES) {
-      if (exists(stage.file)) {
+      if (exists(stage.file) && included(stage)) {
         pushLeaf(`smoke-${chainName}-${stage.id}`, stage.file, desktop);
       }
     }
@@ -486,6 +489,13 @@ const WIND_CHAIN = smokeChain('wind', 'wind-e2e');
 // config is untouched (currentDrsSmokeKey never throws).
 const DRS_SMOKE_KEY = require('./tests/integration/drs-smoke-profile').currentDrsSmokeKey();
 const DRS_CHAIN = DRS_SMOKE_KEY ? smokeChain('drs', DRS_SMOKE_KEY) : [];
+// THE PER-CATALOG-VERSION RFI / NC CHAINS (onboarding suite, 2026-10-21): for an
+// onboarding project named by DRS_PROJECT_TAG, one chain per catalog version other
+// than All sites v1 - the smoke RFI / NC stages only, on that version's own codes
+// and SM<nn>-01..09 ground (drs-smoke-profile.js buildVersionSmokeProfile), as
+// `smoke-drsv<nn>-*`. Empty for any other project, so nothing else changes.
+const DRS_VERSION_CHAINS = require('./tests/integration/drs-smoke-profile').currentVersionSmokeChains()
+  .flatMap((c) => smokeChain(c.chain, c.key, {}, { only: c.stageIds }));
 
 module.exports = defineConfig({
   testDir: './tests',
@@ -545,6 +555,9 @@ module.exports = defineConfig({
         // DRS Setting (Package Configurator catalog specs, tests/drs-setting/):
         // no specs yet; ignored here so none can ever run unordered under `chromium`.
         /[\\/]drs-setting[\\/]/,
+        // The onboarding suite (tests/onboarding/) writes permanent DRS records;
+        // it runs only through `npm run onboarding:uat`.
+        /[\\/]onboarding[\\/]/,
       ],
     },
 
@@ -561,6 +574,16 @@ module.exports = defineConfig({
     // (tests/drs-setting, RUNBOOK.md). Same DRS host and
     // login as `drs`; its own project because it edits the CATALOG, not a project.
     // PC_MODE=verify (default) is read-only; PC_MODE=build creates nodes.
+    // The ONBOARDING suite (tests/onboarding, docs/drs-onboarding-suite.md): every
+    // run builds six catalog versions and onboards a fresh project with WA01..WA06
+    // mapped to them. Same DRS host and login as `drs`; driven in order by
+    // tests/utils/run-onboarding.js (npm run onboarding:uat).
+    {
+      name: 'onboarding',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /[\\/]onboarding[\\/].*\.spec\.js$/,
+    },
+
     {
       name: 'drs-setting',
       use: { ...devices['Desktop Chrome'] },
@@ -637,6 +660,7 @@ module.exports = defineConfig({
     ...WIND_CHAIN,
     ...SOLAR_CHAIN,
     ...DRS_CHAIN,
+    ...DRS_VERSION_CHAINS,
   ],
   outputDir: 'test-results/',
 });

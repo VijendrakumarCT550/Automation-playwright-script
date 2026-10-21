@@ -518,7 +518,9 @@ class BasePage {
     // false and this returned a false "0 attachments" even though the
     // photo was there and visible moments later. waitFor() is what
     // actually polls.
-    const appeared = await label.waitFor({ state: 'visible', timeout: 10000 }).then(() => true).catch(() => false);
+    // 25 s, not 10 (2026-10-21): with the onboarding suite's 3 parallel lanes the
+    // review page renders slower, and a QI review read a false "0 attachments".
+    const appeared = await label.waitFor({ state: 'visible', timeout: 25000 }).then(() => true).catch(() => false);
     if (!appeared) return 0;
 
     const container = label.locator('xpath=..');
@@ -529,7 +531,7 @@ class BasePage {
     // and rendered correctly moments later. Poll briefly for the image
     // rather than counting once; a real "no attachment" case still
     // legitimately returns 0 after the timeout elapses.
-    await container.locator('img').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    await container.locator('img').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     return await container.locator('img').count();
   }
 

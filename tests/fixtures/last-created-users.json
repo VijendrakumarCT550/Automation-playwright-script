@@ -470,334 +470,784 @@
         "vendor": null
       },
       "EESM": {
-        "name": "EESMwhoUser204",
-        "email": "EESMwhoUser204@adani.com",
-        "phone": "6956240330",
-        "number": 204,
+        "name": "EESMubnUser233",
+        "email": "EESMubnUser233@adani.com",
+        "phone": "8585768981",
+        "number": 233,
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "profileKey": "drs-solar-26092026-FQQ",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-26092026-FQQ"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "QISM": {
-        "name": "QISMphpUser208",
-        "email": "QISMphpUser208@adani.com",
-        "phone": "6988342741",
-        "number": 208,
+        "name": "QISMovhUser233",
+        "email": "QISMovhUser233@adani.com",
+        "phone": "9259463458",
+        "number": 233,
         "role": "Quality Inspector",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "ELSM": {
-        "name": "ELSMngoUser208",
-        "email": "ELSMngoUser208@adani.com",
-        "phone": "6891081991",
-        "number": 208,
+        "name": "ELSMsqvUser233",
+        "email": "ELSMsqvUser233@adani.com",
+        "phone": "7128376379",
+        "number": 233,
         "role": "Execution Lead",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "QLSM": {
-        "name": "QLSMgugUser208",
-        "email": "QLSMgugUser208@adani.com",
-        "phone": "8084907582",
-        "number": 208,
+        "name": "QLSMbuiUser233",
+        "email": "QLSMbuiUser233@adani.com",
+        "phone": "7710273677",
+        "number": 233,
         "role": "Quality Lead",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "PMSM": {
-        "name": "PMSMfmzUser208",
-        "email": "PMSMfmzUser208@adani.com",
-        "phone": "9257797734",
-        "number": 208,
+        "name": "PMSMjmyUser233",
+        "email": "PMSMjmyUser233@adani.com",
+        "phone": "6806584571",
+        "number": 233,
         "role": "Project Manager",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "PADSM": {
-        "name": "PADSMplaUser208",
-        "email": "PADSMplaUser208@adani.com",
-        "phone": "6375224595",
-        "number": 208,
+        "name": "PADSMnlvUser233",
+        "email": "PADSMnlvUser233@adani.com",
+        "phone": "9548616072",
+        "number": 233,
         "role": "Plot Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "SADSM": {
-        "name": "SADSMnojUser208",
-        "email": "SADSMnojUser208@adani.com",
-        "phone": "9067813218",
-        "number": 208,
+        "name": "SADSMkcfUser233",
+        "email": "SADSMkcfUser233@adani.com",
+        "phone": "7974005050",
+        "number": 233,
         "role": "Site Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "CADSM": {
-        "name": "CADSMuhzUser208",
-        "email": "CADSMuhzUser208@adani.com",
-        "phone": "9253297788",
-        "number": 208,
+        "name": "CADSMhalUser233",
+        "email": "CADSMhalUser233@adani.com",
+        "phone": "9482261163",
+        "number": 233,
         "role": "Cluster Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "ADMSM": {
-        "name": "ADMSMomkUser208",
-        "email": "ADMSMomkUser208@adani.com",
-        "phone": "9016540904",
-        "number": 208,
+        "name": "ADMSMrewUser233",
+        "email": "ADMSMrewUser233@adani.com",
+        "phone": "7700908709",
+        "number": 233,
         "role": "Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "CIDRS": {
-        "name": "CIDRScdgUser225",
-        "email": "CIDRScdgUser225@adani.com",
-        "phone": "6703446676",
-        "number": 225,
+        "name": "CIDRSgsxUser234",
+        "email": "CIDRSgsxUser234@adani.com",
+        "phone": "8492598623",
+        "number": 234,
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": "AUTOMATION SERVICE CONTRACTOR"
       },
       "EEDRS": {
-        "name": "EEDRSuejUser225",
-        "email": "EEDRSuejUser225@adani.com",
-        "phone": "7863833938",
-        "number": 225,
+        "name": "EEDRSqvmUser234",
+        "email": "EEDRSqvmUser234@adani.com",
+        "phone": "9897589663",
+        "number": 234,
         "role": "Execution Engineer",
         "userType": "AGEL",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "QIDRS": {
-        "name": "QIDRSmuoUser225",
-        "email": "QIDRSmuoUser225@adani.com",
-        "phone": "9840785320",
-        "number": 225,
+        "name": "QIDRSowbUser234",
+        "email": "QIDRSowbUser234@adani.com",
+        "phone": "7793468419",
+        "number": 234,
         "role": "Quality Inspector",
         "userType": "AGEL",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "CMDRS": {
-        "name": "CMDRSvsvUser206",
-        "email": "CMDRSvsvUser206@adani.com",
-        "phone": "7985065793",
-        "number": 206,
+        "name": "CMDRSezjUser234",
+        "email": "CMDRSezjUser234@adani.com",
+        "phone": "8999551414",
+        "number": 234,
         "role": "Contractor Manager",
         "userType": "VENDOR",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": "AUTOMATION SERVICE CONTRACTOR"
       },
       "ELDRS": {
-        "name": "ELDRShyqUser225",
-        "email": "ELDRShyqUser225@adani.com",
-        "phone": "9473771408",
-        "number": 225,
+        "name": "ELDRSyffUser234",
+        "email": "ELDRSyffUser234@adani.com",
+        "phone": "7845394783",
+        "number": 234,
         "role": "Execution Lead",
         "userType": "AGEL",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "QLDRS": {
-        "name": "QLDRSzvtUser225",
-        "email": "QLDRSzvtUser225@adani.com",
-        "phone": "6458794992",
-        "number": 225,
+        "name": "QLDRSpguUser234",
+        "email": "QLDRSpguUser234@adani.com",
+        "phone": "9325436272",
+        "number": 234,
         "role": "Quality Lead",
         "userType": "AGEL",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "PMDRS": {
-        "name": "PMDRSddpUser225",
-        "email": "PMDRSddpUser225@adani.com",
-        "phone": "7022586478",
-        "number": 225,
+        "name": "PMDRSxmkUser244",
+        "email": "PMDRSxmkUser244@adani.com",
+        "phone": "9017987960",
+        "number": 244,
         "role": "Project Manager",
         "userType": "AGEL",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "PADDRS": {
-        "name": "PADDRSqgrUser206",
-        "email": "PADDRSqgrUser206@adani.com",
-        "phone": "6439355982",
-        "number": 206,
+        "name": "PADDRSeddUser234",
+        "email": "PADDRSeddUser234@adani.com",
+        "phone": "6681792473",
+        "number": 234,
         "role": "Plot Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "SADDRS": {
-        "name": "SADDRSjegUser206",
-        "email": "SADDRSjegUser206@adani.com",
-        "phone": "9247245240",
-        "number": 206,
+        "name": "SADDRSnlaUser234",
+        "email": "SADDRSnlaUser234@adani.com",
+        "phone": "9016992751",
+        "number": 234,
         "role": "Site Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "CADDRS": {
-        "name": "CADDRSgqnUser206",
-        "email": "CADDRSgqnUser206@adani.com",
-        "phone": "6245474227",
-        "number": 206,
+        "name": "CADDRSjxzUser234",
+        "email": "CADDRSjxzUser234@adani.com",
+        "phone": "7656066590",
+        "number": 234,
         "role": "Cluster Admin",
         "userType": "AGEL",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": null
       },
       "CICSM": {
-        "name": "CICSMfdzUser208",
-        "email": "CICSMfdzUser208@adani.com",
-        "phone": "6375268771",
-        "number": 208,
+        "name": "CICSMszaUser233",
+        "email": "CICSMszaUser233@adani.com",
+        "phone": "8337828212",
+        "number": 233,
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": "AUTOMATION SERVICE CONTRACTOR"
       },
       "CMSM": {
-        "name": "CMSMswrUser208",
-        "email": "CMSMswrUser208@adani.com",
-        "phone": "9070313828",
-        "number": 208,
+        "name": "CMSMmmhUser233",
+        "email": "CMSMmmhUser233@adani.com",
+        "phone": "8340297155",
+        "number": 233,
         "role": "Contractor Manager",
         "userType": "VENDOR",
-        "profileKey": "drs-solar-28092026-LPW",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-28092026-LPW"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": "AUTOMATION SERVICE CONTRACTOR"
       },
       "CIEDRS": {
-        "name": "CIEDRSmbfUser225",
-        "email": "CIEDRSmbfUser225@adani.com",
-        "phone": "6799726638",
-        "number": 225,
+        "name": "CIEDRSgswUser231",
+        "email": "CIEDRSgswUser231@adani.com",
+        "phone": "9106977861",
+        "number": 231,
         "role": "Contractor Incharge",
         "userType": "VENDOR",
-        "profileKey": "drs-solar-15102026-RHY",
+        "profileKey": "drs-solar-21102026-OB6",
         "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
         "projectType": "SOLAR",
         "workLocations": [
-          "AUTO-WL-15102026-RHY"
+          "AUTO-WL-21102026-OB6"
         ],
         "vendor": "AUTOMATION ELECTRICAL CONTRACTOR"
+      },
+      "CIDRSV02": {
+        "name": "CIDRSV02rueUser245",
+        "email": "CIDRSV02rueUser245@adani.com",
+        "phone": "9169861513",
+        "number": 245,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "CIDRSV03": {
+        "name": "CIDRSV03rrqUser243",
+        "email": "CIDRSV03rrqUser243@adani.com",
+        "phone": "7444403316",
+        "number": 243,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "CMDRSV02": {
+        "name": "CMDRSV02dhwUser245",
+        "email": "CMDRSV02dhwUser245@adani.com",
+        "phone": "7899377022",
+        "number": 245,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "CMDRSV04": {
+        "name": "CMDRSV04uhkUser244",
+        "email": "CMDRSV04uhkUser244@adani.com",
+        "phone": "7704527785",
+        "number": 244,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "CMDRSV03": {
+        "name": "CMDRSV03caxUser243",
+        "email": "CMDRSV03caxUser243@adani.com",
+        "phone": "7219424802",
+        "number": 243,
+        "role": "Contractor Manager",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
+      },
+      "EEDRSV02": {
+        "name": "EEDRSV02kgwUser245",
+        "email": "EEDRSV02kgwUser245@adani.com",
+        "phone": "7162696480",
+        "number": 245,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "EEDRSV04": {
+        "name": "EEDRSV04omiUser244",
+        "email": "EEDRSV04omiUser244@adani.com",
+        "phone": "9137254414",
+        "number": 244,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "EEDRSV03": {
+        "name": "EEDRSV03satUser243",
+        "email": "EEDRSV03satUser243@adani.com",
+        "phone": "7001274724",
+        "number": 243,
+        "role": "Execution Engineer",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QIDRSV02": {
+        "name": "QIDRSV02yzsUser245",
+        "email": "QIDRSV02yzsUser245@adani.com",
+        "phone": "7746095185",
+        "number": 245,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QIDRSV04": {
+        "name": "QIDRSV04hyvUser244",
+        "email": "QIDRSV04hyvUser244@adani.com",
+        "phone": "8610823457",
+        "number": 244,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QIDRSV03": {
+        "name": "QIDRSV03pwsUser243",
+        "email": "QIDRSV03pwsUser243@adani.com",
+        "phone": "7027673036",
+        "number": 243,
+        "role": "Quality Inspector",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "ELDRSV02": {
+        "name": "ELDRSV02siwUser245",
+        "email": "ELDRSV02siwUser245@adani.com",
+        "phone": "9856125625",
+        "number": 245,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "ELDRSV04": {
+        "name": "ELDRSV04ayrUser244",
+        "email": "ELDRSV04ayrUser244@adani.com",
+        "phone": "8994476595",
+        "number": 244,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "ELDRSV03": {
+        "name": "ELDRSV03avlUser243",
+        "email": "ELDRSV03avlUser243@adani.com",
+        "phone": "7981639294",
+        "number": 243,
+        "role": "Execution Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QLDRSV02": {
+        "name": "QLDRSV02gvdUser245",
+        "email": "QLDRSV02gvdUser245@adani.com",
+        "phone": "7659120143",
+        "number": 245,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QLDRSV04": {
+        "name": "QLDRSV04wqzUser244",
+        "email": "QLDRSV04wqzUser244@adani.com",
+        "phone": "7946483603",
+        "number": 244,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "QLDRSV03": {
+        "name": "QLDRSV03tyoUser243",
+        "email": "QLDRSV03tyoUser243@adani.com",
+        "phone": "6588265940",
+        "number": 243,
+        "role": "Quality Lead",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PMDRSV02": {
+        "name": "PMDRSV02kkgUser241",
+        "email": "PMDRSV02kkgUser241@adani.com",
+        "phone": "7962890378",
+        "number": 241,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PMDRSV04": {
+        "name": "PMDRSV04kycUser240",
+        "email": "PMDRSV04kycUser240@adani.com",
+        "phone": "8773895638",
+        "number": 240,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PMDRSV03": {
+        "name": "PMDRSV03lpiUser242",
+        "email": "PMDRSV03lpiUser242@adani.com",
+        "phone": "8265470360",
+        "number": 242,
+        "role": "Project Manager",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PADDRSV02": {
+        "name": "PADDRSV02mcoUser245",
+        "email": "PADDRSV02mcoUser245@adani.com",
+        "phone": "8691851816",
+        "number": 245,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PADDRSV04": {
+        "name": "PADDRSV04yqlUser244",
+        "email": "PADDRSV04yqlUser244@adani.com",
+        "phone": "9389903280",
+        "number": 244,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "PADDRSV03": {
+        "name": "PADDRSV03cclUser243",
+        "email": "PADDRSV03cclUser243@adani.com",
+        "phone": "6526317218",
+        "number": 243,
+        "role": "Plot Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "SADDRSV02": {
+        "name": "SADDRSV02jgfUser245",
+        "email": "SADDRSV02jgfUser245@adani.com",
+        "phone": "6869076371",
+        "number": 245,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "SADDRSV04": {
+        "name": "SADDRSV04breUser244",
+        "email": "SADDRSV04breUser244@adani.com",
+        "phone": "7565277735",
+        "number": 244,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "SADDRSV03": {
+        "name": "SADDRSV03chrUser243",
+        "email": "SADDRSV03chrUser243@adani.com",
+        "phone": "7073526663",
+        "number": 243,
+        "role": "Site Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "CADDRSV02": {
+        "name": "CADDRSV02nzoUser245",
+        "email": "CADDRSV02nzoUser245@adani.com",
+        "phone": "7694687549",
+        "number": 245,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v02",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "CADDRSV04": {
+        "name": "CADDRSV04osyUser244",
+        "email": "CADDRSV04osyUser244@adani.com",
+        "phone": "6082886024",
+        "number": 244,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "CADDRSV03": {
+        "name": "CADDRSV03wxsUser243",
+        "email": "CADDRSV03wxsUser243@adani.com",
+        "phone": "8539995926",
+        "number": 243,
+        "role": "Cluster Admin",
+        "userType": "AGEL",
+        "profileKey": "drs-solar-21102026-OB6-v03",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": null
+      },
+      "CIDRSV04": {
+        "name": "CIDRSV04eimUser244",
+        "email": "CIDRSV04eimUser244@adani.com",
+        "phone": "9241436822",
+        "number": 244,
+        "role": "Contractor Incharge",
+        "userType": "VENDOR",
+        "profileKey": "drs-solar-21102026-OB6-v04",
+        "baseUrl": "https://pulse-uat.cfapps.ap11.hana.ondemand.com",
+        "projectType": "SOLAR",
+        "workLocations": [
+          "AUTO-WL-21102026-OB6"
+        ],
+        "vendor": "AUTOMATION SERVICE CONTRACTOR"
       }
     },
     "qa": {

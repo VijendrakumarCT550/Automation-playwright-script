@@ -31,7 +31,10 @@ function drsProject() {
   const env = state.envRecord(DRS_ENV);
   const tag = process.env.DRS_PROJECT_TAG;
   const projects = (env.projects || []).filter((p) => (p.stagesDone || []).includes(READY_STAGE));
-  const project = tag ? projects.find((p) => p.tag === tag) : projects[projects.length - 1];
+  // Without a tag: the newest NON-onboarding project. An onboarding project
+  // (tests/onboarding) is reached only by name (DRS_PROJECT_TAG, set by its runner),
+  // so `npm run integration:uat` and the smoke-drs chain keep their BL ground.
+  const project = tag ? projects.find((p) => p.tag === tag) : projects.filter((p) => !p.onboardingRun).pop();
   if (!project) {
     throw new Error(
       `No DRS project ready for Pulse (stage ${READY_STAGE} done) on drs-${DRS_ENV}` +
@@ -51,8 +54,15 @@ function drsProject() {
 
 function drsIntegrationProfile() {
   const { env, project, pulseKey } = drsProject();
-  const blocks = project.workAreas.filter((wa) => /^BL\d+$/i.test(wa));
-  if (blocks.length < 2) {
+  // An ONBOARDING project (tests/onboarding) has no BL ground: its areas are
+  // WA<nn> / Road<nn> / Drain<nn> / Culvert<nn> per catalog version, and its RFIs
+  // are planned by tests/onboarding/pulse-plan.js. The single-cycle defaults point
+  // at WA01 (All sites v1) so the shared helpers still have a valid profile.
+  const onboarding = Boolean(project.onboardingRun);
+  const blocks = onboarding
+    ? project.workAreas.filter((wa) => /^WA\d+$/.test(wa))
+    : project.workAreas.filter((wa) => /^BL\d+$/i.test(wa));
+  if (!onboarding && blocks.length < 2) {
     throw new Error(`${project.name} has ${blocks.length} BL work area(s); RFI and NC need one each`);
   }
   // Disjoint ground (docs §9, smoke rule R2): a non-approved NC blocks RFI on
@@ -198,11 +208,15 @@ function requireAvailable(profile) {
 
 // Records Pulse-side results on the DRS project, so one record holds the whole
 // DRS → Pulse story of a project.
+// Atomic (state.mutateProject, under the state lock). `patch` is merged into
+// project.pulse; a FUNCTION patch gets the current pulse record (a fresh read,
+// inside the lock) and returns the patch - for parallel workers merging into the
+// same map (onboarding OB04 / OB05 items).
 function recordPulse(profile, patch) {
-  const current = (state.envRecord(profile.drs.env).projects || [])
-    .find((p) => p.tag === profile.drs.tag) || {};
-  const pulse = { ...(current.pulse || {}), env: profile.drs.pulseKey, ...patch };
-  return state.upsertProject(profile.drs.env, profile.drs.tag, { pulse });
+  return state.mutateProject(profile.drs.env, profile.drs.tag, (p) => {
+    const cur = p.pulse || {};
+    p.pulse = { ...cur, env: profile.drs.pulseKey, ...(typeof patch === 'function' ? patch(cur) : patch) };
+  });
 }
 
 function recordedPulse(profile) {
