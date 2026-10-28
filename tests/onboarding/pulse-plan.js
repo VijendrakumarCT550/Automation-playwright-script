@@ -1,6 +1,7 @@
 const state = require('../drs/utils/drs-state');
 const DATA = require('../drs/drs-data');
 const { buildTree, DEPENDENCY_PLANS, SITE_CHECKLIST_BINDING } = require('../drs-setting/pc-data');
+const { coverageArea } = require('./onboarding-run');
 
 // THE PULSE SIDE OF AN ONBOARDING RUN (docs/drs-onboarding-suite.md §5).
 //
@@ -95,7 +96,17 @@ function codeItems(wa, code, p, { inherited }) {
   });
 }
 
-function plan(project) {
+// TWO MODES (app owner, 2026-10-21: onboarding back to ~1.9 h, the depth in
+// tests/onboarding-smoke):
+//   'onboarding' (default)  per version: the standard Civil RFI, one RFI on the
+//                           newest PE code, one per Road / Drain / Culvert, and the
+//                           dependency checks of every planned P-code (CHECKED_SUBS:
+//                           blocked / released, the round-2 removal proof)
+//   'coverage'              EVERYTHING ELSE on the version's new codes - every
+//                           checkpoint of every PC / QC / PE / QE sub-activity, our
+//                           checklists' questions - and one NC per sub-activity
+// ONBOARDING_PLAN picks it (OB04 / OB05); the two never repeat each other's items.
+function plan(project, mode = process.env.ONBOARDING_PLAN || 'onboarding') {
   const env = state.envRecord(DATA.DRS_ENV || String(process.env.DRS_ENV || 'uat').toLowerCase());
   const byVersion = {};
   for (const [wa, version] of Object.entries(project.areaVersions || {})) {
@@ -104,44 +115,50 @@ function plan(project) {
   const versions = [];
   for (const [version, areas] of Object.entries(byVersion)) {
     const kindArea = (k) => areas.find((a) => new RegExp(`^${k}\\d+$`).test(a));
-    const items = [];
-    const ncItems = [];
+    const basic = [];
     const wa = kindArea('WA');
     const rec = catalogRecord(env, version);
-    // This round's NEW codes, per package - only for versions THIS SUITE built (a
-    // root such as <site> v1 predates the run; it keeps its plain RFIs).
-    const own = (rec && rec.onboarding && rec.codes) || {};
-    const newCodes = [...(own.Civil || []), ...(own.Electrical || [])];
+    const plans = (rec && rec.codePlans) || {};
     if (wa) {
-      items.push({ id: `${wa}/Civil/standard`, kind: 'plain', pkg: 'Civil', workArea: wa, ...STANDARD_CIVIL });
-      // A version with no new Electrical code of its own (the site root) still gets
-      // one RFI on its newest PE code; a round version's PE codes are fully covered.
+      basic.push({ id: `${wa}/Civil/standard`, kind: 'plain', pkg: 'Civil', workArea: wa, ...STANDARD_CIVIL });
       const pe = DATA.catalogCodes(env, version, 'Electrical').filter((c) => c.startsWith('P')).pop();
-      if (pe && !newCodes.includes(pe)) {
+      if (pe) {
         const t = buildTree(pe);
-        const a = t.activities[0]; const s = a.subActivities[0]; const c = s.checkpoints[0];
-        items.push({ id: `${wa}/Electrical/${pe}`, kind: 'plain', pkg: 'Electrical', workArea: wa,
-          subPackage: t.name, activity: a.name, subActivity: s.name, checkpoint: c.name, checklist: c.checklist.chip });
+        const a = t.activities[0]; const sb = a.subActivities[0]; const c = sb.checkpoints[0];
+        basic.push({ id: `${wa}/Electrical/${pe}`, kind: 'plain', pkg: 'Electrical', workArea: wa,
+          subPackage: t.name, activity: a.name, subActivity: sb.name, checkpoint: c.name, checklist: c.checklist.chip });
       }
     }
     for (const [k, l] of Object.entries(LINEAR)) {
       const area = kindArea(k);
-      if (area) items.push({ id: `${area}/Civil/${k}`, kind: 'plain', pkg: 'Civil', workArea: area,
+      if (area) basic.push({ id: `${area}/Civil/${k}`, kind: 'plain', pkg: 'Civil', workArea: area,
         subPackage: l.subPackage, activity: l.activity, subActivity: '__first__', checkpoint: '__first__', checklist: '__first__' });
     }
-    const plans = (rec && rec.codePlans) || {};
     if (wa) {
-      // The inherited round-2 code: its dependency checks (removal + added chains).
       for (const [code, p] of Object.entries(plans)) {
-        if (!newCodes.includes(code) && p.deps && CHECKED_SUBS[p.deps]) items.push(...codeItems(wa, code, p, { inherited: true }));
+        if (p.deps && CHECKED_SUBS[p.deps]) basic.push(...codeItems(wa, code, p, { inherited: true }));
       }
-      // Every new code, every sub-activity, every checkpoint; and one NC per sub-activity.
+    }
+    if (mode !== 'coverage') { versions.push({ version, areas, items: basic, ncItems: [] }); continue; }
+
+    // COVERAGE: this round's NEW codes - only versions THIS SUITE built (a root such
+    // as <site> v1 predates the run) - every sub-activity / checkpoint not already
+    // an onboarding item, and one NC per sub-activity.
+    const own = (rec && rec.onboarding && rec.codes) || {};
+    const newCodes = [...(own.Civil || []), ...(own.Electrical || [])];
+    // On the run's own coverage area CV<nn>-<run> (onboarding-run.js
+    // coverageAreaPlan) when OS01 imported it, else on WA<nn>.
+    const run = process.env.ONBOARDING_RECORD;
+    const cv = wa && run ? areas.find((a) => a === coverageArea(wa.slice(2), run)) : null;
+    const area = cv || wa;
+    const sameItem = new Set(basic.map((it) => it.id.slice(it.workArea.length)));
+    const items = [];
+    const ncItems = [];
+    if (area) {
       for (const code of newCodes) {
-        const its = codeItems(wa, code, plans[code], { inherited: false });
-        items.push(...its);
-        for (const it of its) {
-          ncItems.push({ id: `${it.id}/NC`, pkg: it.pkg, workArea: wa, code, activity: it.activity, subActivity: it.subActivity });
-        }
+        const its = codeItems(area, code, plans[code], { inherited: false });
+        items.push(...its.filter((it) => !sameItem.has(it.id.slice(area.length))));
+        for (const it of its) ncItems.push({ id: `${it.id}/NC`, pkg: it.pkg, workArea: area, code, activity: it.activity, subActivity: it.subActivity });
       }
     }
     versions.push({ version, areas, items, ncItems });

@@ -19,6 +19,7 @@ is linked, not duplicated:
 | Wind activity/checklist reference | [wind-activity-checklist-reference.md](wind-activity-checklist-reference.md) |
 | Mobile-view RFI flow | [mobile-view-rfi-flow.md](mobile-view-rfi-flow.md) |
 | RFI/NC reassignment rules and scenarios | [reassignment-scenarios.md](reassignment-scenarios.md) |
+| **CR set 2026-10-27**: users + WAM move to DRS, many users per role per area, multi-role users, creator picks assignees (stored on record). Supersedes §3.6, §3.7, §3.7a on `pulse-qa` / `drs-dev` | [cr-drs-user-management-and-assignment-model.md](cr-drs-user-management-and-assignment-model.md) |
 
 ---
 
@@ -545,6 +546,51 @@ Call sites updated: `SM17_hierarchy_dashboard_menu.spec.js`,
 `31_hierarchy_roles_dashboard_menu.spec.js` (the two menu sweeps) and
 `online-role-regression.js` (which now reports the hand-off as an expected
 outcome instead of only recognising the migration notice).
+
+### 3.10 Draft rows have a Delete button — app change 2026-10-23
+
+A draft row now carries a **Delete** button next to the eye icon: in the grid's
+Actions column on desktop, and on the record card in mobile view. What it does
+depends on the row:
+
+* **Newly created draft** (never submitted): deletes the draft.
+* **Draft of a record already in the flow** — only at the **creator's resubmit
+  step** (CI for RFI, the NC creator for NC, editing a REJECTED record): the
+  same button acts as **Discard**. It throws away the drafted edits and
+  restores the record to the fresh state it was in when it came back to the
+  creator. A created record can never be deleted this way (app owner,
+  2026-10-23).
+* Reviewers (EE/QI) get no draft/discard at their review step.
+* **In development, do not build for yet:** Admin-only delete of a request,
+  which only hides it in the backend.
+
+Applies to **both RFI and NC**. Not automated yet.
+
+**Confirmed live 2026-10-23** (`tests/specs/inspection/00_inspect_draft_delete.spec.js`, pulse-test):
+
+* Desktop: the Actions cell holds two buttons — the eye (`svg.lucide-eye`, no
+  label) and `button[aria-label="Discard draft"]` (`svg.lucide-trash-2`). Same
+  for RFI (CI) and NC (QI).
+* Clicking it opens a dialog **"Discard this draft?"** with **Yes** / **No**. No
+  toast after Yes. The In-Draft row is gone afterwards (1 → 0, RFI and NC).
+* After deleting, Create RFI opens with Work Location `S05b` and Package `Civil`
+  already set but Work Area empty. Those two are the form's defaults for this
+  user (Package was never in the draft), not leftovers from the draft.
+* Drafts are **still browser-local**: a draft made on desktop did not appear in
+  a separate mobile login of the same user.
+* Mobile NC card: the DOM holds `Discard draft` + a **Continue** button, but
+  neither is visible on the card as rendered — how they are revealed is still
+  open. Locators that find the eye icon by its own icon
+(`svg.lucide-eye`, as `RFIListPage.openDraftRow` does) are unaffected; anything
+that clicks "the last button in the Actions cell" would now hit Delete.
+
+### 3.11 NC Target Date for Closure may be auto-filled — app change 2026-10-23
+
+The backend may fill **Target Date for Closure** from the selected Defect Type,
+but not for every Defect Type. Automation leaves an auto-filled date alone and
+picks a date only when the field is still empty
+(`NCCreatePage.selectTargetDateIfEmpty`,
+`RFIReviewPage.selectLinkedNcTargetDateIfEmpty`), logging which path it took.
 
 ---
 

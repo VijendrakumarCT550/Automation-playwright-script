@@ -557,7 +557,7 @@ module.exports = defineConfig({
         /[\\/]drs-setting[\\/]/,
         // The onboarding suite (tests/onboarding/) writes permanent DRS records;
         // it runs only through `npm run onboarding:uat`.
-        /[\\/]onboarding[\\/]/,
+        /[\\/]onboarding[\\/]/, /[\\/]onboarding-smoke[\\/]/,
       ],
     },
 
@@ -582,6 +582,14 @@ module.exports = defineConfig({
       name: 'onboarding',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /[\\/]onboarding[\\/].*\.spec\.js$/,
+    },
+    // The ONBOARDING SMOKE suite (tests/onboarding-smoke): the smoke + coverage
+    // ground on the last onboarded project; driven by tests/utils/run-onboarding-smoke.js
+    // (npm run onboarding-smoke:uat), which also runs OB03/OB04/OB05 and the smoke chains.
+    {
+      name: 'onboarding-smoke',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /[\\/]onboarding-smoke[\\/].*\.spec\.js$/,
     },
 
     {
@@ -662,5 +670,8 @@ module.exports = defineConfig({
     ...DRS_CHAIN,
     ...DRS_VERSION_CHAINS,
   ],
-  outputDir: 'test-results/',
+  // PLAYWRIGHT_OUTPUT_DIR: the onboarding runners give each parallel version chain
+  // its own folder - every invocation empties its outputDir when it starts, which
+  // deleted the other running chains' failure screenshots (2026-10-22).
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR || 'test-results/',
 });

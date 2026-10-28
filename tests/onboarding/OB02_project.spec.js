@@ -3,9 +3,10 @@ const path = require('path');
 const { drsEnv, loginSuperAdmin, makeDumper } = require('../drs/utils/drs-ui');
 const state = require('../drs/utils/drs-state');
 const DATA = require('../drs/drs-data');
-const { DrsProjectPage, buildLocationCsv, writeCsv } = require('../drs/pages/DrsProjectPage');
+const { DrsProjectPage } = require('../drs/pages/DrsProjectPage');
 const DrsServiceOrderPage = require('../drs/pages/DrsServiceOrderPage');
-const { currentRun, putRun, areaPlan, SECTION_PLAN } = require('./onboarding-run');
+const { currentRun, putRun, areaPlan } = require('./onboarding-run');
+const { importMissingAreas, pinAreas } = require('./project-areas');
 
 // ===========================================================================
 // OB02 — THE RUN'S PROJECT (onboarding suite; docs/drs-onboarding-suite.md).
@@ -67,79 +68,21 @@ test('P1. a fresh project', async () => {
 
 test('P2. Work Location + WA01.. with their Work Sections', async () => {
   test.setTimeout(20 * 60 * 1000);
-  const areas = areaPlan(run);
   // A project imported before an area kind was added (Culvert<nn>, 2026-10-19)
-  // gets only its MISSING areas imported, into the same Work Location.
-  const have = project.workAreas || [];
-  const toImport = areas.filter((a) => !have.includes(a.name));
-  if (!toImport.length) { console.log(`  tree already imported: ${have.length} areas`); return; }
-  if (have.length) console.log(`  adding ${toImport.map((a) => a.name).join(', ')} to ${project.workLocation}`);
-  const workLocation = project.workLocation || `AUTO-WL-${project.tag}`;
-  // BATCHES (2026-10-21): the location import takes at most 10,000 rows per file
-  // (DRS: "too_big", maximum 10000), and a full run's plan is ~18,000 sections, so
-  // the areas go in files of <= 9,000 rows, every area whole in one file. Each
-  // batch is recorded the moment DRS accepts it, so a stop part-way resumes with
-  // the areas still missing.
-  const MAX_ROWS = 9000;
-  const rowsOf = (a) => Object.values(a.plan || {}).reduce((n, x) => n + x, 0);
-  const batches = [];
-  for (const a of toImport) {
-    const last = batches[batches.length - 1];
-    if (last && last.rows + rowsOf(a) <= MAX_ROWS) { last.areas.push(a); last.rows += rowsOf(a); } else batches.push({ areas: [a], rows: rowsOf(a) });
-  }
-  const projects = new DrsProjectPage(page, ENV.baseUrl);
-  const stamp = Date.now();
-  for (const [b, batch] of batches.entries()) {
-    const csvPath = writeCsv(path.join(OUT, `locations-${project.tag}-${stamp}-${b + 1}.csv`), buildLocationCsv({
-      cluster: project.cluster, site: project.site, workLocation, workAreas: 0, linearAreas: false,
-      extraAreas: batch.areas.map((a) => ({ name: a.name, plan: a.plan })),
-    }));
-    await projects.gotoLocationStep(project.id);
-    await projects.chooseClusterSite(project.cluster, project.site);
-    const res = await projects.importCsv(csvPath);
-    console.log(`  import ${b + 1}/${batches.length} (${batch.areas.length} areas, ${batch.rows} sections) → HTTP ${res.status}: ${res.body.slice(0, 200)}`);
-    expect(res.status, `import ${b + 1} answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
-    const names = batch.areas.map((a) => a.name);
-    project = state.mutateProject(ENV.key, project.tag, (p) => {
-      p.workLocation = workLocation;
-      p.workAreas = [...new Set([...(p.workAreas || []), ...names])];
-      p.areaVersions = { ...(p.areaVersions || {}), ...Object.fromEntries(batch.areas.map((a) => [a.name, a.version])) };
-      p.sectionPlan = SECTION_PLAN;
-      p.csv = path.basename(csvPath);
-    });
-  }
-  await projects.gotoLocationStep(project.id);
-  await expect(projects.treeItem(workLocation, 1), `${workLocation} not in the tree`).toBeVisible({ timeout: 30000 });
+  // gets only its MISSING areas imported, into the same Work Location; batched
+  // under DRS's 10,000-row import limit (project-areas.js).
+  project = await importMissingAreas({ page, ENV, project, areas: areaPlan(run), outDir: OUT });
   project = state.markStageDone(ENV.key, project.tag, 'D5');
 });
 
 test('P3. pin every Work Area to its version', async () => {
   test.setTimeout(20 * 60 * 1000);
-  const projects = new DrsProjectPage(page, ENV.baseUrl);
-  await projects.gotoLocationStep(project.id);
-  const wl = projects.treeItem(project.workLocation, 1);
-  await wl.waitFor({ state: 'visible', timeout: 30000 });
-  if ((await wl.getAttribute('aria-expanded')) !== 'true') { await wl.click(); await page.waitForTimeout(1500); }
-  for (const [wa, version] of Object.entries(project.areaVersions)) {
-    const current = await projects.workAreaVersionBadge(wa, { label: true });
-    if (current === version) { console.log(`  ${wa}: already ${version}`); continue; }
-    expect(current, `${wa} is pinned to "${current}", planned "${version}" - not changing a pin`).toBe('');
-    const res = await projects.pinWorkAreaVersion(project.workLocation, wa, version.match(/v\d+$/)[0], version);
-    console.log(`  ${wa} -> ${version}: ${res.method} HTTP ${res.status}`);
-    expect(res.status, `${wa}: pin answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
-    await projects.collapseWorkArea(wa);
-  }
-  await projects.gotoLocationStep(project.id);
-  const wl2 = projects.treeItem(project.workLocation, 1);
-  await wl2.waitFor({ state: 'visible', timeout: 30000 });
-  if ((await wl2.getAttribute('aria-expanded')) !== 'true') { await wl2.click(); await page.waitForTimeout(1500); }
-  const pinned = {};
-  for (const [wa, version] of Object.entries(project.areaVersions)) {
-    pinned[wa] = await projects.workAreaVersionBadge(wa, { label: true });
-    expect(pinned[wa], `${wa}: badge "${pinned[wa]}" after pinning ${version}`).toBe(version);
-  }
+  // The run's areas only: smoke areas a later onboarding-smoke run added to this
+  // project are pinned by OS01.
+  const names = areaPlan(run).map((a) => a.name);
+  const pinned = await pinAreas({ page, ENV, project, names });
   await dump('tree-after-pinning');
-  project = state.upsertProject(ENV.key, project.tag, { pinned });
+  project = state.upsertProject(ENV.key, project.tag, { pinned: { ...(project.pinned || {}), ...pinned } });
   project = state.markStageDone(ENV.key, project.tag, 'D6');
 });
 

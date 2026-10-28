@@ -132,8 +132,10 @@ async function fillLinkedNcPanel(page, profile) {
   await tryFill('Category', async () => {
     await nc.selectDropdownOption(nc.categoryDropdown, src.category || 'Critical');
   });
+  // May be auto-filled by the app from the Defect Type — only filled if empty.
   await tryFill('Target Date', async () => {
-    await nc.selectTargetDate(src.targetDateClosureDays || 14);
+    const { autoFilled, value } = await nc.selectTargetDateIfEmpty(src.targetDateClosureDays || 14);
+    note(`  Target Date ${autoFilled ? 'auto-filled by app' : 'filled by automation'}: ${value}`);
   });
   await tryFill('NC Quantity', async () => {
     await nc.ncQuantityInput.fill(String(src.ncQuantity || 1));

@@ -116,11 +116,19 @@ class DashboardPage extends BasePage {
   // reliable "did the actual data change" fingerprint: same string = same
   // rendered shape = the chart did NOT change, regardless of what the
   // toggle button's own class says.
+  //
+  // Rects inside <defs> are left out (2026-10-22): they are clipPaths, not data -
+  // the plot-area clip plus one animation clip per Area series, which Recharts
+  // adds or drops depending on whether that render animated. Found on SM18's
+  // Trend Analysis read (R6 onboarding smoke, Site Admin + Execution Lead): the
+  // SAME path data read "237x152|237x154|237x154" then "237x152" and failed the
+  // "same RFI data after switching back" check.
   async getChartDataFingerprint(title) {
     const card = this.chartCard(title);
     const svg = card.locator('svg.recharts-surface').first();
     const rects = await svg.locator('rect').evaluateAll(
-      els => els.map(el => `${el.getAttribute('width')}x${el.getAttribute('height')}`).join('|')
+      els => els.filter(el => !el.closest('defs'))
+        .map(el => `${el.getAttribute('width')}x${el.getAttribute('height')}`).join('|')
     ).catch(() => '');
     const paths = await svg.locator('path').evaluateAll(
       els => els.map(el => el.getAttribute('d')).join('|')

@@ -651,6 +651,27 @@ class RFIReviewPage extends BasePage {
     );
   }
 
+  // Linked-NC counterpart of NCCreatePage.selectTargetDateIfEmpty: the backend
+  // may auto-fill Target Date for Closure from the selected Defect Type
+  // (app change, 2026-10-23), so only pick a date when it is still empty.
+  // Must run AFTER the panel's Defect Type is set. Returns { autoFilled, value }.
+  async selectLinkedNcTargetDateIfEmpty(index = 0, daysFromNow = 14, { waitMs = 5000 } = {}) {
+    const input = this._linkedNcField(index, 'Target Date').getByPlaceholder('dd/mm/yyyy').first();
+    const defect = this.lastLinkedNcDefectType ?? '?';
+    const autoValue = await this.waitForAutoFilledDate(input, waitMs);
+    if (autoValue) {
+      console.log(`Linked NC #${index} Target Date: auto-filled by app from Defect Type ` +
+        `"${defect}" → ${autoValue} (not touched)`);
+      return { autoFilled: true, value: autoValue };
+    }
+    console.log(`Linked NC #${index} Target Date: NOT auto-filled for Defect Type ` +
+      `"${defect}" — filling it (+${daysFromNow} days)`);
+    await this.selectLinkedNcTargetDate(index, daysFromNow);
+    const value = (await input.inputValue().catch(() => '')).trim();
+    console.log(`Linked NC #${index} Target Date: filled → ${value}`);
+    return { autoFilled: false, value };
+  }
+
   // Fills every field of one item's linked-NC panel. Defaults mirror
   // nc-flow-turns.js's NC_DATA so a linked NC and a standalone one carry
   // comparable data; Debit Amount is the one optional field and is only touched
@@ -679,7 +700,8 @@ class RFIReviewPage extends BasePage {
       category
     );
 
-    await this.selectLinkedNcTargetDate(index, targetDateDays);
+    // May already be auto-filled from the Defect Type — see selectLinkedNcTargetDateIfEmpty.
+    await this.selectLinkedNcTargetDateIfEmpty(index, targetDateDays);
 
     await panel.getByPlaceholder('Enter Quantity').fill(String(quantity));
     await this.selectDropdownOption(

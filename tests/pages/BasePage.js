@@ -427,6 +427,19 @@ class BasePage {
     return false;
   }
 
+  // Waits up to `timeoutMs` for a date input to be filled by the APP (e.g.
+  // NC's Target Date for Closure, which the backend may derive from the
+  // selected Defect Type). Returns the value it found, or '' if it stayed
+  // empty — callers then fill it themselves.
+  async waitForAutoFilledDate(input, timeoutMs = 5000) {
+    let value = '';
+    await this.pollUntil(async () => {
+      value = (await input.inputValue()).trim();
+      return value !== '';
+    }, { timeoutMs });
+    return value;
+  }
+
   // Same "leftover UI blocks later clicks" pattern as closeAnyOpenListbox
   // above, but for a toast notification — confirmed live for NC: a toast
   // left open after an earlier action (e.g. CI's resubmit) can sit on top

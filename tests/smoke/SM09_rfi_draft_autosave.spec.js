@@ -375,6 +375,11 @@ test.describe('Smoke stage SM09 - RFI draft-autosave at every depth of the Page 
       // draft) ----
       const rfiList = new RFIListPage(page);
       await rfiList.waitForGrid();
+      // Diagnostic (2026-10-23, L1 read back "Select Work Location"): openDraftRow
+      // opens the FIRST In-Draft row, so a leftover draft from an earlier run
+      // would be resumed instead of this one. Log how many are on screen.
+      const draftRows = await page.locator('[role="row"]').filter({ hasText: 'In-Draft' }).count();
+      console.log(`${level.key}: In-Draft rows visible in Pending with me = ${draftRows}`);
       await rfiList.openDraftRow();
       console.log(`${level.key}: url after eye-icon click = ${page.url()}`);
 
@@ -401,9 +406,19 @@ test.describe('Smoke stage SM09 - RFI draft-autosave at every depth of the Page 
       // ---- The heart of this level: every field it had filled must have
       // survived the round trip. Checked field by field so a partial restore
       // names the exact field that was lost. ----
+      //
+      // Waits for each value rather than reading once: the resumed form can
+      // still show its placeholders right after networkidle while the draft
+      // is being restored into it (L1 failed 2026-10-23 on a one-shot read).
       for (const fieldKey of level.fields) {
         if (fieldKey === 'workSection') continue;
-        const shown = (await fieldLocator(rfiCreate, fieldKey).innerText()).trim();
+        const field = fieldLocator(rfiCreate, fieldKey);
+        const restored = await expect(field).toContainText(rfiFields[fieldKey], { timeout: 15000 })
+          .then(() => true)
+          .catch(() => false);
+        const shown = (await field.innerText()).trim();
+        console.log(`${level.key}: "${fieldKey}" after resume = "${shown}"` +
+          `${restored ? '' : ' (still not restored after 15s)'}`);
         expect(
           shown,
           `${level.key}: "${fieldKey}" should survive the draft/resume round trip ` +

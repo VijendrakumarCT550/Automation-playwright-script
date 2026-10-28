@@ -290,12 +290,23 @@ class DashboardFilterPage extends BasePage {
     const already = this.datePickerCalendar.locator(`[data-part="table-cell-trigger"][data-value="${value}"]`);
     if (await already.isVisible({ timeout: 500 }).catch(() => false)) return;
 
-    const viewTrigger = this.datePickerCalendar.getByRole('button', { name: /switch to year view/i });
-    if (!(await viewTrigger.isVisible({ timeout: 2000 }).catch(() => false))) {
+    // RENAMED BY THE APP, confirmed live 2026-10-23 (SM16 page snapshot): the
+    // day view's header button ("October 2026") is now "Switch to month view"
+    // — the same control that was "Switch to year view" on 2026-09-05 (a
+    // Zag.js naming change; it still opens the 12-month grid). Accept either.
+    // waitFor, not isVisible({timeout}) — isVisible does not poll.
+    const viewTrigger = this.datePickerCalendar
+      .getByRole('button', { name: /switch to (month|year) view/i })
+      .first();
+    const hasTrigger = await viewTrigger.waitFor({ state: 'visible', timeout: 2000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!hasTrigger) {
       throw new Error(
         `DashboardFilterPage: date ${value} is not in the calendar's current month, and no ` +
-        `"Switch to year view" control was found to navigate there. Either the accessible ` +
-        `name changed, or this picker has no way to jump directly to a distant date.`
+        `"Switch to month view" / "Switch to year view" control was found to navigate there. ` +
+        `Either the accessible name changed again, or this picker has no way to jump directly ` +
+        `to a distant date.`
       );
     }
     await viewTrigger.click();

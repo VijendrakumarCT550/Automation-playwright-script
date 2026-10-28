@@ -44,7 +44,9 @@
     "smoke:restore": "playwright test --workers=1 --project=smoke-solar-restore",
     "smoke:list": "node tests/utils/run-smoke.js solar --list",
     "smoke:solar": "node tests/utils/run-smoke.js solar",
-    "smoke:solar:artifacts": "cross-env PLAYWRIGHT_JSON_OUTPUT_NAME=smoke-reports/results.json PLAYWRIGHT_JUNIT_OUTPUT_NAME=smoke-reports/junit.xml node tests/utils/run-smoke.js solar -- --reporter=list,html,json,junit"
+    "smoke:solar:artifacts": "cross-env PLAYWRIGHT_JSON_OUTPUT_NAME=smoke-reports/results.json PLAYWRIGHT_JUNIT_OUTPUT_NAME=smoke-reports/junit.xml node tests/utils/run-smoke.js solar -- --reporter=list,html,json,junit",
+    "onboarding-smoke": "node tests/utils/run-onboarding-smoke.js",
+    "onboarding-smoke:uat": "cross-env DRS_ENV=uat PULSE_ENV=uat node tests/utils/run-onboarding-smoke.js"
   },
   "keywords": [],
   "author": "",

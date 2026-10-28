@@ -22,9 +22,12 @@ const profile = onboardingOnly(profileForSpec());
 
 // The onboarding areas only: the SM<nn> smoke areas are mapped by the smoke
 // stages themselves (SM03 / SM04 ...), exactly as on any smoke ground.
+// ONBOARDING_WAM_AREAS (a regex) replaces both lists: onboarding-smoke maps its
+// run's coverage areas (CV<nn>-S<k>, Civil + Electrical like WA<nn>) and no others.
+const ONLY = process.env.ONBOARDING_WAM_AREAS ? new RegExp(process.env.ONBOARDING_WAM_AREAS) : null;
 const AREAS = {
-  Civil: () => profile.drs.project.workAreas.filter((wa) => /^(WA|Road|Drain|Culvert)\d+$/.test(wa)),
-  Electrical: () => profile.drs.project.workAreas.filter((wa) => /^WA\d+$/.test(wa)),
+  Civil: () => profile.drs.project.workAreas.filter((wa) => (ONLY || /^(WA|Road|Drain|Culvert)\d+$/).test(wa)),
+  Electrical: () => profile.drs.project.workAreas.filter((wa) => (ONLY || /^WA\d+$/).test(wa)),
 };
 
 test.describe.configure({ mode: 'serial' });
@@ -40,7 +43,8 @@ for (const pkg of Object.keys(AREAS)) {
     const areas = AREAS[pkg]();
     expect(areas.length, `${profile.drs.project.name}: no ${pkg} Work Areas`).toBeGreaterThan(0);
     const { assigned } = await ensureWorkAreaMapping(browser, packageProfile(profile, pkg), users, { roles: ROLES, areas, label: `OB03 ${pkg}` });
+    const key = ONLY ? `${pkg}_${process.env.ONBOARDING_RECORD || 'only'}` : pkg;
     const wam = recordedPulse(profile).onboardingWam || {};
-    recordPulse(profile, { onboardingWam: { ...wam, [pkg]: { roles: ROLES, areas, assigned, at: new Date().toISOString() } } });
+    recordPulse(profile, { onboardingWam: { ...wam, [key]: { roles: ROLES, areas, assigned, at: new Date().toISOString() } } });
   });
 }

@@ -276,6 +276,28 @@ class NCCreatePage extends BasePage {
     );
   }
 
+  // Target Date for Closure MAY now be auto-filled by the backend from the
+  // selected Defect Type (app change, 2026-10-23) — but not for every defect
+  // type. So: give the autofill a short window to land, and only pick a date
+  // ourselves when the field is still empty. Either way the outcome is logged,
+  // so a run shows which path each NC took.
+  //
+  // Must run AFTER Defect Type is selected. Returns { autoFilled, value }.
+  async selectTargetDateIfEmpty(daysFromNow = 14, { waitMs = 5000 } = {}) {
+    const autoValue = await this.waitForAutoFilledDate(this.targetDateInput, waitMs);
+    if (autoValue) {
+      console.log(`Target Date for Closure: auto-filled by app from Defect Type ` +
+        `"${this.lastDefectType ?? '?'}" → ${autoValue} (not touched)`);
+      return { autoFilled: true, value: autoValue };
+    }
+    console.log(`Target Date for Closure: NOT auto-filled for Defect Type ` +
+      `"${this.lastDefectType ?? '?'}" — filling it (+${daysFromNow} days)`);
+    await this.selectTargetDate(daysFromNow);
+    const value = (await this.targetDateInput.inputValue().catch(() => '')).trim();
+    console.log(`Target Date for Closure: filled → ${value}`);
+    return { autoFilled: false, value };
+  }
+
   // NC Quantity is only required when the selected Unit is NOT "Not
   // Applicable (NA)" — caller signals this by simply omitting ncQuantity
   // (and passing a unit like 'NA') vs providing both.
@@ -345,8 +367,9 @@ class NCCreatePage extends BasePage {
 
     await pick(this.categoryDropdown, data.category);
 
+    // May already be auto-filled from the Defect Type — see selectTargetDateIfEmpty.
     if (data.targetDateClosureDays != null) {
-      await this.selectTargetDate(data.targetDateClosureDays);
+      await this.selectTargetDateIfEmpty(data.targetDateClosureDays);
     }
 
     if (data.debitAmount != null) {

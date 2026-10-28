@@ -1,0 +1,662 @@
+{
+  "TC-01-QI": {
+    "ncId": "66281a4c-622a-46fa-98df-5b0dc9e16d7a",
+    "ncCode": "NC-S05b-BL05-CIV-188",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QI",
+    "workArea": "BL05"
+  },
+  "TC-02-QI": {
+    "ncId": "46bc99b3-0f61-40dd-ae9d-50d8b894e052",
+    "ncCode": "NC-S05b-BL05-CIV-189",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QI",
+    "workArea": "BL05"
+  },
+  "TC-03-QI": {
+    "ncId": "9db9be05-4c03-4d60-a92c-8a364f3c83c2",
+    "ncCode": "NC-S05b-BL05-CIV-190",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QI",
+    "workArea": "BL05"
+  },
+  "TC-04-QI": {
+    "ncId": "3e58e91a-5c36-4f48-9c57-45b6b0287134",
+    "ncCode": "NC-S05b-BL05-CIV-191",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QI",
+    "workArea": "BL05"
+  },
+  "TC-01-EE": {
+    "ncId": "a0d33826-e987-470c-a51f-c512fc3e77e7",
+    "ncCode": "NC-S05b-BL05-CIV-172",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EE",
+    "workArea": "BL05"
+  },
+  "TC-02-EE": {
+    "ncId": "65c2935a-bd36-4767-97db-360a43c56c38",
+    "ncCode": "NC-S05b-BL05-CIV-173",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EE",
+    "workArea": "BL05"
+  },
+  "TC-03-EE": {
+    "ncId": "97d9b020-2d78-4229-a94d-11434be84355",
+    "ncCode": "NC-S05b-BL05-CIV-174",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EE",
+    "workArea": "BL05"
+  },
+  "TC-04-EE": {
+    "ncId": "30640f38-4438-41cf-8cb7-d8c9839605c9",
+    "ncCode": "NC-S05b-BL05-CIV-175",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EE",
+    "workArea": "BL05"
+  },
+  "TC-01-PM": {
+    "ncId": "246f7b46-8e64-4961-b4ae-36ea55e8dfe1",
+    "ncCode": "NC-S05b-BL05-CIV-176",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "PM",
+    "workArea": "BL05"
+  },
+  "TC-02-PM": {
+    "ncId": "80a183c5-2222-4639-8e99-e33db70a5591",
+    "ncCode": "NC-S05b-BL05-CIV-177",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "PM",
+    "workArea": "BL05"
+  },
+  "TC-03-PM": {
+    "ncId": "808750fb-8c82-464f-904a-73a9cac2ef71",
+    "ncCode": "NC-S05b-BL05-CIV-178",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "PM",
+    "workArea": "BL05"
+  },
+  "TC-04-PM": {
+    "ncId": "e8bc3d4e-7619-45b2-afb7-fe69276f4686",
+    "ncCode": "NC-S05b-BL05-CIV-179",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "PM",
+    "workArea": "BL05"
+  },
+  "TC-01-EL": {
+    "ncId": "c0fdb99e-aa78-43dd-81d1-452954d1dd0f",
+    "ncCode": "NC-S05b-BL05-CIV-180",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EL",
+    "workArea": "BL05"
+  },
+  "TC-02-EL": {
+    "ncId": "c2b44a88-2e3c-4b03-a960-dc1588ee4ae1",
+    "ncCode": "NC-S05b-BL05-CIV-181",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EL",
+    "workArea": "BL05"
+  },
+  "TC-03-EL": {
+    "ncId": "c686f615-71f0-42ba-8730-2abad36b8f00",
+    "ncCode": "NC-S05b-BL05-CIV-182",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EL",
+    "workArea": "BL05"
+  },
+  "TC-04-EL": {
+    "ncId": "58f8a204-b174-4b71-b530-4e40c73f30b4",
+    "ncCode": "NC-S05b-BL05-CIV-183",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "EL",
+    "workArea": "BL05"
+  },
+  "TC-01-QL": {
+    "ncId": "1b5a2f5b-60b2-4f07-8863-0dbcf7b265e4",
+    "ncCode": "NC-S05b-BL05-CIV-184",
+    "currentStepIndex": 3,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QL",
+    "workArea": "BL05"
+  },
+  "TC-02-QL": {
+    "ncId": "c4791c38-0135-4d6a-a5fa-f6e185daa751",
+    "ncCode": "NC-S05b-BL05-CIV-185",
+    "currentStepIndex": 5,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QL",
+    "workArea": "BL05"
+  },
+  "TC-03-QL": {
+    "ncId": "7cebbf26-b46b-4d9a-9399-b7b2a2e96740",
+    "ncCode": "NC-S05b-BL05-CIV-186",
+    "currentStepIndex": 6,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QL",
+    "workArea": "BL05"
+  },
+  "TC-04-QL": {
+    "ncId": "87fdddfb-210d-4760-a25a-de15341a4bd9",
+    "ncCode": "NC-S05b-BL05-CIV-187",
+    "currentStepIndex": 8,
+    "currentVersion": "V1",
+    "status": "done",
+    "steps": [
+      {
+        "actor": "CI",
+        "action": "respond"
+      },
+      {
+        "actor": "EE",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "reject"
+      },
+      {
+        "actor": "CI",
+        "action": "resubmit"
+      },
+      {
+        "actor": "EE",
+        "action": "approve"
+      },
+      {
+        "actor": "QI",
+        "action": "approve"
+      }
+    ],
+    "creator": "QL",
+    "workArea": "BL05"
+  }
+}

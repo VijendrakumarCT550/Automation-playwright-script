@@ -468,8 +468,10 @@ test('4. fill the panel from what the dump found, and push the rejection through
   // NCCreatePage's proven calendar handling (same Ark UI widget).
   try {
     const NCCreatePage = require('../../pages/NCCreatePage');
-    await new NCCreatePage(page).selectTargetDate(src.targetDateClosureDays || 14);
-    say('Target Date for Closure: FILLED');
+    // May be auto-filled by the app from the Defect Type — only filled if empty.
+    const { autoFilled, value } =
+      await new NCCreatePage(page).selectTargetDateIfEmpty(src.targetDateClosureDays || 14);
+    say(`Target Date for Closure: ${autoFilled ? 'AUTO-FILLED by app' : 'FILLED'} (${value})`);
   } catch (err) {
     say(`Target Date for Closure: FAILED — ${firstLine(err)}`);
   }

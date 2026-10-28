@@ -71,12 +71,16 @@ function baseFor(item) {
   };
 }
 
-const done = (id) => ((recordedPulse(profile).onboardingRfi || {})[id] || {}).status === 'passed';
+// Where items are recorded: the onboarding run's map, or - for a coverage run of
+// tests/onboarding-smoke (ONBOARDING_RECORD=<run id>) - that run's own map, so a
+// re-run after a deployment tests everything again (2026-10-21).
+const RECORD_KEY = process.env.ONBOARDING_RECORD ? `onboardingRfi_${process.env.ONBOARDING_RECORD}` : 'onboardingRfi';
+const done = (id) => ((recordedPulse(profile)[RECORD_KEY] || {})[id] || {}).status === 'passed';
 // Merged into the CURRENT map inside the state lock: lanes run in parallel.
 function record(id, patch) {
   recordPulse(profile, (cur) => {
-    const all = cur.onboardingRfi || {};
-    return { onboardingRfi: { ...all, [id]: { ...(all[id] || {}), ...patch, at: new Date().toISOString() } } };
+    const all = cur[RECORD_KEY] || {};
+    return { [RECORD_KEY]: { ...all, [id]: { ...(all[id] || {}), ...patch, at: new Date().toISOString() } } };
   });
 }
 

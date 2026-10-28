@@ -136,12 +136,16 @@ async function openPicker(card) {
 // The SOs to map: one per package (serviceOrders), or the single SO of an older project.
 function serviceOrders() {
   if (run.serviceOrders) return Object.values(run.serviceOrders);
+  // Resolved at load time (one test per SO): a project with no SO yet must not
+  // break loading - D9 then fails with the reason below.
+  if (!run.serviceOrder) return [];
   return [{ ...run.serviceOrder, package: 'Civil',
     lines: (run.serviceOrder.lines || []).map((l) => ({ ...l, version: l.version || DATA.catalogOptionLabel })) }];
 }
 
 const SOS = run ? serviceOrders() : [];
 if (!run) test('D9. SO Line Mapping', () => { throw new Error(`no unfinished project on ${ENV.key}`); });
+else if (!SOS.length) test('D9. SO Line Mapping', () => { throw new Error(`${run.name}: no service order yet - run D04 first`); });
 
 for (const so of SOS) {
   test(`D9. ${so.package} SO ${so.number}: every line holds its planned sub-activities (max 2, one catalog version)`, async () => {

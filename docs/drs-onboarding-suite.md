@@ -2,7 +2,7 @@
 
 `npm run onboarding:uat` (folder `tests/onboarding/`).
 
-Every run builds **new catalog versions in both chains** and **onboards a fresh project** whose Work Areas are mapped to them. A second suite, which brings new versions onto *this* project by importing Work Areas and checks RFI / NC data integrity, comes later.
+Every run builds **new catalog versions in both chains** and **onboards a fresh project** whose Work Areas are mapped to them, in about **1.9 h**. The depth (every checkpoint of every new code, an NC per sub-activity, the smoke folder on every catalog version) is a **separate suite on the last onboarded project**, `npm run onboarding-smoke:uat` (§6), so it can be re-run after every deployment without onboarding again (app owner, 2026-10-21).
 
 Related: [`drs-catalog-versions-and-so-lines.md`](drs-catalog-versions-and-so-lines.md), [`drs-checklists.md`](drs-checklists.md), [`drs-so-lines-and-service-codes.md`](drs-so-lines-and-service-codes.md).
 
@@ -148,6 +148,8 @@ Blocked and no-predecessor attempts use a throwaway Work Section, because select
 
 **Resume:** each RFI / NC item is recorded on the project (`pulse.onboardingRfi`, `pulse.onboardingNc`) once it passes; a re-run skips it.
 
+**Two plans (`ONBOARDING_PLAN`, `pulse-plan.js`):** the onboarding run uses `onboarding` (the items above, 45 RFIs / 30 NCs); onboarding-smoke uses `coverage` (§6). The two never repeat each other's items. OB04 runs one lane per catalog version, because Pulse's RFI counter per Work Area + package gave two concurrent creates the **same code** (`…WA03-CIV-73`, reported to the app owner).
+
 **R1 (2026-10-19, `AUTO-Solar-19102026-OB1`):** OB04 45/45, OB05 30/30 (built up stage by stage).
 
 **R2 (2026-10-19/20, `AUTO-Solar-19102026-OB2`), the first end-to-end run of the whole suite:** All sites v9 / v10, Automation Site 01 v6 / v7; every stage green. OB01 5/5 (≈ 60 + 36 min, one resume after a verify read flake, fixed), OB02 4/4 (4 min, 775 records), D05 (11.6 min), D06 (6.5 min), IN01 (2 min), OB03 (2.2 min), OB04 45/45 (1.7 h), OB05 30/30 (51 min). **About 4 h 15 min end to end.**
@@ -163,4 +165,33 @@ Blocked and no-predecessor attempts use a throwaway Work Section, because select
   - `runs.R<n>`: `roots`, `rounds.{A1,S1,A2,S2}`, `projectTag`, `done`.
 - **Catalog versions:** recorded under `catalogs["All sites" | "<site>"]["R<n>-<round>"]`, with `label`, `source`, `codes`, `inheritedCodes`, `codePlans` (per code: dependency plan and checklists) and `status`.
 - **The project:** under `projects[]`, with `areaVersions`, `serviceOrders`, `stagesDone`.
-- **Resume:** a run that stops part-way is resumed by the next one; the runner closes a run when D06 has passed.
+- **Resume:** a run that stops part-way is resumed by the next one; the runner closes a run when OB05 has passed.
+- **Onboarding-smoke runs:** `environments.<env>.onboardingSmoke.runs.S<n>` (`projectTag`, `done`); their RFI / NC results are on the project under `pulse.onboardingRfi_S<n>` / `pulse.onboardingNc_S<n>`, their WAM under `pulse.onboardingWam.<pkg>_S<n>`.
+
+---
+
+## 6. Onboarding smoke (`tests/onboarding-smoke/`)
+
+`npm run onboarding-smoke:uat` (`tests/utils/run-onboarding-smoke.js`) runs on the project of the **last completed onboarding run**; `--project <tag>` picks another one. The same `--from` / `--only` / `--list` options, and the same report (`playwright-report/`, `onboarding-smoke-reports/`).
+
+| Stage | What | Project |
+|---|---|---|
+| OS01 | Import + pin the smoke and coverage areas (below) | `onboarding-smoke` |
+| D05 | SO Configuration, so the new areas carry the project's SOs (idempotent: old areas are read, not re-saved) | `drs` |
+| OB03 | Pulse WAM: CI / CIE / EE / QI on this run's `CV<nn>-S<k>` only | `onboarding` |
+| OB04 | `coverage` plan: every checkpoint a/b/c of every sub-activity of every new code (PC / QC / PE / QE), our checklists' questions checked against DRS (texts + count) | `onboarding` |
+| OB05 | `coverage` plan: one NC per sub-activity of every new code | `onboarding` |
+| SMOKE | The smoke folder (SM01–SM29) unchanged, on `SM01`…`SM13` (All sites v1) | `smoke-drs-*` |
+| SMOKEV | The smoke RFI / NC stages on **every other version**, the site root and A1 / S1 / A2 / S2 included: its own users + their WAM, RFI flow (9 TCs, reject + resubmit, desktop + mobile), NC flow (reject + resubmit), NC blocks RFI, dependency chain, RFI data integrity, RFI / NC create, bulk, draft autosave | `smoke-drsv<nn>-*` |
+
+**Areas** (TABLE + INVERTER; no SO lines needed: the lines are per version, and the project's existing ones cover it):
+
+| Area | Version | When |
+|---|---|---|
+| `SM01`…`SM13` | All sites v1 | once per project |
+| `SM<nn>-01`…`09` | the version of `WA<nn>`, every other version | once per project |
+| `CV<nn>-S<k>` | each version the onboarding run **built** (A1, S1, A2, S2) | **every run**: R6's coverage used 16–22 of `WA<nn>`'s 60 TABLEs plus throwaway sections, so re-runs get areas of their own |
+
+**Parallel:** each version chain has its own CI / EE / QI (`<role>DRSV<nn>`), so up to three chains run at once (`ONBOARDING_LANES`); the draft-autosave chains run one at a time (one draft per user). The **PM is shared** (Pulse takes one PM per Work Location), so the version chains leave the PM out of their NC creators (`SMOKE_NC_CREATORS=QI,EE,EL,QL`). The WAM **feature** specs (all roles, hierarchy, demap / update) and the role sweeps run only in the All sites v1 chain: WAM maps users to areas and does not depend on the catalog version.
+
+**Fresh vs resumed:** a run with no `--from` / `--only` starts `S<n+1>` and resets the smoke trackers (`SMOKE_RESET=1`); `--from` / `--only` continue the open run and its trackers (`SMOKE_RETRY_FAILED=1` revives failed TCs in place).

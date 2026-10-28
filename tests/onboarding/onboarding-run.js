@@ -76,46 +76,101 @@ const SECTION_PLAN = {
   Culvert: { culvert: 10 },
 };
 
-// THE SMOKE GROUND (app owner, 2026-10-21): the smoke folder's stages (SM01-SM29)
-// run UNCHANGED on the run's project through the DRS smoke chain
-// (tests/integration/drs-smoke-profile.js), on standard checkpoints first. They
-// give 13 stages a Work Area each (a stage consumes sections or leaves records -
-// e.g. SM28's open NC - that would disturb the others), so the project gets 13
-// areas of their own: SM01..SM13, TABLE + INVERTER like a BL block (288 + 12),
-// pinned to the All-sites root (All sites v1, the standard Piling catalog).
-const SMOKE_AREAS = 13;
-const SMOKE_PLAN = { table: 288, inverter: 12 };
-// THE SMOKE RFI / NC SCENARIOS ON EVERY OTHER VERSION (app owner, 2026-10-21:
-// "for all new catalog site and all site specific, not only v1"): the site root
-// and every version the run builds get the smoke RFI / NC stages too, on that
-// version's own codes (drs-smoke-profile.js version profiles). Each version n
-// (02 = the site root, then A1, S1, A2, S2) gets the 9 areas those stages own -
-// SM<nn>-01..09: RFI desktop, RFI mobile, NC, NC-blocks-RFI, dependency chain,
-// RFI create, and the three bulk areas - pinned to that version.
-const VERSION_SMOKE_SLOTS = 9;
-
+// THE ONBOARDING RUN'S Work Areas - WA / Road / Drain / Culvert per version. The
+// SMOKE ground (SM01..SM13, SM<nn>-01..09) is NOT part of onboarding any more (app
+// owner, 2026-10-21: a full run with smoke took ~9 h): tests/onboarding-smoke
+// imports it into the last onboarded project (smokeAreaPlan below).
 function areaPlan(run) {
   const versions = [
     run.roots && run.roots.allSites,
     run.roots && run.roots.site,
     ...ROUNDS.map((r) => run.rounds[r.key] && run.rounds[r.key].label),
   ].filter(Boolean);
-  const areas = versions.flatMap((v, i) => Object.entries(SECTION_PLAN).map(([kind, plan]) => (
+  return versions.flatMap((v, i) => Object.entries(SECTION_PLAN).map(([kind, plan]) => (
     { name: `${kind}${String(i + 1).padStart(2, '0')}`, version: v, kind, plan })));
-  const root = run.roots && run.roots.allSites;
+}
+
+// THE SMOKE GROUND of an onboarded project (tests/onboarding-smoke, app owner
+// 2026-10-21). The smoke folder's stages run UNCHANGED on it through the DRS smoke
+// chains (tests/integration/drs-smoke-profile.js):
+//   SM01..SM13      the full smoke chain, on the All-sites root (All sites v1) -
+//                   13 stages own an area each (a stage consumes sections or leaves
+//                   records, e.g. SM28's open NC, that would disturb the others)
+//   SM<nn>-01..09   the smoke RFI / NC stages on version nn's own codes, for every
+//                   other version (nn = the version's WA<nn> number): RFI desktop,
+//                   RFI mobile, NC, NC-blocks-RFI, dependency chain, RFI create and
+//                   the three bulk areas
+// TABLE + INVERTER like a BL block (288 + 12). Versions come from the project's
+// own WA<nn> -> version map, so this works on any onboarded project.
+const SMOKE_AREAS = 13;
+const SMOKE_PLAN = { table: 288, inverter: 12 };
+const VERSION_SMOKE_SLOTS = 9;
+
+function smokeAreaPlan(project) {
   const pad = (n) => String(n).padStart(2, '0');
-  if (root) {
-    for (let n = 1; n <= SMOKE_AREAS; n += 1) {
-      areas.push({ name: `SM${pad(n)}`, version: root, kind: 'SM', plan: SMOKE_PLAN });
-    }
+  const byNn = Object.entries(project.areaVersions || {})
+    .map(([wa, v]) => [(wa.match(/^WA(\d{2})$/) || [])[1], v]).filter(([nn]) => nn).sort();
+  const root = (byNn.find(([nn]) => nn === '01') || [])[1];
+  const areas = [];
+  if (root) for (let n = 1; n <= SMOKE_AREAS; n += 1) areas.push({ name: `SM${pad(n)}`, version: root, kind: 'SM', plan: SMOKE_PLAN });
+  for (const [nn, v] of byNn) {
+    if (v === root) continue;
+    for (let k = 1; k <= VERSION_SMOKE_SLOTS; k += 1) areas.push({ name: `SM${nn}-${pad(k)}`, version: v, kind: 'SMV', plan: SMOKE_PLAN });
   }
-  versions.forEach((v, i) => {
-    if (v === root) return; // All sites v1: the full smoke chain on SM01..SM13
-    for (let k = 1; k <= VERSION_SMOKE_SLOTS; k += 1) {
-      areas.push({ name: `SM${pad(i + 1)}-${pad(k)}`, version: v, kind: 'SMV', plan: SMOKE_PLAN });
-    }
-  });
   return areas;
 }
 
-module.exports = { ROUNDS, record, currentRun, putRun, chainName, areaPlan, SECTION_PLAN, SMOKE_AREAS, VERSION_SMOKE_SLOTS };
+// THE COVERAGE GROUND of one onboarding-smoke run: a FRESH area per version,
+// CV<nn>-S<k> (nn = the version's WA<nn>, S<k> = the smoke run). Every checkpoint
+// of every new code consumes Work Sections (R6: 16-22 of WA<nn>'s 60 TABLEs, plus
+// the throwaway ones), and the suite is re-run after every deployment, so each run
+// raises its coverage RFIs / NCs on areas of its own instead of wearing out WA<nn>.
+const COVERAGE_PLAN = { table: 60, inverter: 10 };
+const coverageArea = (nn, smokeRun) => `CV${nn}-${smokeRun}`;
+
+// Only versions this suite BUILT carry new codes (the roots predate the run).
+function builtVersions(envKey) {
+  const labels = new Set();
+  for (const chain of Object.values(state.envRecord(envKey).catalogs || {})) {
+    for (const rec of Object.values(chain)) if (rec && rec.onboarding && rec.codes) labels.add(rec.label);
+  }
+  return labels;
+}
+
+function coverageAreaPlan(project, smokeRun, envKey = DATA.DRS_ENV || String(process.env.DRS_ENV || 'uat').toLowerCase()) {
+  const built = builtVersions(envKey);
+  return Object.entries(project.areaVersions || {})
+    .map(([wa, v]) => [(wa.match(/^WA(\d{2})$/) || [])[1], v]).filter(([nn, v]) => nn && built.has(v)).sort()
+    .map(([nn, v]) => ({ name: coverageArea(nn, smokeRun), version: v, kind: 'CV', plan: COVERAGE_PLAN }));
+}
+
+// THE ONBOARDING-SMOKE RUNS (S1, S2 ...) under env.onboardingSmoke, one per
+// invocation of run-onboarding-smoke.js on an onboarded project: `fresh` closes an
+// open one and starts S<n+1>; otherwise the open run is resumed (--from / --only).
+function smokeRun(envKey, projectTag, { fresh }) {
+  return state.mutateEnv(envKey, (env) => {
+    const os = env.onboardingSmoke = env.onboardingSmoke || { lastRun: 0, runs: {} };
+    os.runs = os.runs || {};
+    const open = Object.values(os.runs).find((r) => !r.done);
+    if (open && !fresh) return open;
+    if (open) os.runs[open.run] = { ...open, done: true, abandoned: true, doneAt: new Date().toISOString() };
+    const n = (os.lastRun || 0) + 1;
+    const run = { run: `S${n}`, n, projectTag, startedAt: new Date().toISOString(), done: false };
+    os.lastRun = n;
+    os.runs[run.run] = run;
+    return run;
+  });
+}
+
+function closeSmokeRun(envKey, runId) {
+  return state.mutateEnv(envKey, (env) => {
+    const r = env.onboardingSmoke.runs[runId];
+    env.onboardingSmoke.runs[runId] = { ...r, done: true, doneAt: new Date().toISOString() };
+    return env.onboardingSmoke.runs[runId];
+  });
+}
+
+module.exports = {
+  ROUNDS, record, currentRun, putRun, chainName, areaPlan, smokeAreaPlan, coverageAreaPlan, coverageArea,
+  smokeRun, closeSmokeRun, SECTION_PLAN, SMOKE_AREAS, VERSION_SMOKE_SLOTS,
+};

@@ -43,7 +43,9 @@ const VENDOR = { Civil: 'AUTOMATION SERVICE', Electrical: 'AUTOMATION ELECTRICAL
 function items() {
   if (profile.unavailable) return [];
   const out = [];
-  for (const wa of profile.drs.project.workAreas) {
+  // Per-area NCs: the onboarding plan only (coverage = the new codes' sub-activities).
+  const coverage = (process.env.ONBOARDING_PLAN || 'onboarding') === 'coverage';
+  for (const wa of coverage ? [] : profile.drs.project.workAreas) {
     const kind = (wa.match(/^(WA|Road|Drain|Culvert)\d+$/) || [])[1];
     for (const k of KINDS.filter((x) => x.kind === kind)) {
       out.push({ id: `${wa}/${k.pkg}/NC`, workArea: wa, version: profile.drs.project.areaVersions[wa], ...k });
@@ -61,12 +63,16 @@ function items() {
   return out;
 }
 
-const done = (id) => ((recordedPulse(profile).onboardingNc || {})[id] || {}).status === 'passed';
+// Where items are recorded: the onboarding run's map, or - for a coverage run of
+// tests/onboarding-smoke (ONBOARDING_RECORD=<run id>) - that run's own map, so a
+// re-run after a deployment tests everything again (2026-10-21).
+const RECORD_KEY = process.env.ONBOARDING_RECORD ? `onboardingNc_${process.env.ONBOARDING_RECORD}` : 'onboardingNc';
+const done = (id) => ((recordedPulse(profile)[RECORD_KEY] || {})[id] || {}).status === 'passed';
 // Merged into the CURRENT map inside the state lock: lanes run in parallel.
 function record(id, patch) {
   recordPulse(profile, (cur) => {
-    const all = cur.onboardingNc || {};
-    return { onboardingNc: { ...all, [id]: { ...(all[id] || {}), ...patch, at: new Date().toISOString() } } };
+    const all = cur[RECORD_KEY] || {};
+    return { [RECORD_KEY]: { ...all, [id]: { ...(all[id] || {}), ...patch, at: new Date().toISOString() } } };
   });
 }
 
