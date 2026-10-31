@@ -33,6 +33,26 @@ class DrsAppSettingsPage {
     return this.page.getByText(name, { exact: true }).first().isVisible().catch(() => false);
   }
 
+  // Add SPV (round 24, drs-dev 2026-10-30): the right pane holds one field,
+  // "SPV Name*", and Cancel / Create. Returns the create call's answer.
+  async createSpv(name) {
+    await this.page.goto(this.url('/appSettings/spvsConfigurator'));
+    await this.page.getByRole('button', { name: 'Add SPV' }).click();
+    const byLabel = this.page.getByRole('textbox', { name: /SPV Name/i });
+    const nameBox = (await byLabel.isVisible({ timeout: 3000 }).catch(() => false))
+      ? byLabel
+      : this.page.locator('input[type="text"]:not([placeholder="Search SPVs"]):visible').last();
+    await nameBox.waitFor({ state: 'visible', timeout: 15000 });
+    await nameBox.fill(name);
+    const response = this.page.waitForResponse(
+      (r) => r.request().method() === 'POST' && /spv/i.test(r.url()),
+      { timeout: 60000 },
+    );
+    await this.page.getByRole('button', { name: 'Create', exact: true }).click();
+    const res = await response;
+    return { status: res.status(), url: res.url(), body: await res.text().catch(() => '') };
+  }
+
   // ---- Locations: Cluster → Site ------------------------------------------
 
   async gotoLocations() {

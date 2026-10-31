@@ -37,6 +37,7 @@ const counter = require('./pc-counter');
 //
 // Run:  npx playwright test --project=drs-setting tests/drs-setting/catalog_site_versions.spec.js --workers=1
 //       CATALOG_SITE="AUTOMATION SITE" (default)   CATALOG_STEPS=S1 (one step only)
+//       CATALOG_NO_LOCK=1 (build + verify, leave the draft for a person to lock)
 // ===========================================================================
 
 const ENV = drsEnv();
@@ -232,7 +233,8 @@ for (const step of planSteps()) {
       const offered = await pc.optionLabels('Catalog version');
       const own = offered.filter((l) => chainRe.test(l));
       const recordedLabels = Object.values(cats()).map((c) => c.label).filter(Boolean);
-      const strangers = own.filter((l) => !recordedLabels.includes(PackagesConfiguratorPage.bareLabel(l)));
+      // The source is expected: with CATALOG_SITE="All sites" the chain's own v1 is it.
+      const strangers = own.filter((l) => ![...recordedLabels, source].includes(PackagesConfiguratorPage.bareLabel(l)));
       expect(strangers, `${SITE} has versions this spec did not record - check by hand before going on`).toEqual([]);
 
       // What a draft COULD copy: the chosen source, or the newest locked version.
@@ -301,6 +303,13 @@ for (const step of planSteps()) {
     await verifyCodes(rec.codes, rec.label);
     rec = putCat(step.key, { status: 'built' });
     await dump(`${step.key}-built`);
+
+    // CATALOG_NO_LOCK=1: leave the built draft open - the app owner locks it by hand
+    // (drs-dev, 2026-10-30). A later run resumes it (status stays below 'locked').
+    if (process.env.CATALOG_NO_LOCK === '1') {
+      console.log(`  ${step.key}: ${rec.label} built + verified, left as DRAFT (CATALOG_NO_LOCK=1) - lock it by hand`);
+      return;
+    }
 
     // ---- lock (permanent) ----
     const lock = await pc.lockVersion(rec.label);

@@ -46974,17 +46974,1349 @@
       }
     },
     "dev": {
-      "projects": [],
+      "projects": [
+        {
+          "tag": "30102026-OB1",
+          "createdAt": "2026-10-30T11:56:56.869Z",
+          "stagesDone": [
+            "D4",
+            "D5",
+            "D6",
+            "D7",
+            "D8",
+            "D9"
+          ],
+          "name": "AUTO-Solar-30102026-OB1",
+          "id": "e778c5a1-6f5b-4d5c-a27f-87a5e9f52bc5",
+          "type": "Solar",
+          "spv": "VIJESPV",
+          "cluster": "Rajasthan",
+          "site": "Pulse-Site 06",
+          "pairedPulse": [
+            "qa",
+            "dev",
+            "test"
+          ],
+          "onboardingRun": "R1",
+          "areaVersions": {
+            "WA01": "All sites v1",
+            "Road01": "All sites v1",
+            "Drain01": "All sites v1",
+            "Culvert01": "All sites v1",
+            "WA02": "All sites v2",
+            "Road02": "All sites v2",
+            "Drain02": "All sites v2",
+            "Culvert02": "All sites v2",
+            "WA03": "Pulse-Site 06 v1",
+            "Road03": "Pulse-Site 06 v1",
+            "Drain03": "Pulse-Site 06 v1",
+            "Culvert03": "Pulse-Site 06 v1"
+          },
+          "workLocation": "AUTO-WL-30102026-OB1",
+          "workAreas": [
+            "WA01",
+            "Road01",
+            "Drain01",
+            "Culvert01",
+            "WA02",
+            "Road02",
+            "Drain02",
+            "Culvert02",
+            "WA03",
+            "Road03",
+            "Drain03",
+            "Culvert03"
+          ],
+          "sectionPlan": {
+            "WA": {
+              "table": 60,
+              "inverter": 25,
+              "cable": 10
+            },
+            "Road": {
+              "road": 10
+            },
+            "Drain": {
+              "drain": 10
+            },
+            "Culvert": {
+              "culvert": 10
+            }
+          },
+          "csv": "locations-30102026-OB1-1793361417024-1.csv",
+          "pinned": {
+            "WA01": "All sites v1",
+            "Road01": "All sites v1",
+            "Drain01": "All sites v1",
+            "Culvert01": "All sites v1",
+            "WA02": "All sites v2",
+            "Road02": "All sites v2",
+            "Drain02": "All sites v2",
+            "Culvert02": "All sites v2",
+            "WA03": "Pulse-Site 06 v1",
+            "Road03": "Pulse-Site 06 v1",
+            "Drain03": "Pulse-Site 06 v1",
+            "Culvert03": "Pulse-Site 06 v1"
+          },
+          "serviceOrders": {
+            "Civil": {
+              "number": "9961502473",
+              "package": "Civil",
+              "vendorCode": "995421",
+              "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+              "vendorText": "995421 — Automation Service Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ],
+                  "serviceCode": "120021756"
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v1",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ],
+                  "serviceCode": "120036457"
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.1.1 Sub Activity",
+                    "PC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC02.2.1 Sub Activity",
+                    "PC02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.1.1 Sub Activity",
+                    "QC02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC02.2.1 Sub Activity",
+                    "QC02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 90,
+                  "serviceItemNo": 90,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "group": "120021756",
+                  "subActivities": [
+                    "Piling - MMS",
+                    "Piling - Inverter",
+                    "Piling - LT Cable Hanger System"
+                  ]
+                },
+                {
+                  "lineNumber": 100,
+                  "serviceItemNo": 100,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "group": "120036457",
+                  "subActivities": [
+                    "Piling - Robotic Docking System",
+                    "Installation of binders/clips, bridges, docking & reverse stations"
+                  ]
+                },
+                {
+                  "lineNumber": 110,
+                  "serviceItemNo": 110,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.1.1 Sub Activity",
+                    "PC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 120,
+                  "serviceItemNo": 120,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "PC01.2.1 Sub Activity",
+                    "PC01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 130,
+                  "serviceItemNo": 130,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.1.1 Sub Activity",
+                    "QC01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 140,
+                  "serviceItemNo": 140,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Civil",
+                  "subActivities": [
+                    "QC01.2.1 Sub Activity",
+                    "QC01.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            },
+            "Electrical": {
+              "number": "9961519285",
+              "package": "Electrical",
+              "vendorCode": "999749",
+              "vendorName": "AUTOMATION ELECTRICAL CONTRACTOR",
+              "vendorText": "999749 — Automation Electrical Contractor",
+              "vendorHeaderSet": true,
+              "lines": [
+                {
+                  "lineNumber": 10,
+                  "serviceItemNo": 10,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.1.1 Sub Activity",
+                    "PE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 20,
+                  "serviceItemNo": 20,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE02.2.1 Sub Activity",
+                    "PE02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 30,
+                  "serviceItemNo": 30,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.1.1 Sub Activity",
+                    "QE02.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 40,
+                  "serviceItemNo": 40,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "All sites v2",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE02.2.1 Sub Activity",
+                    "QE02.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 50,
+                  "serviceItemNo": 50,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.1.1 Sub Activity",
+                    "PE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 60,
+                  "serviceItemNo": 60,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "PE01.2.1 Sub Activity",
+                    "PE01.2.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 70,
+                  "serviceItemNo": 70,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.1.1 Sub Activity",
+                    "QE01.1.2 Sub Activity"
+                  ]
+                },
+                {
+                  "lineNumber": 80,
+                  "serviceItemNo": 80,
+                  "quantity": 100,
+                  "actualQty": 100,
+                  "priceUnit": 1,
+                  "uom": "EA",
+                  "version": "Pulse-Site 06 v1",
+                  "package": "Electrical",
+                  "subActivities": [
+                    "QE01.2.1 Sub Activity",
+                    "QE01.2.2 Sub Activity"
+                  ]
+                }
+              ]
+            }
+          },
+          "serviceOrder": {
+            "number": "9961502473",
+            "package": "Civil",
+            "vendorCode": "995421",
+            "vendorName": "AUTOMATION SERVICE CONTRACTOR",
+            "vendorText": "995421 — Automation Service Contractor",
+            "vendorHeaderSet": true,
+            "lines": [
+              {
+                "lineNumber": 10,
+                "serviceItemNo": 10,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ],
+                "serviceCode": "120021756"
+              },
+              {
+                "lineNumber": 20,
+                "serviceItemNo": 20,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v1",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ],
+                "serviceCode": "120036457"
+              },
+              {
+                "lineNumber": 30,
+                "serviceItemNo": 30,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 40,
+                "serviceItemNo": 40,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ]
+              },
+              {
+                "lineNumber": 50,
+                "serviceItemNo": 50,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.1.1 Sub Activity",
+                  "PC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 60,
+                "serviceItemNo": 60,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "PC02.2.1 Sub Activity",
+                  "PC02.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 70,
+                "serviceItemNo": 70,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.1.1 Sub Activity",
+                  "QC02.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 80,
+                "serviceItemNo": 80,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "All sites v2",
+                "package": "Civil",
+                "subActivities": [
+                  "QC02.2.1 Sub Activity",
+                  "QC02.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 90,
+                "serviceItemNo": 90,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "group": "120021756",
+                "subActivities": [
+                  "Piling - MMS",
+                  "Piling - Inverter",
+                  "Piling - LT Cable Hanger System"
+                ]
+              },
+              {
+                "lineNumber": 100,
+                "serviceItemNo": 100,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "group": "120036457",
+                "subActivities": [
+                  "Piling - Robotic Docking System",
+                  "Installation of binders/clips, bridges, docking & reverse stations"
+                ]
+              },
+              {
+                "lineNumber": 110,
+                "serviceItemNo": 110,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.1.1 Sub Activity",
+                  "PC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 120,
+                "serviceItemNo": 120,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "PC01.2.1 Sub Activity",
+                  "PC01.2.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 130,
+                "serviceItemNo": 130,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.1.1 Sub Activity",
+                  "QC01.1.2 Sub Activity"
+                ]
+              },
+              {
+                "lineNumber": 140,
+                "serviceItemNo": 140,
+                "quantity": 100,
+                "actualQty": 100,
+                "priceUnit": 1,
+                "uom": "EA",
+                "version": "Pulse-Site 06 v1",
+                "package": "Civil",
+                "subActivities": [
+                  "QC01.2.1 Sub Activity",
+                  "QC01.2.2 Sub Activity"
+                ]
+              }
+            ]
+          },
+          "soConfiguration": {
+            "byVersion": {
+              "All sites v1": {
+                "Anti-Corrosion Protection - for MMS Structural Components": {
+                  "WA01": "9961502473"
+                },
+                "Anti-Corrosion Protection - for Stubs": {
+                  "WA01": "9961502473"
+                },
+                "Culvert Works -RCC": {
+                  "Culvert01": "9961502473"
+                },
+                "Culvert Works-PCC": {
+                  "WA01": "9961502473"
+                },
+                "Drain Work": {
+                  "Drain01": "9961502473"
+                },
+                "IDT Civil & Structural": {
+                  "WA01": "9961502473"
+                },
+                "IDT Fencing & Gravel Laying": {
+                  "WA01": "9961502473"
+                },
+                "Inverter Height Extension": {
+                  "WA01": "9961502473"
+                },
+                "MMS Installation": {
+                  "WA01": "9961502473"
+                },
+                "Module Installation": {
+                  "WA01": "9961502473"
+                },
+                "Piling - Inverter": {
+                  "WA01": "9961502473"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "WA01": "9961502473"
+                },
+                "Piling - MMS": {
+                  "WA01": "9961502473"
+                },
+                "Piling - Robotic Docking System": {
+                  "WA01": "9961502473"
+                },
+                "Road Works - IDT Road GSB": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Macadam": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road OGL Layer": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 1": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 2": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 3": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 4": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 5": {
+                  "Road01": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 6": {
+                  "Road01": "9961502473"
+                },
+                "Robot Structure Installation": {
+                  "WA01": "9961502473"
+                },
+                "AC/LT Network - Cable & Cable Management System Laying": {
+                  "WA01": "9961519285"
+                },
+                "AC/LT Network - Earthing": {
+                  "WA01": "9961519285"
+                },
+                "AC/LT Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA01": "9961519285"
+                },
+                "DC Network - Cable Laying": {
+                  "WA01": "9961519285"
+                },
+                "DC Network - Earthing": {
+                  "WA01": "9961519285"
+                },
+                "DC Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA01": "9961519285"
+                },
+                "HT Cable Laying & Termination": {
+                  "WA01": "9961519285"
+                }
+              },
+              "All sites v2": {
+                "Anti-Corrosion Protection - for MMS Structural Components": {
+                  "WA02": "9961502473"
+                },
+                "Anti-Corrosion Protection - for Stubs": {
+                  "WA02": "9961502473"
+                },
+                "Culvert Works -RCC": {
+                  "Culvert02": "9961502473"
+                },
+                "Culvert Works-PCC": {
+                  "WA02": "9961502473"
+                },
+                "Drain Work": {
+                  "Drain02": "9961502473"
+                },
+                "IDT Civil & Structural": {
+                  "WA02": "9961502473"
+                },
+                "IDT Fencing & Gravel Laying": {
+                  "WA02": "9961502473"
+                },
+                "Inverter Height Extension": {
+                  "WA02": "9961502473"
+                },
+                "MMS Installation": {
+                  "WA02": "9961502473"
+                },
+                "Module Installation": {
+                  "WA02": "9961502473"
+                },
+                "PC02.1 Activity": {
+                  "WA02": "9961502473"
+                },
+                "PC02.2 Activity": {
+                  "WA02": "9961502473"
+                },
+                "Piling - Inverter": {
+                  "WA02": "9961502473"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "WA02": "9961502473"
+                },
+                "Piling - MMS": {
+                  "WA02": "9961502473"
+                },
+                "Piling - Robotic Docking System": {
+                  "WA02": "9961502473"
+                },
+                "QC02.1 Activity": {
+                  "WA02": "9961502473"
+                },
+                "QC02.2 Activity": {
+                  "WA02": "9961502473"
+                },
+                "Road Works - IDT Road GSB": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Macadam": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road OGL Layer": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 1": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 2": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 3": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 4": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 5": {
+                  "Road02": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 6": {
+                  "Road02": "9961502473"
+                },
+                "Robot Structure Installation": {
+                  "WA02": "9961502473"
+                },
+                "AC/LT Network - Cable & Cable Management System Laying": {
+                  "WA02": "9961519285"
+                },
+                "AC/LT Network - Earthing": {
+                  "WA02": "9961519285"
+                },
+                "AC/LT Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA02": "9961519285"
+                },
+                "DC Network - Cable Laying": {
+                  "WA02": "9961519285"
+                },
+                "DC Network - Earthing": {
+                  "WA02": "9961519285"
+                },
+                "DC Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA02": "9961519285"
+                },
+                "HT Cable Laying & Termination": {
+                  "WA02": "9961519285"
+                },
+                "PE02.1 Activity": {
+                  "WA02": "9961519285"
+                },
+                "PE02.2 Activity": {
+                  "WA02": "9961519285"
+                },
+                "QE02.1 Activity": {
+                  "WA02": "9961519285"
+                },
+                "QE02.2 Activity": {
+                  "WA02": "9961519285"
+                }
+              },
+              "Pulse-Site 06 v1": {
+                "Anti-Corrosion Protection - for MMS Structural Components": {
+                  "WA03": "9961502473"
+                },
+                "Anti-Corrosion Protection - for Stubs": {
+                  "WA03": "9961502473"
+                },
+                "Culvert Works -RCC": {
+                  "Culvert03": "9961502473"
+                },
+                "Culvert Works-PCC": {
+                  "WA03": "9961502473"
+                },
+                "Drain Work": {
+                  "Drain03": "9961502473"
+                },
+                "IDT Civil & Structural": {
+                  "WA03": "9961502473"
+                },
+                "IDT Fencing & Gravel Laying": {
+                  "WA03": "9961502473"
+                },
+                "Inverter Height Extension": {
+                  "WA03": "9961502473"
+                },
+                "MMS Installation": {
+                  "WA03": "9961502473"
+                },
+                "Module Installation": {
+                  "WA03": "9961502473"
+                },
+                "PC01.1 Activity": {
+                  "WA03": "9961502473"
+                },
+                "PC01.2 Activity": {
+                  "WA03": "9961502473"
+                },
+                "Piling - Inverter": {
+                  "WA03": "9961502473"
+                },
+                "Piling - LT Cable Hanger System": {
+                  "WA03": "9961502473"
+                },
+                "Piling - MMS": {
+                  "WA03": "9961502473"
+                },
+                "Piling - Robotic Docking System": {
+                  "WA03": "9961502473"
+                },
+                "QC01.1 Activity": {
+                  "WA03": "9961502473"
+                },
+                "QC01.2 Activity": {
+                  "WA03": "9961502473"
+                },
+                "Road Works - IDT Road GSB": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Macadam": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road OGL Layer": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 1": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 2": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 3": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 4": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 5": {
+                  "Road03": "9961502473"
+                },
+                "Road Works - IDT Road Soil Layer 6": {
+                  "Road03": "9961502473"
+                },
+                "Robot Structure Installation": {
+                  "WA03": "9961502473"
+                },
+                "AC/LT Network - Cable & Cable Management System Laying": {
+                  "WA03": "9961519285"
+                },
+                "AC/LT Network - Earthing": {
+                  "WA03": "9961519285"
+                },
+                "AC/LT Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA03": "9961519285"
+                },
+                "DC Network - Cable Laying": {
+                  "WA03": "9961519285"
+                },
+                "DC Network - Earthing": {
+                  "WA03": "9961519285"
+                },
+                "DC Network - Equipment Installation & Testing and Cable Termination": {
+                  "WA03": "9961519285"
+                },
+                "HT Cable Laying & Termination": {
+                  "WA03": "9961519285"
+                },
+                "PE01.1 Activity": {
+                  "WA03": "9961519285"
+                },
+                "PE01.2 Activity": {
+                  "WA03": "9961519285"
+                },
+                "QE01.1 Activity": {
+                  "WA03": "9961519285"
+                },
+                "QE01.2 Activity": {
+                  "WA03": "9961519285"
+                }
+              }
+            },
+            "version": "v1",
+            "package": "Civil",
+            "mapping": {
+              "Anti-Corrosion Protection - for MMS Structural Components": {
+                "WA01": "9961502473"
+              },
+              "Anti-Corrosion Protection - for Stubs": {
+                "WA01": "9961502473"
+              },
+              "Culvert Works -RCC": {
+                "Culvert01": "9961502473"
+              },
+              "Culvert Works-PCC": {
+                "WA01": "9961502473"
+              },
+              "Drain Work": {
+                "Drain01": "9961502473"
+              },
+              "IDT Civil & Structural": {
+                "WA01": "9961502473"
+              },
+              "IDT Fencing & Gravel Laying": {
+                "WA01": "9961502473"
+              },
+              "Inverter Height Extension": {
+                "WA01": "9961502473"
+              },
+              "MMS Installation": {
+                "WA01": "9961502473"
+              },
+              "Module Installation": {
+                "WA01": "9961502473"
+              },
+              "Piling - Inverter": {
+                "WA01": "9961502473"
+              },
+              "Piling - LT Cable Hanger System": {
+                "WA01": "9961502473"
+              },
+              "Piling - MMS": {
+                "WA01": "9961502473"
+              },
+              "Piling - Robotic Docking System": {
+                "WA01": "9961502473"
+              },
+              "Road Works - IDT Road GSB": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Macadam": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road OGL Layer": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 1": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 2": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 3": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 4": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 5": {
+                "Road01": "9961502473"
+              },
+              "Road Works - IDT Road Soil Layer 6": {
+                "Road01": "9961502473"
+              },
+              "Robot Structure Installation": {
+                "WA01": "9961502473"
+              },
+              "AC/LT Network - Cable & Cable Management System Laying": {
+                "WA01": "9961519285"
+              },
+              "AC/LT Network - Earthing": {
+                "WA01": "9961519285"
+              },
+              "AC/LT Network - Equipment Installation & Testing and Cable Termination": {
+                "WA01": "9961519285"
+              },
+              "DC Network - Cable Laying": {
+                "WA01": "9961519285"
+              },
+              "DC Network - Earthing": {
+                "WA01": "9961519285"
+              },
+              "DC Network - Equipment Installation & Testing and Cable Termination": {
+                "WA01": "9961519285"
+              },
+              "HT Cable Laying & Termination": {
+                "WA01": "9961519285"
+              }
+            },
+            "versionsDone": [
+              "All sites v1",
+              "All sites v2",
+              "Pulse-Site 06 v1"
+            ]
+          },
+          "soLineMapping": {
+            "Electrical": {
+              "number": "9961519285",
+              "lines": {
+                "10-10": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - PE02.1.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - PE02.1.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "20-20": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - PE02.2.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - PE02.2.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "30-30": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - QE02.1.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - QE02.1.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "40-40": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - QE02.2.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - QE02.2.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "50-50": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - PE01.1.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - PE01.1.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "60-60": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - PE01.2.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - PE01.2.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "70-70": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - QE01.1.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - QE01.1.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "80-80": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - QE01.2.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - QE01.2.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                }
+              }
+            },
+            "Civil": {
+              "number": "9961502473",
+              "lines": {
+                "10-10": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v1 — WA01",
+                    "EA - Piling - Inverter — Solar · All sites v1 — WA01",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v1 — WA01"
+                  ]
+                },
+                "20-20": {
+                  "version": "All sites v1",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · All sites v1 — WA01",
+                    "Not Applicable - Installation of binders/clips, bridges, docking & reverse stations — Solar · All sites v1 — WA01"
+                  ]
+                },
+                "30-30": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · All sites v2 — WA02",
+                    "EA - Piling - Inverter — Solar · All sites v2 — WA02",
+                    "EA - Piling - LT Cable Hanger System — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "40-40": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · All sites v2 — WA02",
+                    "Not Applicable - Installation of binders/clips, bridges, docking & reverse stations — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "50-50": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - PC02.1.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - PC02.1.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "60-60": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - PC02.2.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - PC02.2.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "70-70": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - QC02.1.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - QC02.1.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "80-80": {
+                  "version": "All sites v2",
+                  "subActivities": [
+                    "Per Unit - QC02.2.1 Sub Activity — Solar · All sites v2 — WA02",
+                    "Per Unit - QC02.2.2 Sub Activity — Solar · All sites v2 — WA02"
+                  ]
+                },
+                "90-90": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "EA - Piling - MMS — Solar · Pulse-Site 06 v1 — WA03",
+                    "EA - Piling - Inverter — Solar · Pulse-Site 06 v1 — WA03",
+                    "EA - Piling - LT Cable Hanger System — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "100-100": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "EA - Piling - Robotic Docking System — Solar · Pulse-Site 06 v1 — WA03",
+                    "Not Applicable - Installation of binders/clips, bridges, docking & reverse stations — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "110-110": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - PC01.1.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - PC01.1.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "120-120": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - PC01.2.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - PC01.2.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "130-130": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - QC01.1.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - QC01.1.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                },
+                "140-140": {
+                  "version": "Pulse-Site 06 v1",
+                  "subActivities": [
+                    "Per Unit - QC01.2.1 Sub Activity — Solar · Pulse-Site 06 v1 — WA03",
+                    "Per Unit - QC01.2.2 Sub Activity — Solar · Pulse-Site 06 v1 — WA03"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
       "vendor": {
         "code": "995421",
-        "name": "AUTOMATION SERVICE CONTRACTOR",
-        "createdAt": "2026-10-28T12:36:42.069Z"
+        "name": "AUTOMATION SERVICE CONTRACTOR"
       },
-      "updatedAt": "2026-10-28T12:36:49.539Z",
+      "updatedAt": "2026-10-30T12:00:54.454Z",
       "vendorElectrical": {
         "code": "999749",
-        "name": "AUTOMATION ELECTRICAL CONTRACTOR",
-        "createdAt": "2026-10-28T12:36:49.527Z"
+        "name": "AUTOMATION ELECTRICAL CONTRACTOR"
+      },
+      "catalogs": {
+        "Pulse-Site 06": {
+          "S1": {
+            "label": "Pulse-Site 06 v1",
+            "source": "All sites v1",
+            "newestLocked": "All sites v1",
+            "status": "locked",
+            "draftedAt": "2026-10-30T10:57:56.762Z",
+            "updatedAt": "2026-10-30T11:55:21.045Z",
+            "copied": {
+              "source": "All sites v1",
+              "newestLocked": "All sites v1",
+              "matchesSource": true,
+              "matchesNewest": true,
+              "distinguishable": false
+            },
+            "codes": {
+              "Civil": [
+                "PC01",
+                "QC01"
+              ],
+              "Electrical": [
+                "PE01",
+                "QE01"
+              ]
+            },
+            "lockedAt": "2026-10-30T11:55:21.045Z",
+            "lockedBy": "app owner (by hand)"
+          }
+        },
+        "All sites": {
+          "S1": {
+            "label": "All sites v2",
+            "source": "All sites v1",
+            "newestLocked": "All sites v1",
+            "status": "locked",
+            "draftedAt": "2026-10-30T11:21:38.561Z",
+            "updatedAt": "2026-10-30T11:55:21.045Z",
+            "copied": {
+              "source": "All sites v1",
+              "newestLocked": "All sites v1",
+              "matchesSource": true,
+              "matchesNewest": true,
+              "distinguishable": false
+            },
+            "codes": {
+              "Civil": [
+                "PC02",
+                "QC02"
+              ],
+              "Electrical": [
+                "PE02",
+                "QE02"
+              ]
+            },
+            "lockedAt": "2026-10-30T11:55:21.045Z",
+            "lockedBy": "app owner (by hand)"
+          }
+        }
+      },
+      "spv": "VIJESPV",
+      "cluster": "Rajasthan",
+      "site": "Pulse-Site 06",
+      "onboarding": {
+        "lastRun": 1,
+        "runs": {
+          "R1": {
+            "run": "R1",
+            "n": 1,
+            "startedAt": "2026-10-30T11:56:45.978Z",
+            "rounds": {},
+            "done": true,
+            "versions": [
+              "All sites v1",
+              "All sites v2",
+              "Pulse-Site 06 v1"
+            ],
+            "projectTag": "30102026-OB1",
+            "updatedAt": "2026-10-30T11:56:56.966Z",
+            "doneAt": "2026-10-30T12:00:54.454Z"
+          }
+        }
       }
     }
   }

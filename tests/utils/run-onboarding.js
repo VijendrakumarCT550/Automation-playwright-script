@@ -44,7 +44,10 @@ defaultPulseEnv();
 const argv = process.argv.slice(2);
 const runIdx = argv.indexOf('--run');
 const RUN_ID = runIdx >= 0 ? argv[runIdx + 1] : null;
-const { picked, resumeHint } = selectStages(STAGES, argv, 'run-onboarding.js');
+// ONBOARDING_VERSIONS (onboarding-run.js fixedVersions): the versions exist already,
+// so OB01 builds nothing and is left out.
+const stages = process.env.ONBOARDING_VERSIONS ? STAGES.filter((s) => s.id !== 'OB01') : STAGES;
+const { picked, resumeHint } = selectStages(stages, argv, 'run-onboarding.js');
 
 function runProjectTag() {
   delete require.cache[require.resolve('../drs/utils/drs-state')];

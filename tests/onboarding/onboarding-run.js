@@ -23,6 +23,14 @@ const ROUNDS = [
   { key: 'S2', chain: 'site', round: 2 },
 ];
 
+// ONBOARDING_VERSIONS="All sites v1,All sites v2,Pulse-Site 06 v1" (app owner,
+// drs-dev 2026-10-30): onboard onto these EXISTING locked versions, WA01.. in this
+// order, and build none (the runner skips OB01). Fixed when the run starts.
+function fixedVersions() {
+  const list = String(process.env.ONBOARDING_VERSIONS || '').split(',').map((v) => v.trim()).filter(Boolean);
+  return list.length ? { versions: list } : {};
+}
+
 function record(envKey) {
   return state.envRecord(envKey).onboarding || { lastRun: 0, runs: {} };
 }
@@ -36,7 +44,7 @@ function currentRun(envKey) {
     const open = Object.values(ob.runs).find((r) => !r.done);
     if (open) return open;
     const n = (ob.lastRun || 0) + 1;
-    const run = { run: `R${n}`, n, startedAt: new Date().toISOString(), rounds: {}, done: false };
+    const run = { run: `R${n}`, n, startedAt: new Date().toISOString(), rounds: {}, done: false, ...fixedVersions() };
     ob.lastRun = n;
     ob.runs[run.run] = run;
     return run;
@@ -80,8 +88,10 @@ const SECTION_PLAN = {
 // SMOKE ground (SM01..SM13, SM<nn>-01..09) is NOT part of onboarding any more (app
 // owner, 2026-10-21: a full run with smoke took ~9 h): tests/onboarding-smoke
 // imports it into the last onboarded project (smokeAreaPlan below).
+// A run given FIXED versions (ONBOARDING_VERSIONS, recorded as run.versions) onboards
+// onto those already-locked versions instead of OB01's rounds.
 function areaPlan(run) {
-  const versions = [
+  const versions = run.versions || [
     run.roots && run.roots.allSites,
     run.roots && run.roots.site,
     ...ROUNDS.map((r) => run.rounds[r.key] && run.rounds[r.key].label),

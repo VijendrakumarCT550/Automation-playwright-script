@@ -101,8 +101,13 @@ test('D1. a service-contractor vendor per package exists in User Management (fou
   for (const v of VENDORS) await ensureVendor(v);
 });
 
-test('D2. the SPV exists', async () => {
+test('D2. the SPV exists (found or created once)', async () => {
   test.setTimeout(3 * 60 * 1000);
+  if (!(await settings.spvExists(DATA.spv))) {
+    const res = await settings.createSpv(DATA.spv);
+    console.log(`  create SPV "${DATA.spv}" → HTTP ${res.status} ${res.url} ${res.body.slice(0, 200)}`);
+    expect(res.status, `SPV create answered ${res.status}: ${res.body.slice(0, 300)}`).toBeLessThan(300);
+  }
   expect(await settings.spvExists(DATA.spv), `SPV "${DATA.spv}" not found in SPV Master`).toBe(true);
   state.updateEnv(ENV.key, { spv: DATA.spv });
   console.log(`  SPV ok: ${DATA.spv}`);

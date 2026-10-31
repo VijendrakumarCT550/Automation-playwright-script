@@ -35,7 +35,8 @@ function tagFor(r) {
 test.beforeAll(async ({ browser }) => {
   test.setTimeout(5 * 60 * 1000);
   run = currentRun(ENV.key);
-  for (const k of ['A1', 'S1', 'A2', 'S2']) expect(run.rounds[k], `${run.run}: round ${k} not locked yet - run OB01`).toBeTruthy();
+  if (!run.versions) for (const k of ['A1', 'S1', 'A2', 'S2']) expect(run.rounds[k], `${run.run}: round ${k} not locked yet - run OB01`).toBeTruthy();
+  else console.log(`  ${run.run}: fixed versions ${JSON.stringify(run.versions)} (no OB01)`);
   const env = state.envRecord(ENV.key);
   for (const k of ['vendor', 'vendorElectrical', 'spv', 'cluster', 'site']) expect(env[k], `DRS masters missing "${k}" - run D01`).toBeTruthy();
   project = run.projectTag ? env.projects.find((p) => p.tag === run.projectTag) : null;

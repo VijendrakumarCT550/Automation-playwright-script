@@ -2,5 +2,9 @@
   "uat": {
     "Civil": 27,
     "Electrical": 27
+  },
+  "dev": {
+    "Civil": 2,
+    "Electrical": 2
   }
 }

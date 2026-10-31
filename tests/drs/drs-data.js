@@ -27,7 +27,8 @@ module.exports = {
   },
 
   // D2 — the app owner's own SPV on drs-uat (2026-09-26: "use VIJESPV that I
-  // created"). Verified to exist, never created.
+  // created"). Found, or created once where the env has none (drs-dev, app owner
+  // 2026-10-30: same find-or-create rule as the vendors).
   spv: 'VIJESPV',
 
   // D3 — docs/drs-pulse-integration.md §4: a dedicated Site under the existing
@@ -38,8 +39,10 @@ module.exports = {
   // "AUTOMATION SITE"s. Renaming OUR site (same uuid, so its catalog chain and
   // projects stay) makes it distinct in Pulse. D01 renames a site still carrying a
   // `siteFormerNames` entry instead of creating a new one.
+  // drs-dev (app owner, 2026-10-30): onboard on the EXISTING Rajasthan → Pulse-Site 06,
+  // which carries its own catalog (Pulse-Site 06 v1) - there is no Automation Site there.
   cluster: 'Rajasthan',
-  site: 'Automation Site 01',
+  site: ({ dev: 'Pulse-Site 06' })[String(process.env.DRS_ENV || 'uat').trim().toLowerCase()] || 'Automation Site 01',
   siteFormerNames: ['AUTOMATION SITE'],
 
   // D4 — project defaults (app owner: solar only for now).
